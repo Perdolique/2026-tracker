@@ -1,0 +1,71 @@
+<template>
+  <RouterView />
+</template>
+
+<script setup lang="ts">
+  import { RouterView } from 'vue-router'
+</script>
+
+<style>
+  :root {
+    /* Colors - Dark theme by default */
+    --color-bg: #0f0f0f;
+    --color-surface: #1a1a1a;
+    --color-border: #2a2a2a;
+    --color-text: #ffffff;
+    --color-text-secondary: #888888;
+    --color-primary: #6366f1;
+    --color-primary-hover: #5558e3;
+    --color-primary-bg: rgba(99, 102, 241, 0.15);
+    --color-success: #22c55e;
+    --color-danger: #ef4444;
+    --color-danger-bg: rgba(239, 68, 68, 0.15);
+    --color-progress-bg: #2a2a2a;
+
+    /* Typography */
+    --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --color-bg: #f5f5f5;
+      --color-surface: #ffffff;
+      --color-border: #e5e5e5;
+      --color-text: #171717;
+      --color-text-secondary: #737373;
+      --color-primary-bg: rgba(99, 102, 241, 0.1);
+      --color-danger-bg: rgba(239, 68, 68, 0.1);
+      --color-progress-bg: #e5e5e5;
+    }
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: var(--font-family);
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: var(--color-bg);
+    color: var(--color-text);
+    min-height: 100vh;
+  }
+
+  /* Reset */
+  button {
+    font-family: inherit;
+  }
+
+  input,
+  textarea {
+    font-family: inherit;
+  }
+</style>
