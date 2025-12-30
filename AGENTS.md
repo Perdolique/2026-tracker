@@ -63,6 +63,8 @@ Changes that don't require documentation updates:
 
 ## Tech Stack
 
+### Frontend
+
 - **Vue 3** — Composition API only, `<script setup lang="ts">`
 - **TypeScript** — strict mode, ES2024 target
 - **Pinia** — state management
@@ -70,21 +72,28 @@ Changes that don't require documentation updates:
 - **CSS Modules** — component-scoped styles
 - **Vite** — build tool
 - **Vitest** — testing framework
-- **localStorage** — fake API persistence
+
+### Backend
+
+- **Cloudflare Workers** — serverless API runtime
+- **Hono** — lightweight web framework
+- **D1** — SQLite database (Cloudflare)
+- **Drizzle ORM** — type-safe database queries
+- **Valibot** — request validation
 
 ## Architecture
 
 ```text
-Vue Components → Pinia Stores → API Client → localStorage
+Vue Components → Pinia Stores → API Client (fetch) → Cloudflare Worker (Hono) → D1 (SQLite)
 ```
 
-All data mutations go through Pinia actions. API client is async (simulates real API).
+All data mutations go through Pinia actions. API client uses `fetch('/api/...')` to communicate with the backend.
 
 ## Project Structure
 
 ```text
 src/
-├── api/           # localStorage-based API client
+├── api/           # API client (fetch-based)
 ├── components/    # Reusable Vue components
 ├── models/        # TypeScript interfaces/types
 │   └── __tests__/ # Unit tests for models
@@ -94,6 +103,12 @@ src/
 ├── router/        # Vue Router config
 ├── App.vue        # Root component
 └── main.ts        # Entry point
+worker/
+├── index.ts       # Hono app entry point
+└── db/
+    ├── schema.ts  # Drizzle schema (tables)
+    └── queries.ts # DB query functions
+drizzle/           # Generated SQL migrations
 ```
 
 ### Testing Convention
@@ -200,13 +215,26 @@ src/
 ## Commands
 
 ```bash
-npm run dev          # Start dev server
-npm run build        # Production build
-npm run preview      # Preview production build
-npm run test         # Run tests once
-npm run test:browser # Run browser tests (Playwright)
-npm run test:ui      # Run tests with UI
-npm run test:watch   # Run tests in watch mode
+# Frontend
+npm run dev            # Start Vite dev server
+npm run build          # Production build
+npm run preview        # Preview production build
+
+# Backend
+npm run dev:worker     # Start Cloudflare Worker locally
+npm run deploy         # Build & deploy to Cloudflare
+
+# Database
+npm run db:generate    # Generate migrations + convert to wrangler format
+npm run db:migrate     # Apply migrations to local D1
+npm run db:migrate:prod # Apply migrations to production D1
+npm run db:studio      # Open Drizzle Studio
+
+# Testing
+npm run test           # Run unit tests once
+npm run test:browser   # Run browser tests (Playwright)
+npm run test:ui        # Run tests with UI
+npm run test:watch     # Run tests in watch mode
 ```
 
 ## Data Models
@@ -254,13 +282,45 @@ type Task = DailyTask | ProgressTask | OneTimeTask
 | Progress | `currentValue >= targetValue` |
 | One-time | `completedAt` is set |
 
-## localStorage Keys
+## Database Schema
 
-```typescript
-const STORAGE_KEYS = {
-  TASKS: '2026-tracker:tasks',
-} as const
+### Tables
+
+```sql
+-- Main tasks table (single-table design with nullable type-specific columns)
+CREATE TABLE tasks (
+  id TEXT PRIMARY KEY,           -- UUID
+  title TEXT NOT NULL,
+  description TEXT,
+  type TEXT NOT NULL,            -- 'daily' | 'progress' | 'one-time'
+  created_at TEXT NOT NULL,      -- ISO timestamp
+  is_archived INTEGER DEFAULT 0, -- boolean
+  target_days INTEGER,           -- daily tasks
+  target_value INTEGER,          -- progress tasks
+  current_value INTEGER,         -- progress tasks
+  unit TEXT,                     -- progress tasks
+  completed_at TEXT              -- one-time tasks
+);
+
+-- Separate table for daily task completion dates (SQLite doesn't support arrays)
+CREATE TABLE daily_completions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  task_id TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  completed_date TEXT NOT NULL   -- YYYY-MM-DD
+);
 ```
+
+### API Endpoints
+
+| Method | Endpoint | Description |
+| ------ | -------- | ----------- |
+| GET | `/api/tasks` | Get all tasks (optional `?archived=true/false`) |
+| GET | `/api/tasks/:id` | Get single task |
+| POST | `/api/tasks` | Create task |
+| PUT | `/api/tasks/:id` | Update task |
+| DELETE | `/api/tasks/:id` | Delete task |
+| PATCH | `/api/tasks/:id/archive` | Archive task |
+| POST | `/api/tasks/:id/checkin` | Record check-in |
 
 ## Key Flows
 
@@ -282,4 +342,4 @@ const STORAGE_KEYS = {
 2. Select type (daily/progress/one-time)
 3. If daily → enter target days
 4. If progress → enter target value + unit
-5. Save to store → API → localStorage
+5. Save to store → API (POST /api/tasks) → D1 database
