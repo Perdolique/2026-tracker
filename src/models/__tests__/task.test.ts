@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import type { DailyTask, ProgressTask, OneTimeTask } from '../task'
+import { isDailyTaskCompletedToday, getCurrentDate } from '../task'
 
 describe('Task Types', () => {
   it('should create a valid DailyTask', () => {
@@ -55,5 +56,76 @@ describe('Task Types', () => {
     }
 
     expect(oneTimeTask.completedAt).toBe('2026-01-15T10:00:00.000Z')
+  })
+})
+
+describe('getCurrentDate', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('should return date in YYYY-MM-DD format', () => {
+    vi.setSystemTime(new Date('2026-03-15T12:30:00.000Z'))
+    expect(getCurrentDate()).toBe('2026-03-15')
+  })
+
+  it('should use UTC timezone', () => {
+    // 23:30 UTC on March 15 = still March 15 in UTC
+    vi.setSystemTime(new Date('2026-03-15T23:30:00.000Z'))
+    expect(getCurrentDate()).toBe('2026-03-15')
+  })
+})
+
+describe('isDailyTaskCompletedToday', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-01-15T10:00:00.000Z'))
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('should return true when task has today in completedDates', () => {
+    const task: DailyTask = {
+      id: '1',
+      title: 'Test',
+      type: 'daily',
+      targetDays: 100,
+      completedDates: ['2026-01-14', '2026-01-15'],
+      createdAt: '2026-01-01T00:00:00.000Z',
+    }
+
+    expect(isDailyTaskCompletedToday(task)).toBe(true)
+  })
+
+  it('should return false when task does not have today in completedDates', () => {
+    const task: DailyTask = {
+      id: '1',
+      title: 'Test',
+      type: 'daily',
+      targetDays: 100,
+      completedDates: ['2026-01-13', '2026-01-14'],
+      createdAt: '2026-01-01T00:00:00.000Z',
+    }
+
+    expect(isDailyTaskCompletedToday(task)).toBe(false)
+  })
+
+  it('should return false when completedDates is empty', () => {
+    const task: DailyTask = {
+      id: '1',
+      title: 'Test',
+      type: 'daily',
+      targetDays: 100,
+      completedDates: [],
+      createdAt: '2026-01-01T00:00:00.000Z',
+    }
+
+    expect(isDailyTaskCompletedToday(task)).toBe(false)
   })
 })

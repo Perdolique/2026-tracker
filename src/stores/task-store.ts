@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Task, CreateTaskData } from '@/models/task'
-import { isTaskCompleted } from '@/models/task'
+import { isTaskCompleted, isDailyTask, isDailyTaskCompletedToday } from '@/models/task'
 import * as taskApi from '@/api/task-api'
 
 export const useTaskStore = defineStore('tasks', () => {
@@ -12,7 +12,13 @@ export const useTaskStore = defineStore('tasks', () => {
   const completedTasks = computed(() => tasks.value.filter((t) => isTaskCompleted(t)))
 
   function getTasksForCheckIn(): Task[] {
-    return activeTasks.value
+    return activeTasks.value.filter((task) => {
+      // Skip daily tasks that were already completed today
+      if (isDailyTask(task) && isDailyTaskCompletedToday(task)) {
+        return false
+      }
+      return true
+    })
   }
 
   async function fetchTasks(): Promise<void> {
@@ -57,6 +63,25 @@ export const useTaskStore = defineStore('tasks', () => {
     }
   }
 
+  async function updateTask(task: Task): Promise<Task | null> {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const updatedTask = await taskApi.updateTask(task)
+      const index = tasks.value.findIndex((t) => t.id === task.id)
+      if (index !== -1) {
+        tasks.value[index] = updatedTask
+      }
+      return updatedTask
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Failed to update task'
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   async function processCheckIn(
     taskId: string,
     completed: boolean,
@@ -93,6 +118,7 @@ export const useTaskStore = defineStore('tasks', () => {
     fetchTasks,
     addTask,
     removeTask,
+    updateTask,
     processCheckIn,
     getTaskById,
   }

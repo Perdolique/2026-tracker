@@ -715,9 +715,7 @@
     padding: 16px;
   }
 
-  .completedCard {
-    opacity: 0.8;
-  }
+  /* completed cards have full opacity now */
 
   .taskHeader {
     display: flex;
