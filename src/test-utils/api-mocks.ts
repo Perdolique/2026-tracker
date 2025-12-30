@@ -27,7 +27,8 @@ export function setMockTasks(tasks: Task[]): void {
 let taskIdCounter = 0
 
 function generateTaskId(): string {
-  return `test-task-${++taskIdCounter}`
+  taskIdCounter += 1
+  return `test-task-${taskIdCounter}`
 }
 
 export function resetTaskIdCounter(): void {
@@ -80,14 +81,15 @@ function createTaskFromData(data: CreateTaskData): Task {
   }
 
   switch (data.type) {
-    case 'daily':
+    case 'daily': {
       return {
         ...base,
         type: 'daily',
         targetDays: data.targetDays ?? 1,
         completedDates: [],
       } as DailyTask
-    case 'progress':
+    }
+    case 'progress': {
       return {
         ...base,
         type: 'progress',
@@ -95,20 +97,20 @@ function createTaskFromData(data: CreateTaskData): Task {
         currentValue: 0,
         unit: data.unit ?? '',
       } as ProgressTask
-    case 'one-time':
+    }
+    case 'one-time': {
       return {
         ...base,
         type: 'one-time',
       } as OneTimeTask
+    }
   }
 }
 
 // --- MSW Handlers ---
 export const handlers = [
   // GET /api/tasks — список задач
-  http.get('*/api/tasks', () => {
-    return HttpResponse.json(mockTasksStorage)
-  }),
+  http.get('*/api/tasks', () => HttpResponse.json(mockTasksStorage)),
 
   // POST /api/tasks — создание задачи
   http.post('*/api/tasks', async ({ request }) => {
@@ -197,16 +199,14 @@ export const handlers = [
   }),
 
   // GET /api/auth/me — текущий пользователь (для аутентификации)
-  http.get('*/api/auth/me', () => {
-    return HttpResponse.json({
+  http.get('*/api/auth/me', () => HttpResponse.json({
       id: 'test-user-1',
       twitchId: '12345',
       username: 'test_user',
       displayName: 'Test User',
       avatarUrl: 'https://example.com/avatar.png',
       isPublic: false,
-    })
-  }),
+    })),
 ]
 
 // --- Worker instance ---

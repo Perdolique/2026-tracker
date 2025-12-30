@@ -168,8 +168,7 @@
 <script setup lang="ts">
   import { computed, ref, reactive } from 'vue'
   import { useI18n } from 'vue-i18n'
-  import type { Task, DailyTask, ProgressTask } from '@/models/task'
-  import { getTaskProgress, isDailyTask, isProgressTask, isOneTimeTask } from '@/models/task'
+  import { getTaskProgress, isDailyTask, isProgressTask, isOneTimeTask, type Task, type DailyTask, type ProgressTask } from '@/models/task'
   import { useTaskStore } from '@/stores/task-store'
 
   const { t } = useI18n()
@@ -208,7 +207,7 @@
   const progress = computed(() => getTaskProgress(props.task))
 
   const progressText = computed(() => {
-    const task = props.task
+    const {task} = props
     if (isDailyTask(task)) {
       return t('taskCard.daysProgress', { completed: task.completedDates.length, target: task.targetDays })
     }
@@ -223,12 +222,15 @@
 
   const typeLabel = computed(() => {
     switch (props.task.type) {
-      case 'daily':
+      case 'daily': {
         return t('taskCard.dailyLabel')
-      case 'progress':
+      }
+      case 'progress': {
         return t('taskCard.progressLabel')
-      case 'one-time':
+      }
+      case 'one-time': {
         return t('taskCard.oneTimeLabel')
+      }
     }
   })
 
@@ -236,14 +238,15 @@
   const todayDate = computed(() => new Date().toISOString().split('T')[0])
 
   const sortedCompletedDates = computed(() =>
-    [...editForm.completedDates].sort((a, b) => b.localeCompare(a))
+    [...editForm.completedDates].toSorted((dateA: string, dateB: string) => dateB.localeCompare(dateA))
   )
 
   const canAddDate = computed(() => {
     const date = editForm.newDate
-    if (!date) return false
-    if (date > todayDate.value!) return false
-    if (editForm.completedDates.includes(date)) return false
+    if (!date) {return false}
+    const today = todayDate.value ?? ''
+    if (date > today) {return false}
+    if (editForm.completedDates.includes(date)) {return false}
     return true
   })
 
@@ -253,7 +256,7 @@
   }
 
   function addDate() {
-    if (!canAddDate.value) return
+    if (!canAddDate.value) {return}
     editForm.completedDates.push(editForm.newDate)
     editForm.newDate = ''
   }
@@ -266,7 +269,8 @@
   }
 
   function hideMenu() {
-    document.getElementById(menuId.value)?.hidePopover()
+    const menuEl = document.querySelector(`#${CSS.escape(menuId.value)}`) as HTMLElement | null
+    menuEl?.hidePopover()
   }
 
   function initEditForm() {
@@ -297,11 +301,11 @@
   }
 
   async function saveChanges() {
-    if (!editForm.title.trim()) return
+    if (!editForm.title.trim()) {return}
 
     isSaving.value = true
 
-    let updatedTask: Task
+    let updatedTask: Task = props.task
 
     if (isDailyTask(props.task)) {
       updatedTask = {

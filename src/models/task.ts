@@ -68,24 +68,30 @@ export function isOneTimeTask(task: Task): task is OneTimeTask {
 // Check if task goal is reached
 export function isTaskCompleted(task: Task): boolean {
   switch (task.type) {
-    case 'daily':
+    case 'daily': {
       return task.completedDates.length >= task.targetDays
-    case 'progress':
+    }
+    case 'progress': {
       return task.currentValue >= task.targetValue
-    case 'one-time':
+    }
+    case 'one-time': {
       return task.completedAt !== undefined
+    }
   }
 }
 
 // Get task progress as percentage (0-100)
 export function getTaskProgress(task: Task): number {
   switch (task.type) {
-    case 'daily':
+    case 'daily': {
       return Math.min(100, (task.completedDates.length / task.targetDays) * 100)
-    case 'progress':
+    }
+    case 'progress': {
       return Math.min(100, (task.currentValue / task.targetValue) * 100)
-    case 'one-time':
+    }
+    case 'one-time': {
       return task.completedAt ? 100 : 0
+    }
   }
 }
 

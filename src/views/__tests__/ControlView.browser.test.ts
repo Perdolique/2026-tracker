@@ -15,6 +15,7 @@ import {
   resetTaskIdCounter,
 } from '@/test-utils/api-mocks'
 import { createTestI18n } from '@/test-utils/i18n'
+import { delay, waitFor } from '@/test-utils/delay'
 
 function createTestRouter() {
   return createRouter({
@@ -24,19 +25,6 @@ function createTestRouter() {
       { path: '/control', name: 'control', component: ControlView },
     ],
   })
-}
-
-async function waitFor(
-  condition: () => boolean,
-  timeout = 2000,
-  interval = 50,
-): Promise<void> {
-  const start = Date.now()
-  while (Date.now() - start < timeout) {
-    if (condition()) return
-    await new Promise((resolve) => setTimeout(resolve, interval))
-  }
-  throw new Error('waitFor timeout')
 }
 
 describe('ControlView - Browser Tests', () => {
@@ -160,7 +148,7 @@ describe('ControlView - Browser Tests', () => {
     await noButton.click()
 
     // Give time for potential update
-    await new Promise((resolve) => setTimeout(resolve, 100))
+    await delay(100)
 
     // Check task wasn't changed
     const tasks = getMockTasksStorage() as OneTimeTask[]
@@ -346,7 +334,7 @@ describe('ControlView - Browser Tests', () => {
       const noButton = screen.getByText(/✕\s*No/i)
       await noButton.click()
 
-      await new Promise((resolve) => setTimeout(resolve, 100))
+      await delay(100)
 
       const tasks = getMockTasksStorage() as DailyTask[]
       const unchangedTask = tasks.find((t) => t.id === 'daily-2')
@@ -390,7 +378,7 @@ describe('ControlView - Browser Tests', () => {
       const yesButton = screen.getByText(/✓\s*Yes/i)
       await yesButton.click()
 
-      await new Promise((resolve) => setTimeout(resolve, 150))
+      await delay(150)
 
       const tasks = getMockTasksStorage() as DailyTask[]
       const completedTask = tasks.find((t) => t.id === 'daily-4')
@@ -406,8 +394,8 @@ describe('ControlView - Browser Tests', () => {
         id: 'progress-1',
         title: 'Walk 1000000 steps',
         type: 'progress',
-        targetValue: 1000000,
-        currentValue: 500000,
+        targetValue: 1_000_000,
+        currentValue: 500_000,
         unit: 'steps',
         createdAt: '2026-01-01',
       }
@@ -457,8 +445,8 @@ describe('ControlView - Browser Tests', () => {
         id: 'progress-2',
         title: 'Save money',
         type: 'progress',
-        targetValue: 100000,
-        currentValue: 50000,
+        targetValue: 100_000,
+        currentValue: 50_000,
         unit: '$',
         createdAt: '2026-01-01',
       }
@@ -510,13 +498,13 @@ describe('ControlView - Browser Tests', () => {
       await waitFor(() => {
         const tasks = getMockTasksStorage() as ProgressTask[]
         const updatedTask = tasks.find((t) => t.id === 'progress-2')
-        return updatedTask?.currentValue === 65000
+        return updatedTask?.currentValue === 65_000
       })
 
       const tasks = getMockTasksStorage() as ProgressTask[]
       const progressTask = tasks.find((t) => t.id === 'progress-2')
 
-      expect(progressTask?.currentValue).toBe(65000)
+      expect(progressTask?.currentValue).toBe(65_000)
     })
 
     it('should not change task when clicking "Skip"', async () => {
@@ -568,7 +556,7 @@ describe('ControlView - Browser Tests', () => {
       const skipButton = screen.getByText(/Skip/i)
       await skipButton.click()
 
-      await new Promise((resolve) => setTimeout(resolve, 100))
+      await delay(100)
 
       const tasks = getMockTasksStorage() as ProgressTask[]
       const unchangedTask = tasks.find((t) => t.id === 'progress-3')

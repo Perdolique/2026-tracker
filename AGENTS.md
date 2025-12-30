@@ -79,6 +79,8 @@ Changes that don't require documentation updates:
 - **CSS Modules** — component-scoped styles
 - **Vite** — build tool
 - **Vitest** — testing framework
+- **oxlint** — linting (via eslint-config-greenpie)
+- **husky** — git hooks (pre-commit: lint → test → build)
 
 ### Browser Support
 
@@ -238,6 +240,10 @@ Browser tests use **MSW (Mock Service Worker)** for HTTP request interception.
 npm run dev            # Start Vite dev server
 npm run build          # Production build
 npm run preview        # Preview production build
+
+# Linting
+npm run lint           # Run oxlint
+npm run lint:fix       # Run oxlint with auto-fix
 
 # Backend
 npm run dev:worker     # Start Cloudflare Worker locally

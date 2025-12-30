@@ -22,6 +22,8 @@ Mobile-first task tracker for 2026 goals with three completion types.
 - CSS Modules (no frameworks)
 - Vitest for testing
 - Vite + Rolldown for blazing fast builds
+- oxlint for linting
+- husky for git hooks
 
 ### Backend
 
@@ -63,6 +65,12 @@ npm run test:ui
 
 # Run tests in watch mode
 npm run test:watch
+
+# Lint code
+npm run lint
+
+# Lint and auto-fix
+npm run lint:fix
 ```
 
 ### Database Commands

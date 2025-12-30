@@ -9,6 +9,8 @@
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
     "deploy": "npm run build && wrangler deploy",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
     "test": "vitest run",
     "test:browser": "vitest run --config vitest.browser.config.ts",
     "test:ui": "vitest --ui",
@@ -16,7 +18,8 @@
     "db:generate": "drizzle-kit generate && tsx scripts/convert-migrations.ts",
     "db:migrate": "wrangler d1 migrations apply 2026-tracker-db --local",
     "db:migrate:prod": "wrangler d1 migrations apply 2026-tracker-db --remote",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "prepare": "husky"
   },
   "dependencies": {
     "drizzle-orm": "^1.0.0-beta.6-7aaf14b",
@@ -36,8 +39,11 @@
     "@vitest/ui": "^4.0.16",
     "@vue/tsconfig": "^0.8.1",
     "drizzle-kit": "^1.0.0-beta.6-7aaf14b",
+    "eslint-config-greenpie": "^14.16.0",
     "happy-dom": "^20.0.11",
+    "husky": "^9.1.7",
     "msw": "^2.12.7",
+    "oxlint": "^1.36.0",
     "tsx": "^4.21.0",
     "typescript": "~5.9.3",
     "vite": "npm:rolldown-vite@7.3.0",

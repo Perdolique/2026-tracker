@@ -1,4 +1,4 @@
-export default {
+const enLocale = {
   common: {
     loading: 'Loading...',
     back: '← Back',
@@ -87,3 +87,5 @@ export default {
     language: 'Language',
   },
 }
+
+export default enLocale

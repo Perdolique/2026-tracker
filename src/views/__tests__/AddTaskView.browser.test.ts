@@ -14,6 +14,7 @@ import {
   resetTaskIdCounter,
 } from '@/test-utils/api-mocks'
 import { createTestI18n } from '@/test-utils/i18n'
+import { delay, waitFor } from '@/test-utils/delay'
 
 function createTestRouter() {
   return createRouter({
@@ -23,19 +24,6 @@ function createTestRouter() {
       { path: '/add', name: 'add-task', component: AddTaskView },
     ],
   })
-}
-
-async function waitFor(
-  condition: () => boolean,
-  timeout = 2000,
-  interval = 50,
-): Promise<void> {
-  const start = Date.now()
-  while (Date.now() - start < timeout) {
-    if (condition()) return
-    await new Promise((resolve) => setTimeout(resolve, interval))
-  }
-  throw new Error('waitFor timeout')
 }
 
 describe('AddTaskView - Browser Tests', () => {
@@ -84,7 +72,7 @@ describe('AddTaskView - Browser Tests', () => {
     await titleInput.fill('Run every day')
 
     // Select "Days" type (daily)
-    const dailyButton = screen.getByText('Days')
+    const dailyButton = screen.getByText('Days', { exact: true })
     await dailyButton.click()
 
     // Enter target days
@@ -185,7 +173,7 @@ describe('AddTaskView - Browser Tests', () => {
     const createdTask = tasks[0] as ProgressTask
     expect(createdTask.title).toBe('Walk a million steps')
     expect(createdTask.type).toBe('progress')
-    expect(createdTask.targetValue).toBe(1000000)
+    expect(createdTask.targetValue).toBe(1_000_000)
     expect(createdTask.currentValue).toBe(0)
     expect(createdTask.unit).toBe('steps')
   })
@@ -274,7 +262,7 @@ describe('AddTaskView - Browser Tests', () => {
     // Don't click since button should be disabled. Just verify task wasn't created
 
     // Give time for potential creation
-    await new Promise((resolve) => setTimeout(resolve, 200))
+    await delay(200)
 
     // Verify task wasn't created
     const tasks = getMockTasksStorage()

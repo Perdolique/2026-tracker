@@ -9,7 +9,7 @@ export function getCurrentDate(): string {
 }
 
 // Helper for API requests
-async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
+async function apiFetch<TResult>(path: string, options?: RequestInit): Promise<TResult> {
   const response = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {
@@ -25,10 +25,10 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
 
   // Handle 204 No Content
   if (response.status === 204) {
-    return undefined as T
+    return undefined as TResult
   }
 
-  return response.json() as Promise<T>
+  return response.json() as Promise<TResult>
 }
 
 // Get all tasks

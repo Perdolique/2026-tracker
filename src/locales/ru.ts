@@ -1,4 +1,4 @@
-export default {
+const ruLocale = {
   common: {
     loading: 'Загрузка...',
     back: '← Назад',
@@ -87,3 +87,5 @@ export default {
     language: 'Язык',
   },
 }
+
+export default ruLocale

@@ -133,14 +133,14 @@
   const unit = ref('')
 
   const isValid = computed(() => {
-    if (!title.value.trim()) return false
-    if (taskType.value === 'daily' && targetDays.value < 1) return false
-    if (taskType.value === 'progress' && (targetValue.value < 1 || !unit.value.trim())) return false
+    if (!title.value.trim()) {return false}
+    if (taskType.value === 'daily' && targetDays.value < 1) {return false}
+    if (taskType.value === 'progress' && (targetValue.value < 1 || !unit.value.trim())) {return false}
     return true
   })
 
   function handleSubmit() {
-    if (!isValid.value) return
+    if (!isValid.value) {return}
 
     const data: CreateTaskData = {
       title: title.value.trim(),

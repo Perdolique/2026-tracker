@@ -274,8 +274,7 @@
   import { useTaskStore } from '@/stores/task-store'
   import { useLocale } from '@/composables/use-locale'
   import TaskCard from '@/components/TaskCard.vue'
-  import type { Task, DailyTask, ProgressTask, OneTimeTask } from '@/models/task'
-  import { isTaskCompleted } from '@/models/task'
+  import { isTaskCompleted, type Task, type DailyTask, type ProgressTask, type OneTimeTask } from '@/models/task'
 
   interface PublicUser {
     id: string
@@ -306,14 +305,18 @@
 
   const errorText = computed(() => {
     switch (error.value) {
-      case 'not-found':
+      case 'not-found': {
         return t('profile.userNotFound')
-      case 'load-error':
+      }
+      case 'load-error': {
         return t('profile.loadError')
-      case 'network':
+      }
+      case 'network': {
         return t('profile.networkError')
-      default:
+      }
+      default: {
         return error.value
+      }
     }
   })
 
@@ -372,7 +375,7 @@
       if (profile.value?.isOwner) {
         await taskStore.fetchTasks()
       }
-    } catch (e) {
+    } catch {
       error.value = 'network'
     } finally {
       isLoading.value = false
@@ -419,23 +422,29 @@
 
   function getTaskIcon(task: Task): string {
     switch (task.type) {
-      case 'daily':
+      case 'daily': {
         return '📅'
-      case 'progress':
+      }
+      case 'progress': {
         return '📊'
-      case 'one-time':
+      }
+      case 'one-time': {
         return '✅'
+      }
     }
   }
 
   function getProgress(task: Task): number {
     switch (task.type) {
-      case 'daily':
+      case 'daily': {
         return Math.min(100, ((task as DailyTask).completedDates.length / (task as DailyTask).targetDays) * 100)
-      case 'progress':
+      }
+      case 'progress': {
         return Math.min(100, ((task as ProgressTask).currentValue / (task as ProgressTask).targetValue) * 100)
-      case 'one-time':
+      }
+      case 'one-time': {
         return (task as OneTimeTask).completedAt ? 100 : 0
+      }
     }
   }
 
@@ -449,8 +458,9 @@
         const progress = task as ProgressTask
         return `${progress.currentValue.toLocaleString()} / ${progress.targetValue.toLocaleString()} ${progress.unit}`
       }
-      case 'one-time':
+      case 'one-time': {
         return (task as OneTimeTask).completedAt ? t('taskCard.completed') : t('profile.inProgress')
+      }
     }
   }
 </script>

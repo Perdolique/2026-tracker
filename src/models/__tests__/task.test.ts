@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import type { DailyTask, ProgressTask, OneTimeTask } from '../task'
-import { isDailyTaskCompletedToday, getCurrentDate } from '../task'
+import { isDailyTaskCompletedToday, getCurrentDate, type DailyTask, type ProgressTask, type OneTimeTask } from '../task'
 
 describe('Task Types', () => {
   it('should create a valid DailyTask', () => {
@@ -23,7 +22,7 @@ describe('Task Types', () => {
       id: '2',
       title: 'Walk 1M steps',
       type: 'progress',
-      targetValue: 1000000,
+      targetValue: 1_000_000,
       currentValue: 5000,
       unit: 'steps',
       createdAt: '2026-01-01T00:00:00.000Z',
@@ -100,7 +99,7 @@ describe('isDailyTaskCompletedToday', () => {
       createdAt: '2026-01-01T00:00:00.000Z',
     }
 
-    expect(isDailyTaskCompletedToday(task)).toBe(true)
+    expect(isDailyTaskCompletedToday(task)).toBeTruthy()
   })
 
   it('should return false when task does not have today in completedDates', () => {
@@ -113,7 +112,7 @@ describe('isDailyTaskCompletedToday', () => {
       createdAt: '2026-01-01T00:00:00.000Z',
     }
 
-    expect(isDailyTaskCompletedToday(task)).toBe(false)
+    expect(isDailyTaskCompletedToday(task)).toBeFalsy()
   })
 
   it('should return false when completedDates is empty', () => {
@@ -126,6 +125,6 @@ describe('isDailyTaskCompletedToday', () => {
       createdAt: '2026-01-01T00:00:00.000Z',
     }
 
-    expect(isDailyTaskCompletedToday(task)).toBe(false)
+    expect(isDailyTaskCompletedToday(task)).toBeFalsy()
   })
 })

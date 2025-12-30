@@ -68,8 +68,7 @@
 <script setup lang="ts">
   import { ref, computed, watch } from 'vue'
   import { useI18n } from 'vue-i18n'
-  import type { Task } from '@/models/task'
-  import { isDailyTask, isProgressTask, isOneTimeTask, getTaskProgress } from '@/models/task'
+  import { isDailyTask, isProgressTask, isOneTimeTask, getTaskProgress, type Task } from '@/models/task'
 
   const { t } = useI18n()
 
@@ -113,13 +112,13 @@
   const isLastTask = computed(() => currentIdIndex.value >= taskIds.value.length - 1)
 
   const progress = computed(() => {
-    if (!currentTask.value) return 0
+    if (!currentTask.value) {return 0}
     return getTaskProgress(currentTask.value)
   })
 
   const progressText = computed(() => {
     const task = currentTask.value
-    if (!task) return ''
+    if (!task) {return ''}
 
     if (isDailyTask(task)) {
       return t('taskCard.daysProgress', { completed: task.completedDates.length, target: task.targetDays })
@@ -135,21 +134,25 @@
 
   const typeEmoji = computed(() => {
     switch (currentTask.value?.type) {
-      case 'daily':
+      case 'daily': {
         return '📅'
-      case 'progress':
+      }
+      case 'progress': {
         return '📊'
-      case 'one-time':
+      }
+      case 'one-time': {
         return '✅'
-      default:
+      }
+      default: {
         return ''
+      }
     }
   })
 
   async function handleYes() {
-    if (isProcessing.value) return
+    if (isProcessing.value) {return}
     const task = currentTask.value
-    if (!task) return
+    if (!task) {return}
 
     // Progress tasks need value input
     if (isProgressTask(task)) {
@@ -168,9 +171,9 @@
   }
 
   async function handleNo() {
-    if (isProcessing.value) return
+    if (isProcessing.value) {return}
     const task = currentTask.value
-    if (!task) return
+    if (!task) {return}
 
     isProcessing.value = true
     try {
@@ -182,9 +185,9 @@
   }
 
   async function handleValueSubmit() {
-    if (isProcessing.value) return
+    if (isProcessing.value) {return}
     const task = currentTask.value
-    if (!task || !isProgressTask(task)) return
+    if (!task || !isProgressTask(task)) {return}
 
     isProcessing.value = true
     try {
@@ -192,17 +195,17 @@
       showValueInput.value = false
       inputValue.value = undefined
       goNext()
-    } catch (err) {
-      console.error('Error in handleValueSubmit:', err)
+    } catch {
+      // Error handling is done by the parent component
     } finally {
       isProcessing.value = false
     }
   }
 
   async function handleValueSkip() {
-    if (isProcessing.value) return
+    if (isProcessing.value) {return}
     const task = currentTask.value
-    if (!task) return
+    if (!task) {return}
 
     isProcessing.value = true
     try {
@@ -219,7 +222,7 @@
     if (isLastTask.value) {
       emit('complete')
     } else {
-      currentIdIndex.value++
+      currentIdIndex.value += 1
     }
   }
 </script>

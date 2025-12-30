@@ -1,13 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { Task, CreateTaskData } from '@/models/task'
-import { isTaskCompleted, isDailyTask, isDailyTaskCompletedToday } from '@/models/task'
+import { isTaskCompleted, isDailyTask, isDailyTaskCompletedToday, type Task, type CreateTaskData } from '@/models/task'
 import * as taskApi from '@/api/task-api'
 
 export const useTaskStore = defineStore('tasks', () => {
   const tasks = ref<Task[]>([])
   const isLoading = ref(false)
-  const error = ref<string | null>(null)
+  const errorMessage = ref<string | null>(null)
   const activeTasks = computed(() => tasks.value.filter((t) => !isTaskCompleted(t)))
   const completedTasks = computed(() => tasks.value.filter((t) => isTaskCompleted(t)))
 
@@ -23,12 +22,12 @@ export const useTaskStore = defineStore('tasks', () => {
 
   async function fetchTasks(): Promise<void> {
     isLoading.value = true
-    error.value = null
+    errorMessage.value = null
 
     try {
       tasks.value = await taskApi.getAllTasks()
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to fetch tasks'
+    } catch (error) {
+      errorMessage.value = error instanceof Error ? error.message : 'Failed to fetch tasks'
     } finally {
       isLoading.value = false
     }
@@ -36,13 +35,13 @@ export const useTaskStore = defineStore('tasks', () => {
 
   async function addTask(data: CreateTaskData): Promise<Task | null> {
     isLoading.value = true
-    error.value = null
+    errorMessage.value = null
     try {
       const task = await taskApi.createTask(data)
       tasks.value.push(task)
       return task
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to create task'
+    } catch (error) {
+      errorMessage.value = error instanceof Error ? error.message : 'Failed to create task'
       return null
     } finally {
       isLoading.value = false
@@ -51,13 +50,13 @@ export const useTaskStore = defineStore('tasks', () => {
 
   async function removeTask(taskId: string): Promise<void> {
     isLoading.value = true
-    error.value = null
+    errorMessage.value = null
 
     try {
       await taskApi.deleteTask(taskId)
       tasks.value = tasks.value.filter((t) => t.id !== taskId)
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to delete task'
+    } catch (error) {
+      errorMessage.value = error instanceof Error ? error.message : 'Failed to delete task'
     } finally {
       isLoading.value = false
     }
@@ -65,7 +64,7 @@ export const useTaskStore = defineStore('tasks', () => {
 
   async function updateTask(task: Task): Promise<Task | null> {
     isLoading.value = true
-    error.value = null
+    errorMessage.value = null
 
     try {
       const updatedTask = await taskApi.updateTask(task)
@@ -74,8 +73,8 @@ export const useTaskStore = defineStore('tasks', () => {
         tasks.value[index] = updatedTask
       }
       return updatedTask
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to update task'
+    } catch (error) {
+      errorMessage.value = error instanceof Error ? error.message : 'Failed to update task'
       return null
     } finally {
       isLoading.value = false
@@ -88,7 +87,7 @@ export const useTaskStore = defineStore('tasks', () => {
     value?: number
   ): Promise<void> {
     isLoading.value = true
-    error.value = null
+    errorMessage.value = null
     try {
       const updatedTask = await taskApi.recordCheckIn(taskId, completed, value)
 
@@ -97,8 +96,8 @@ export const useTaskStore = defineStore('tasks', () => {
       if (index !== -1) {
         tasks.value[index] = updatedTask
       }
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to process check-in'
+    } catch (error) {
+      errorMessage.value = error instanceof Error ? error.message : 'Failed to process check-in'
     } finally {
       isLoading.value = false
     }
@@ -111,7 +110,7 @@ export const useTaskStore = defineStore('tasks', () => {
   return {
     tasks,
     isLoading,
-    error,
+    error: errorMessage,
     activeTasks,
     completedTasks,
     getTasksForCheckIn,

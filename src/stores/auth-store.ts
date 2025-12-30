@@ -12,20 +12,24 @@ export interface User {
   createdAt: string
 }
 
+function redirectToTwitchAuth(): void {
+  globalThis.location.href = '/api/auth/twitch'
+}
+
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
   const isLoading = ref(false)
-  const error = ref<string | null>(null)
+  const errorMessage = ref<string | null>(null)
 
   const isLoggedIn = computed(() => user.value !== null)
   const shareUrl = computed(() => {
-    if (!user.value) return null
-    return `${window.location.origin}/user/${user.value.id}`
+    if (!user.value) {return null}
+    return `${globalThis.location.origin}/user/${user.value.id}`
   })
 
   async function fetchMe(): Promise<void> {
     isLoading.value = true
-    error.value = null
+    errorMessage.value = null
 
     try {
       const response = await fetch('/api/auth/me')
@@ -36,21 +40,17 @@ export const useAuthStore = defineStore('auth', () => {
 
       const data = (await response.json()) as { user: User | null }
       user.value = data.user
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to fetch user'
+    } catch (error) {
+      errorMessage.value = error instanceof Error ? error.message : 'Failed to fetch user'
       user.value = null
     } finally {
       isLoading.value = false
     }
   }
 
-  function login(): void {
-    window.location.href = '/api/auth/twitch'
-  }
-
   async function logout(): Promise<void> {
     isLoading.value = true
-    error.value = null
+    errorMessage.value = null
 
     try {
       const response = await fetch('/api/auth/logout', { method: 'POST' })
@@ -60,18 +60,18 @@ export const useAuthStore = defineStore('auth', () => {
       }
 
       user.value = null
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to logout'
+    } catch (error) {
+      errorMessage.value = error instanceof Error ? error.message : 'Failed to logout'
     } finally {
       isLoading.value = false
     }
   }
 
   async function setPublic(isPublic: boolean): Promise<void> {
-    if (!user.value) return
+    if (!user.value) {return}
 
     isLoading.value = true
-    error.value = null
+    errorMessage.value = null
 
     try {
       const response = await fetch('/api/users/me', {
@@ -86,8 +86,8 @@ export const useAuthStore = defineStore('auth', () => {
 
       const data = (await response.json()) as { user: User }
       user.value = data.user
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to update settings'
+    } catch (error) {
+      errorMessage.value = error instanceof Error ? error.message : 'Failed to update settings'
     } finally {
       isLoading.value = false
     }
@@ -119,11 +119,11 @@ export const useAuthStore = defineStore('auth', () => {
   return {
     user,
     isLoading,
-    error,
+    error: errorMessage,
     isLoggedIn,
     shareUrl,
     fetchMe,
-    login,
+    login: redirectToTwitchAuth,
     logout,
     setPublic,
     setLanguage,
