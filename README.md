@@ -8,7 +8,7 @@ Mobile-first task tracker for 2026 goals with three completion types.
 - **📊 Progress tasks** — Accumulate values toward a goal (e.g., 1M steps)
 - **✅ One-time tasks** — Single completion actions
 - **🎮 Check-in wizard** — Daily review of all active tasks one-by-one
-- **📦 Archive** — Completed goals move to archive automatically
+- **🏆 Completed section** — Track achieved goals separately
 - **🔐 Twitch OAuth** — Login via Twitch account
 - **🔗 Public profiles** — Share your progress via `/user/:userId` link
 

@@ -10,7 +10,6 @@ describe('Task Types', () => {
       targetDays: 300,
       completedDates: ['2026-01-01', '2026-01-02'],
       createdAt: '2026-01-01T00:00:00.000Z',
-      isArchived: false,
     }
 
     expect(dailyTask.type).toBe('daily')
@@ -27,7 +26,6 @@ describe('Task Types', () => {
       currentValue: 5000,
       unit: 'steps',
       createdAt: '2026-01-01T00:00:00.000Z',
-      isArchived: false,
     }
 
     expect(progressTask.type).toBe('progress')
@@ -41,7 +39,6 @@ describe('Task Types', () => {
       title: 'Read TypeScript handbook',
       type: 'one-time',
       createdAt: '2026-01-01T00:00:00.000Z',
-      isArchived: false,
     }
 
     expect(oneTimeTask.type).toBe('one-time')
@@ -55,7 +52,6 @@ describe('Task Types', () => {
       type: 'one-time',
       completedAt: '2026-01-15T10:00:00.000Z',
       createdAt: '2026-01-01T00:00:00.000Z',
-      isArchived: false,
     }
 
     expect(oneTimeTask.completedAt).toBe('2026-01-15T10:00:00.000Z')

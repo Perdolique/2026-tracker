@@ -36,16 +36,6 @@ export async function getAllTasks(): Promise<Task[]> {
   return apiFetch<Task[]>('/tasks')
 }
 
-// Get active (non-archived) tasks
-export async function getActiveTasks(): Promise<Task[]> {
-  return apiFetch<Task[]>('/tasks?archived=false')
-}
-
-// Get archived tasks
-export async function getArchivedTasks(): Promise<Task[]> {
-  return apiFetch<Task[]>('/tasks?archived=true')
-}
-
 // Get single task by ID
 export async function getTaskById(id: string): Promise<Task | undefined> {
   try {
@@ -75,13 +65,6 @@ export async function updateTask(task: Task): Promise<Task> {
 export async function deleteTask(id: string): Promise<void> {
   await apiFetch<void>(`/tasks/${id}`, {
     method: 'DELETE',
-  })
-}
-
-// Archive task (mark as completed/archived)
-export async function archiveTask(id: string): Promise<Task> {
-  return apiFetch<Task>(`/tasks/${id}/archive`, {
-    method: 'PATCH',
   })
 }
 

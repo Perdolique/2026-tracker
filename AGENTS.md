@@ -261,7 +261,6 @@ interface BaseTask {
   description?: string
   type: TaskType
   createdAt: string      // ISO date
-  isArchived: boolean
 }
 
 interface DailyTask extends BaseTask {
@@ -321,27 +320,25 @@ Tables can be found in `worker/db/schema.ts`.
 
 | Method | Endpoint | Description |
 | ------ | -------- | ----------- |
-| GET | `/api/tasks` | Get all tasks (optional `?archived=true/false`) |
+| GET | `/api/tasks` | Get all tasks |
 | GET | `/api/tasks/:id` | Get single task |
 | POST | `/api/tasks` | Create task |
 | PUT | `/api/tasks/:id` | Update task |
 | DELETE | `/api/tasks/:id` | Delete task |
-| PATCH | `/api/tasks/:id/archive` | Archive task |
 | POST | `/api/tasks/:id/checkin` | Record check-in |
 
 ## Key Flows
 
 ### Check-in Flow (ControlView)
 
-1. Load active (non-archived) tasks
+1. Load active (not completed) tasks
 2. Show tasks one-by-one in wizard
 3. For each task:
    - Show task info
    - Ask "Completed today?" (Yes/No)
    - If Yes + Progress task → ask for value input
    - Record check-in, update task
-4. Auto-archive if goal reached
-5. Next task or finish
+4. Next task or finish
 
 ### Task Creation
 

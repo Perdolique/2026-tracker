@@ -1,5 +1,5 @@
 <template>
-  <article :class="$style.card">
+  <article :class="[$style.card, completed && $style.completed]">
     <header :class="$style.header">
       <span :class="$style.type">{{ typeLabel }}</span>
       <button
@@ -36,6 +36,7 @@
 
   const props = defineProps<{
     task: Task
+    completed?: boolean
   }>()
 
   const emit = defineEmits<{
@@ -80,6 +81,14 @@
     border-radius: 12px;
     padding: 16px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .completed {
+    opacity: 0.8;
+  }
+
+  .completed .progressFill {
+    background: var(--color-success, #22c55e);
   }
 
   .header {

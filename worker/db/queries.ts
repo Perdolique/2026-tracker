@@ -131,7 +131,6 @@ function rowToTask(row: TaskRow, completedDates: string[] = []): Task {
     title: row.title,
     description: row.description ?? undefined,
     createdAt: row.createdAt,
-    isArchived: row.isArchived,
   }
 
   switch (row.type) {
@@ -187,59 +186,7 @@ export async function getAllTasks(db: Database, userId: string): Promise<Task[]>
   return rows.map((row) => rowToTask(row, completionsByTask.get(row.id) ?? []))
 }
 
-/**
- * Get active (non-archived) tasks for a user
- */
-export async function getActiveTasks(db: Database, userId: string): Promise<Task[]> {
-  const rows = await db
-    .select()
-    .from(tasks)
-    .where(and(eq(tasks.userId, userId), eq(tasks.isArchived, false)))
 
-  const taskIds = rows.map((r) => r.id)
-  const completions =
-    taskIds.length > 0
-      ? await db.select().from(dailyCompletions)
-      : []
-
-  const completionsByTask = new Map<string, string[]>()
-  for (const c of completions) {
-    if (taskIds.includes(c.taskId)) {
-      const dates = completionsByTask.get(c.taskId) ?? []
-      dates.push(c.completedDate)
-      completionsByTask.set(c.taskId, dates)
-    }
-  }
-
-  return rows.map((row) => rowToTask(row, completionsByTask.get(row.id) ?? []))
-}
-
-/**
- * Get archived tasks for a user
- */
-export async function getArchivedTasks(db: Database, userId: string): Promise<Task[]> {
-  const rows = await db
-    .select()
-    .from(tasks)
-    .where(and(eq(tasks.userId, userId), eq(tasks.isArchived, true)))
-
-  const taskIds = rows.map((r) => r.id)
-  const completions =
-    taskIds.length > 0
-      ? await db.select().from(dailyCompletions)
-      : []
-
-  const completionsByTask = new Map<string, string[]>()
-  for (const c of completions) {
-    if (taskIds.includes(c.taskId)) {
-      const dates = completionsByTask.get(c.taskId) ?? []
-      dates.push(c.completedDate)
-      completionsByTask.set(c.taskId, dates)
-    }
-  }
-
-  return rows.map((row) => rowToTask(row, completionsByTask.get(row.id) ?? []))
-}
 
 /**
  * Get single task by ID (with optional user check)
@@ -323,7 +270,6 @@ export async function updateTask(db: Database, userId: string, task: Task): Prom
   const baseUpdate = {
     title: task.title,
     description: task.description ?? null,
-    isArchived: task.isArchived,
   }
 
   const ownershipCondition = and(eq(tasks.id, task.id), eq(tasks.userId, userId))
@@ -391,16 +337,6 @@ export async function deleteTask(db: Database, id: string, userId: string): Prom
   // Cascade delete will handle daily_completions
   const result = await db.delete(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
   return result.meta.changes > 0
-}
-
-/**
- * Archive a task (with user ownership check)
- * Returns the archived task, or null if not found or doesn't belong to user
- */
-export async function archiveTask(db: Database, id: string, userId: string): Promise<Task | null> {
-  const result = await db.update(tasks).set({ isArchived: true }).where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
-  if (result.meta.changes === 0) return null
-  return getTaskById(db, id, userId)
 }
 
 /**

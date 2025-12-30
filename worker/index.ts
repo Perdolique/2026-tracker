@@ -5,13 +5,10 @@ import * as v from 'valibot'
 import {
   createDatabase,
   getAllTasks,
-  getActiveTasks,
-  getArchivedTasks,
   getTaskById,
   createTask,
   updateTask,
   deleteTask,
-  archiveTask,
   recordCheckIn,
   getUserByTwitchId,
   getUserById,
@@ -86,7 +83,6 @@ const updateTaskSchema = v.object({
   description: v.optional(v.string()),
   type: taskTypeSchema,
   createdAt: v.string(),
-  isArchived: v.boolean(),
   // Daily
   targetDays: v.optional(v.number()),
   completedDates: v.optional(v.array(v.string())),
@@ -304,7 +300,7 @@ app.get('/api/users/:userId/profile', async (c) => {
 // Task API Routes (require auth)
 // =============================================================================
 
-// GET /api/tasks - Get tasks (with optional archived filter)
+// GET /api/tasks - Get all tasks
 app.get('/api/tasks', async (c) => {
   const user = c.get('user')
 
@@ -313,16 +309,7 @@ app.get('/api/tasks', async (c) => {
   }
 
   const db = createDatabase(c.env.DB)
-  const archived = c.req.query('archived')
-
-  let tasks
-  if (archived === 'true') {
-    tasks = await getArchivedTasks(db, user.id)
-  } else if (archived === 'false') {
-    tasks = await getActiveTasks(db, user.id)
-  } else {
-    tasks = await getAllTasks(db, user.id)
-  }
+  const tasks = await getAllTasks(db, user.id)
 
   return c.json(tasks)
 })
@@ -383,7 +370,6 @@ app.put('/api/tasks/:id', vValidator('json', updateTaskSchema), async (c) => {
     title: data.title,
     description: data.description,
     createdAt: data.createdAt,
-    isArchived: data.isArchived,
   }
 
   let task
@@ -438,25 +424,6 @@ app.delete('/api/tasks/:id', async (c) => {
   }
 
   return c.body(null, 204)
-})
-
-// PATCH /api/tasks/:id/archive - Archive task
-app.patch('/api/tasks/:id/archive', async (c) => {
-  const user = c.get('user')
-
-  if (!user) {
-    return c.json({ error: 'Unauthorized' }, 401)
-  }
-
-  const db = createDatabase(c.env.DB)
-  const id = c.req.param('id')
-
-  const task = await archiveTask(db, id, user.id)
-  if (!task) {
-    return c.json({ error: 'Task not found' }, 404)
-  }
-
-  return c.json(task)
 })
 
 // POST /api/tasks/:id/checkin - Record check-in

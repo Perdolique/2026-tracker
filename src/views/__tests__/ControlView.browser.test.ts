@@ -59,7 +59,6 @@ describe('ControlView - Browser Tests', () => {
       title: 'Сделать тестовую таску',
       type: 'one-time',
       createdAt: '2026-01-01',
-      isArchived: false,
     }
     setMockTasks([task])
 
@@ -128,7 +127,6 @@ describe('ControlView - Browser Tests', () => {
       title: 'Проверка кнопки Нет',
       type: 'one-time',
       createdAt: '2026-01-01',
-      isArchived: false,
     }
     setMockTasks([task])
 
@@ -167,7 +165,6 @@ describe('ControlView - Browser Tests', () => {
 
     expect(unchangedTask).toBeDefined()
     expect(unchangedTask?.completedAt).toBeUndefined()
-    expect(unchangedTask?.isArchived).toBe(false)
 
     // Проверяем, что показан экран "Готово!"
     await waitFor(() => {
@@ -186,14 +183,12 @@ describe('ControlView - Browser Tests', () => {
       title: 'Первая таска',
       type: 'one-time',
       createdAt: '2026-01-01',
-      isArchived: false,
     }
     const task2: OneTimeTask = {
       id: 'test-task-4',
       title: 'Вторая таска',
       type: 'one-time',
       createdAt: '2026-01-02',
-      isArchived: false,
     }
     setMockTasks([task1, task2])
 
@@ -258,7 +253,6 @@ describe('ControlView - Browser Tests', () => {
 
     // Вторая таска должна остаться без изменений
     expect(finalTask2?.completedAt).toBeUndefined()
-    expect(finalTask2?.isArchived).toBe(false)
   })
 
   describe('Daily Tasks', () => {
@@ -270,7 +264,6 @@ describe('ControlView - Browser Tests', () => {
         targetDays: 100,
         completedDates: ['2026-01-01', '2026-01-02'],
         createdAt: '2026-01-01',
-        isArchived: false,
       }
       setMockTasks([task])
 
@@ -310,7 +303,6 @@ describe('ControlView - Browser Tests', () => {
 
       expect(completedTask?.completedDates).toContain(TEST_DATE)
       expect(completedTask?.completedDates.length).toBe(3)
-      expect(completedTask?.isArchived).toBe(false) // Не заархивирована, т.к. 3/100
     })
 
     it('should not change task when clicking "Нет"', async () => {
@@ -321,7 +313,6 @@ describe('ControlView - Browser Tests', () => {
         targetDays: 50,
         completedDates: ['2026-01-01'],
         createdAt: '2026-01-01',
-        isArchived: false,
       }
       setMockTasks([task])
 
@@ -355,58 +346,6 @@ describe('ControlView - Browser Tests', () => {
       const unchangedTask = tasks.find((t) => t.id === 'daily-2')
 
       expect(unchangedTask?.completedDates).toEqual(['2026-01-01'])
-      expect(unchangedTask?.isArchived).toBe(false)
-    })
-
-    it('should auto-archive when reaching targetDays', async () => {
-      const task: DailyTask = {
-        id: 'daily-3',
-        title: 'Медитация',
-        type: 'daily',
-        targetDays: 3,
-        completedDates: ['2026-01-01', '2026-01-02'],
-        createdAt: '2026-01-01',
-        isArchived: false,
-      }
-      setMockTasks([task])
-
-      const router = createTestRouter()
-      const pinia = createPinia()
-
-      await router.push('/control')
-      await router.isReady()
-
-      const screen = render(ControlView, {
-        global: {
-          plugins: [router, pinia],
-        },
-      })
-
-      await waitFor(() => {
-        try {
-          screen.getByText('Медитация')
-          return true
-        } catch {
-          return false
-        }
-      })
-
-      const yesButton = screen.getByText(/✓\s*Да/i)
-      await yesButton.click()
-
-      // Ждём auto-archive (store делает updateTask после recordCheckIn)
-      await waitFor(() => {
-        const tasks = getMockTasksStorage() as DailyTask[]
-        const updatedTask = tasks.find((t) => t.id === 'daily-3')
-        return updatedTask?.isArchived === true
-      }, 3000)
-
-      const tasks = getMockTasksStorage() as DailyTask[]
-      const completedTask = tasks.find((t) => t.id === 'daily-3')
-
-      expect(completedTask?.completedDates).toContain(TEST_DATE)
-      expect(completedTask?.completedDates.length).toBe(3)
-      expect(completedTask?.isArchived).toBe(true)
     })
 
     it('should prevent duplicate date when checking in same day twice', async () => {
@@ -417,7 +356,6 @@ describe('ControlView - Browser Tests', () => {
         targetDays: 100,
         completedDates: [TEST_DATE], // Уже отмечено сегодня
         createdAt: '2026-01-01',
-        isArchived: false,
       }
       setMockTasks([task])
 
@@ -465,7 +403,6 @@ describe('ControlView - Browser Tests', () => {
         currentValue: 500000,
         unit: 'шагов',
         createdAt: '2026-01-01',
-        isArchived: false,
       }
       setMockTasks([task])
 
@@ -516,7 +453,6 @@ describe('ControlView - Browser Tests', () => {
         currentValue: 50000,
         unit: '₽',
         createdAt: '2026-01-01',
-        isArchived: false,
       }
       setMockTasks([task])
 
@@ -572,7 +508,6 @@ describe('ControlView - Browser Tests', () => {
       const progressTask = tasks.find((t) => t.id === 'progress-2')
 
       expect(progressTask?.currentValue).toBe(65000)
-      expect(progressTask?.isArchived).toBe(false) // 65000/100000
     })
 
     it('should not change task when clicking "Пропустить"', async () => {
@@ -584,7 +519,6 @@ describe('ControlView - Browser Tests', () => {
         currentValue: 200,
         unit: 'км',
         createdAt: '2026-01-01',
-        isArchived: false,
       }
       setMockTasks([task])
 
@@ -630,139 +564,6 @@ describe('ControlView - Browser Tests', () => {
       const unchangedTask = tasks.find((t) => t.id === 'progress-3')
 
       expect(unchangedTask?.currentValue).toBe(200)
-      expect(unchangedTask?.isArchived).toBe(false)
-    })
-
-    it('should auto-archive when reaching targetValue', async () => {
-      const task: ProgressTask = {
-        id: 'progress-4',
-        title: 'Прочитать 1000 страниц',
-        type: 'progress',
-        targetValue: 1000,
-        currentValue: 950,
-        unit: 'страниц',
-        createdAt: '2026-01-01',
-        isArchived: false,
-      }
-      setMockTasks([task])
-
-      const router = createTestRouter()
-      const pinia = createPinia()
-
-      await router.push('/control')
-      await router.isReady()
-
-      const screen = render(ControlView, {
-        global: {
-          plugins: [router, pinia],
-        },
-      })
-
-      await waitFor(() => {
-        try {
-          screen.getByText('Прочитать 1000 страниц')
-          return true
-        } catch {
-          return false
-        }
-      })
-
-      const yesButton = screen.getByText(/✓\s*Да/i)
-      await yesButton.click()
-
-      await waitFor(() => {
-        try {
-          screen.getByText(/Сколько страниц сегодня\?/i)
-          return true
-        } catch {
-          return false
-        }
-      })
-
-      const input = screen.getByPlaceholder(/Введи количество страниц/i)
-      await input.fill('60')
-
-      const confirmButton = screen.getByText(/Записать/i)
-      await confirmButton.click()
-
-      // Ждём auto-archive
-      await waitFor(() => {
-        const tasks = getMockTasksStorage() as ProgressTask[]
-        const updatedTask = tasks.find((t) => t.id === 'progress-4')
-        return updatedTask?.isArchived === true
-      }, 3000)
-
-      const tasks = getMockTasksStorage() as ProgressTask[]
-      const completedTask = tasks.find((t) => t.id === 'progress-4')
-
-      expect(completedTask?.currentValue).toBe(1010)
-      expect(completedTask?.isArchived).toBe(true)
-    })
-
-    it('should auto-archive when reaching exactly targetValue', async () => {
-      const task: ProgressTask = {
-        id: 'progress-5',
-        title: 'Точный таргет',
-        type: 'progress',
-        targetValue: 500,
-        currentValue: 450,
-        unit: 'единиц',
-        createdAt: '2026-01-01',
-        isArchived: false,
-      }
-      setMockTasks([task])
-
-      const router = createTestRouter()
-      const pinia = createPinia()
-
-      await router.push('/control')
-      await router.isReady()
-
-      const screen = render(ControlView, {
-        global: {
-          plugins: [router, pinia],
-        },
-      })
-
-      await waitFor(() => {
-        try {
-          screen.getByText('Точный таргет')
-          return true
-        } catch {
-          return false
-        }
-      })
-
-      const yesButton = screen.getByText(/✓\s*Да/i)
-      await yesButton.click()
-
-      await waitFor(() => {
-        try {
-          screen.getByText(/Сколько единиц сегодня\?/i)
-          return true
-        } catch {
-          return false
-        }
-      })
-
-      const input = screen.getByPlaceholder(/Введи количество единиц/i)
-      await input.fill('50')
-
-      const confirmButton = screen.getByText(/Записать/i)
-      await confirmButton.click()
-
-      // Ждём auto-archive
-      await waitFor(() => {
-        const tasks = getMockTasksStorage() as ProgressTask[]
-        const updatedTask = tasks.find((t) => t.id === 'progress-5')
-        return updatedTask?.isArchived === true
-      }, 3000)
-
-      const tasks = getMockTasksStorage() as ProgressTask[]
-      const completedTask = tasks.find((t) => t.id === 'progress-5')
-
-      expect(completedTask?.currentValue).toBe(500)
-      expect(completedTask?.isArchived).toBe(true)
     })
   })
 
@@ -775,7 +576,6 @@ describe('ControlView - Browser Tests', () => {
         targetDays: 100,
         completedDates: [],
         createdAt: '2026-01-01',
-        isArchived: false,
       }
 
       const progressTask: ProgressTask = {
@@ -786,7 +586,6 @@ describe('ControlView - Browser Tests', () => {
         currentValue: 100,
         unit: 'очков',
         createdAt: '2026-01-01',
-        isArchived: false,
       }
 
       const oneTimeTask: OneTimeTask = {
@@ -794,7 +593,6 @@ describe('ControlView - Browser Tests', () => {
         title: 'One-time задача',
         type: 'one-time',
         createdAt: '2026-01-01',
-        isArchived: false,
       }
 
       setMockTasks([dailyTask, progressTask, oneTimeTask])
@@ -892,130 +690,10 @@ describe('ControlView - Browser Tests', () => {
       const finalOneTime = tasks.find((t) => t.id === 'mixed-onetime') as OneTimeTask
 
       expect(finalDaily?.completedDates).toContain(TEST_DATE)
-      expect(finalDaily?.isArchived).toBe(false)
 
       expect(finalProgress?.currentValue).toBe(350)
-      expect(finalProgress?.isArchived).toBe(false)
 
       expect(finalOneTime?.completedAt).toBeUndefined()
-      expect(finalOneTime?.isArchived).toBe(false)
-    })
-
-    it('should handle multiple tasks with auto-archiving', async () => {
-      const dailyTaskComplete: DailyTask = {
-        id: 'auto-daily',
-        title: 'Daily завершается',
-        type: 'daily',
-        targetDays: 2,
-        completedDates: ['2026-01-01'],
-        createdAt: '2026-01-01',
-        isArchived: false,
-      }
-
-      const progressTaskComplete: ProgressTask = {
-        id: 'auto-progress',
-        title: 'Progress завершается',
-        type: 'progress',
-        targetValue: 100,
-        currentValue: 80,
-        unit: 'баллов',
-        createdAt: '2026-01-01',
-        isArchived: false,
-      }
-
-      setMockTasks([dailyTaskComplete, progressTaskComplete])
-
-      const router = createTestRouter()
-      const pinia = createPinia()
-
-      await router.push('/control')
-      await router.isReady()
-
-      const screen = render(ControlView, {
-        global: {
-          plugins: [router, pinia],
-        },
-      })
-
-      // Daily задача - достигаем цели
-      await waitFor(() => {
-        try {
-          screen.getByText('Daily завершается')
-          return true
-        } catch {
-          return false
-        }
-      })
-
-      let yesButton = screen.getByText(/✓\s*Да/i)
-      await yesButton.click()
-
-      // Progress задача - достигаем цели
-      await waitFor(() => {
-        try {
-          screen.getByText('Progress завершается')
-          return true
-        } catch {
-          return false
-        }
-      })
-
-      yesButton = screen.getByText(/✓\s*Да/i)
-      await yesButton.click()
-
-      await waitFor(() => {
-        try {
-          screen.getByText(/Сколько баллов сегодня\?/i)
-          return true
-        } catch {
-          return false
-        }
-      })
-
-      // Ждём появления input
-      await waitFor(() => {
-        try {
-          screen.getByPlaceholder(/Введи количество баллов/i)
-          return true
-        } catch {
-          return false
-        }
-      })
-
-      const input = screen.getByPlaceholder(/Введи количество баллов/i)
-      await input.fill('25')
-
-      const confirmButton = screen.getByText(/Записать/i)
-      await confirmButton.click()
-
-      // Ждём завершения
-      await waitFor(() => {
-        try {
-          screen.getByText(/Готово!/i)
-          return true
-        } catch {
-          return false
-        }
-      })
-
-      // Ждём auto-archive обеих задач
-      await waitFor(() => {
-        const tasks = getMockTasksStorage()
-        const daily = tasks.find((t) => t.id === 'auto-daily') as DailyTask
-        const progress = tasks.find((t) => t.id === 'auto-progress') as ProgressTask
-        return daily?.isArchived === true && progress?.isArchived === true
-      }, 3000)
-
-      const tasks = getMockTasksStorage()
-
-      const finalDaily = tasks.find((t) => t.id === 'auto-daily') as DailyTask
-      const finalProgress = tasks.find((t) => t.id === 'auto-progress') as ProgressTask
-
-      expect(finalDaily?.completedDates.length).toBe(2)
-      expect(finalDaily?.isArchived).toBe(true)
-
-      expect(finalProgress?.currentValue).toBe(105)
-      expect(finalProgress?.isArchived).toBe(true)
     })
   })
 })

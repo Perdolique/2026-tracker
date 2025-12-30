@@ -41,7 +41,6 @@ export function createMockOneTimeTask(overrides: Partial<OneTimeTask> = {}): One
     title: 'Test One-Time Task',
     type: 'one-time',
     createdAt: '2026-01-01',
-    isArchived: false,
     ...overrides,
   }
 }
@@ -54,7 +53,6 @@ export function createMockDailyTask(overrides: Partial<DailyTask> = {}): DailyTa
     targetDays: 100,
     completedDates: [],
     createdAt: '2026-01-01',
-    isArchived: false,
     ...overrides,
   }
 }
@@ -68,7 +66,6 @@ export function createMockProgressTask(overrides: Partial<ProgressTask> = {}): P
     currentValue: 0,
     unit: 'units',
     createdAt: '2026-01-01',
-    isArchived: false,
     ...overrides,
   }
 }
@@ -80,7 +77,6 @@ function createTaskFromData(data: CreateTaskData): Task {
     title: data.title,
     description: data.description,
     createdAt: TEST_DATE,
-    isArchived: false,
   }
 
   switch (data.type) {
@@ -110,18 +106,8 @@ function createTaskFromData(data: CreateTaskData): Task {
 // --- MSW Handlers ---
 export const handlers = [
   // GET /api/tasks — список задач
-  http.get('*/api/tasks', ({ request }) => {
-    const url = new URL(request.url)
-    const archived = url.searchParams.get('archived')
-
-    let tasks = mockTasksStorage
-    if (archived === 'true') {
-      tasks = mockTasksStorage.filter(t => t.isArchived)
-    } else if (archived === 'false') {
-      tasks = mockTasksStorage.filter(t => !t.isArchived)
-    }
-
-    return HttpResponse.json(tasks)
+  http.get('*/api/tasks', () => {
+    return HttpResponse.json(mockTasksStorage)
   }),
 
   // POST /api/tasks — создание задачи
@@ -169,19 +155,6 @@ export const handlers = [
     }
 
     return new HttpResponse(null, { status: 204 })
-  }),
-
-  // PATCH /api/tasks/:id/archive — архивация задачи
-  http.patch('*/api/tasks/:id/archive', ({ params }) => {
-    const { id } = params
-    const task = mockTasksStorage.find(t => t.id === id)
-
-    if (!task) {
-      return HttpResponse.json({ error: 'Not found' }, { status: 404 })
-    }
-
-    task.isArchived = true
-    return HttpResponse.json(task)
   }),
 
   // POST /api/tasks/:id/checkin — check-in

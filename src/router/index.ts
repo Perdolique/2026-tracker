@@ -14,11 +14,6 @@ const router = createRouter({
       component: () => import('@/views/ControlView.vue'),
     },
     {
-      path: '/archive',
-      name: 'archive',
-      component: () => import('@/views/ArchiveView.vue'),
-    },
-    {
       path: '/add',
       name: 'add-task',
       component: () => import('@/views/AddTaskView.vue'),

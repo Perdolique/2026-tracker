@@ -8,11 +8,11 @@ export const useTaskStore = defineStore('tasks', () => {
   const tasks = ref<Task[]>([])
   const isLoading = ref(false)
   const error = ref<string | null>(null)
-  const activeTasks = computed(() => tasks.value.filter((t) => !t.isArchived))
-  const archivedTasks = computed(() => tasks.value.filter((t) => t.isArchived))
+  const activeTasks = computed(() => tasks.value.filter((t) => !isTaskCompleted(t)))
+  const completedTasks = computed(() => tasks.value.filter((t) => isTaskCompleted(t)))
 
   function getTasksForCheckIn(): Task[] {
-    return activeTasks.value.filter((t) => !isTaskCompleted(t))
+    return activeTasks.value
   }
 
   async function fetchTasks(): Promise<void> {
@@ -72,34 +72,10 @@ export const useTaskStore = defineStore('tasks', () => {
       if (index !== -1) {
         tasks.value[index] = updatedTask
       }
-
-      // Auto-archive if completed
-      if (isTaskCompleted(updatedTask) && !updatedTask.isArchived) {
-        await archiveTask(taskId)
-      }
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Failed to process check-in'
     } finally {
       isLoading.value = false
-    }
-  }
-
-  async function archiveTask(taskId: string): Promise<void> {
-    try {
-      const index = tasks.value.findIndex((t) => t.id === taskId)
-      if (index !== -1) {
-        const task = tasks.value[index]
-        if (!task) return
-
-        // Update local state immediately
-        const updatedTask: Task = { ...task, isArchived: true }
-        tasks.value[index] = updatedTask
-
-        // Persist to API
-        await taskApi.updateTask(updatedTask)
-      }
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to archive task'
     }
   }
 
@@ -112,13 +88,12 @@ export const useTaskStore = defineStore('tasks', () => {
     isLoading,
     error,
     activeTasks,
-    archivedTasks,
+    completedTasks,
     getTasksForCheckIn,
     fetchTasks,
     addTask,
     removeTask,
     processCheckIn,
-    archiveTask,
     getTaskById,
   }
 })

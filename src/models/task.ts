@@ -8,7 +8,6 @@ export interface BaseTask {
   description?: string
   type: TaskType
   createdAt: string // ISO date
-  isArchived: boolean
 }
 
 // Daily task — complete N days total

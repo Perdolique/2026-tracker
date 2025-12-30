@@ -60,6 +60,19 @@
         </template>
 
         <p :class="$style.subtitle">Прогресс по целям 2026 🎯</p>
+
+        <!-- CTA for visitors (not own profile) -->
+        <div v-if="!isOwnProfile" :class="$style.visitorCta">
+          <router-link v-if="authStore.isLoggedIn" to="/" :class="$style.myGoalsLink">
+            К своим целям →
+          </router-link>
+          <button v-else :class="$style.loginBtn" @click="authStore.login">
+            <svg :class="$style.twitchIcon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
+            </svg>
+            Войти и начать трекать
+          </button>
+        </div>
       </header>
 
       <!-- Share modal (only for own profile) -->
@@ -108,9 +121,6 @@
         >
           🎮 Check-in
         </button>
-        <button :class="$style.archiveBtn" @click="goToArchive">
-          📦 Архив
-        </button>
       </div>
 
       <!-- Loading tasks -->
@@ -119,7 +129,7 @@
       </div>
 
       <!-- Empty state -->
-      <div v-else-if="activeTasks.length === 0" :class="$style.empty">
+      <div v-else-if="activeTasks.length === 0 && completedTasks.length === 0" :class="$style.empty">
         <p :class="$style.emptyText">Пока нет задач 🤷</p>
         <p v-if="isOwnProfile" :class="$style.emptyHint">Добавь первую цель!</p>
       </div>
@@ -141,13 +151,14 @@
           <div
             v-for="task in activeTasks"
             :key="task.id"
-            :class="[$style.taskCard, task.isArchived && $style.archived]"
+            :class="$style.taskCard"
           >
             <div :class="$style.taskHeader">
               <span :class="$style.taskIcon">{{ getTaskIcon(task) }}</span>
               <h3 :class="$style.taskTitle">{{ task.title }}</h3>
-              <span v-if="task.isArchived" :class="$style.archivedBadge">📦</span>
             </div>
+
+            <p v-if="task.description" :class="$style.taskDescription">{{ task.description }}</p>
 
             <div :class="$style.taskProgress">
               <div :class="$style.progressBar">
@@ -161,6 +172,53 @@
           </div>
         </template>
       </div>
+
+      <!-- Completed tasks section -->
+      <template v-if="completedTasks.length > 0">
+        <!-- Section for own profile -->
+        <template v-if="isOwnProfile">
+          <h2 :class="$style.sectionTitle">Достигнуто 🏆</h2>
+          <div :class="$style.taskList">
+            <TaskCard
+              v-for="task in completedTasks"
+              :key="task.id"
+              :task="task"
+              :completed="true"
+              @delete="handleDelete"
+            />
+          </div>
+        </template>
+
+        <!-- Section for public profile -->
+        <template v-else>
+          <h2 :class="$style.sectionTitle">Достигнуто 🏆</h2>
+          <div :class="$style.taskList">
+            <div
+              v-for="task in completedTasks"
+              :key="task.id"
+              :class="[$style.taskCard, $style.completedCard]"
+            >
+              <div :class="$style.taskHeader">
+                <span :class="$style.taskIcon">{{ getTaskIcon(task) }}</span>
+                <h3 :class="$style.taskTitle">{{ task.title }}</h3>
+                <span :class="$style.completedBadge">✅</span>
+              </div>
+
+              <p v-if="task.description" :class="$style.taskDescription">{{ task.description }}</p>
+
+              <div :class="$style.taskProgress">
+                <div :class="$style.progressBar">
+                  <div
+                    :class="[$style.progressFill, $style.completedFill]"
+                    :style="{ width: '100%' }"
+                  />
+                </div>
+                <span :class="$style.progressText">{{ getProgressText(task) }}</span>
+              </div>
+            </div>
+          </div>
+        </template>
+      </template>
 
       <!-- FAB (only for own profile) -->
       <button v-if="isOwnProfile" :class="$style.fab" @click="goToAddTask" aria-label="Добавить задачу">
@@ -177,6 +235,7 @@
   import { useTaskStore } from '@/stores/task-store'
   import TaskCard from '@/components/TaskCard.vue'
   import type { Task, DailyTask, ProgressTask, OneTimeTask } from '@/models/task'
+  import { isTaskCompleted } from '@/models/task'
 
   interface PublicUser {
     id: string
@@ -208,7 +267,14 @@
     if (isOwnProfile.value) {
       return taskStore.activeTasks
     }
-    return profile.value?.tasks.filter(t => !t.isArchived) ?? []
+    return profile.value?.tasks.filter(t => !isTaskCompleted(t)) ?? []
+  })
+
+  const completedTasks = computed(() => {
+    if (isOwnProfile.value) {
+      return taskStore.completedTasks
+    }
+    return profile.value?.tasks.filter(t => isTaskCompleted(t)) ?? []
   })
 
   onMounted(async () => {
@@ -263,10 +329,6 @@
 
   function goToControl() {
     router.push({ name: 'control' })
-  }
-
-  function goToArchive() {
-    router.push({ name: 'archive' })
   }
 
   async function handleDelete(taskId: string) {
@@ -408,6 +470,28 @@
   .twitchIcon {
     width: 20px;
     height: 20px;
+  }
+
+  .visitorCta {
+    margin-top: 16px;
+  }
+
+  .myGoalsLink {
+    display: inline-block;
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: 2px solid var(--color-primary);
+    border-radius: 12px;
+    background: transparent;
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .myGoalsLink:hover {
+    background: var(--color-primary);
+    color: white;
   }
 
   .header {
@@ -568,42 +652,30 @@
   }
 
   .actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    display: flex;
+    justify-content: center;
     margin-bottom: 24px;
   }
 
-  .controlBtn,
-  .archiveBtn {
-    padding: 14px 16px;
+  .controlBtn {
+    padding: 14px 24px;
     font-size: 1rem;
     font-weight: 600;
     border: none;
     border-radius: 12px;
     cursor: pointer;
     transition: transform 0.1s, opacity 0.2s;
-  }
-
-  .controlBtn:active,
-  .archiveBtn:active {
-    transform: scale(0.98);
-  }
-
-  .controlBtn {
     background: var(--color-primary);
     color: white;
+  }
+
+  .controlBtn:active {
+    transform: scale(0.98);
   }
 
   .controlBtn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-  }
-
-  .archiveBtn {
-    background: var(--color-surface);
-    color: var(--color-text);
-    border: 2px solid var(--color-border);
   }
 
   .empty {
@@ -623,6 +695,13 @@
     color: var(--color-text-secondary);
   }
 
+  .sectionTitle {
+    margin: 32px 0 16px;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+  }
+
   .taskList {
     display: flex;
     flex-direction: column;
@@ -636,15 +715,15 @@
     padding: 16px;
   }
 
-  .taskCard.archived {
-    opacity: 0.6;
+  .completedCard {
+    opacity: 0.8;
   }
 
   .taskHeader {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
 
   .taskIcon {
@@ -659,8 +738,15 @@
     color: var(--color-text);
   }
 
-  .archivedBadge {
+  .completedBadge {
     font-size: 0.875rem;
+  }
+
+  .taskDescription {
+    margin: 0 0 12px;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    line-height: 1.4;
   }
 
   .taskProgress {
@@ -682,6 +768,10 @@
     background: var(--color-primary);
     border-radius: 4px;
     transition: width 0.3s ease;
+  }
+
+  .completedFill {
+    background: var(--color-success, #22c55e);
   }
 
   .progressText {

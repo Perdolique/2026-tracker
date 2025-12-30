@@ -116,7 +116,6 @@ describe('AddTaskView - Browser Tests', () => {
     expect(createdTask.type).toBe('daily')
     expect(createdTask.targetDays).toBe(300)
     expect(createdTask.completedDates).toEqual([])
-    expect(createdTask.isArchived).toBe(false)
   })
 
   it('should create a progress task', async () => {
@@ -186,7 +185,6 @@ describe('AddTaskView - Browser Tests', () => {
     expect(createdTask.targetValue).toBe(1000000)
     expect(createdTask.currentValue).toBe(0)
     expect(createdTask.unit).toBe('шагов')
-    expect(createdTask.isArchived).toBe(false)
   })
 
   it('should create a one-time task', async () => {
@@ -238,7 +236,6 @@ describe('AddTaskView - Browser Tests', () => {
     expect(createdTask.title).toBe('Купить велосипед')
     expect(createdTask.type).toBe('one-time')
     expect(createdTask.completedAt).toBeUndefined()
-    expect(createdTask.isArchived).toBe(false)
   })
 
   it('should not create task without title', async () => {

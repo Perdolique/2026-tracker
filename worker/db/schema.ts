@@ -45,7 +45,6 @@ export const tasks = sqliteTable(
     description: text('description'),
     type: text('type', { enum: taskTypes }).notNull(),
     createdAt: text('created_at').notNull(), // ISO timestamp
-    isArchived: integer('is_archived', { mode: 'boolean' }).notNull().default(false),
 
     // Daily task fields
     targetDays: integer('target_days'),
