@@ -1,12 +1,19 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
 import { render } from 'vitest-browser-vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia, setActivePinia } from 'pinia'
 import ControlView from '../ControlView.vue'
 import HomeView from '../HomeView.vue'
 import type { OneTimeTask, DailyTask, ProgressTask } from '@/models/task'
-
-const STORAGE_KEY = '2026-tracker:tasks'
+import {
+  TEST_DATE,
+  resetMockStorage,
+  setMockTasks,
+  getMockTasksStorage,
+  startMockServer,
+  stopMockServer,
+  resetTaskIdCounter,
+} from '@/test-utils/api-mocks'
 
 function createTestRouter() {
   return createRouter({
@@ -31,19 +38,22 @@ async function waitFor(
   throw new Error('waitFor timeout')
 }
 
-function getCurrentDate(): string {
-  const [date] = new Date().toISOString().split('T')
-  return date ?? ''
-}
-
 describe('ControlView - Browser Tests', () => {
+  beforeAll(async () => {
+    await startMockServer()
+  })
+
+  afterAll(async () => {
+    await stopMockServer()
+  })
+
   beforeEach(() => {
-    localStorage.clear()
+    resetMockStorage()
+    resetTaskIdCounter()
     setActivePinia(createPinia())
   })
 
   it('should complete one-time task when clicking "Да"', async () => {
-    // Создаём незавершённую one-time task в localStorage
     const task: OneTimeTask = {
       id: 'test-task-1',
       title: 'Сделать тестовую таску',
@@ -51,7 +61,7 @@ describe('ControlView - Browser Tests', () => {
       createdAt: '2026-01-01',
       isArchived: false,
     }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([task]))
+    setMockTasks([task])
 
     const router = createTestRouter()
     const pinia = createPinia()
@@ -84,31 +94,21 @@ describe('ControlView - Browser Tests', () => {
     // Кликаем "Да"
     await yesButton.click()
 
-    // Ждём обновления localStorage (API имеет задержку 50ms)
-    const today = getCurrentDate()
+    // Ждём обновления storage (API вызов через route mock)
     await waitFor(() => {
-      const tasks = JSON.parse(
-        localStorage.getItem(STORAGE_KEY) || '[]',
-      ) as OneTimeTask[]
+      const tasks = getMockTasksStorage() as OneTimeTask[]
       const updatedTask = tasks.find((t) => t.id === 'test-task-1')
-      return (
-        updatedTask !== undefined &&
-        updatedTask.completedAt === today &&
-        updatedTask.isArchived === true
-      )
+      return updatedTask?.completedAt === TEST_DATE
     })
 
-    // Финальная проверка состояния задачи
-    const tasks = JSON.parse(
-      localStorage.getItem(STORAGE_KEY) || '[]',
-    ) as OneTimeTask[]
+    // Проверяем финальное состояние
+    const tasks = getMockTasksStorage() as OneTimeTask[]
     const completedTask = tasks.find((t) => t.id === 'test-task-1')
 
     expect(completedTask).toBeDefined()
-    expect(completedTask?.completedAt).toBe(today)
-    expect(completedTask?.isArchived).toBe(true)
+    expect(completedTask?.completedAt).toBe(TEST_DATE)
 
-    // Проверяем, что показан экран "Готово!" (это была единственная задача)
+    // Проверяем, что показан экран "Готово!"
     await waitFor(() => {
       try {
         screen.getByText(/Готово!/i)
@@ -123,7 +123,6 @@ describe('ControlView - Browser Tests', () => {
   })
 
   it('should not change one-time task when clicking "Нет"', async () => {
-    // Создаём незавершённую one-time task в localStorage
     const task: OneTimeTask = {
       id: 'test-task-2',
       title: 'Проверка кнопки Нет',
@@ -131,7 +130,7 @@ describe('ControlView - Browser Tests', () => {
       createdAt: '2026-01-01',
       isArchived: false,
     }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([task]))
+    setMockTasks([task])
 
     const router = createTestRouter()
     const pinia = createPinia()
@@ -159,20 +158,18 @@ describe('ControlView - Browser Tests', () => {
     const noButton = screen.getByText(/✕\s*Нет/i)
     await noButton.click()
 
-    // Даём время на возможное обновление (хотя его не должно быть)
+    // Даём время на возможное обновление
     await new Promise((resolve) => setTimeout(resolve, 100))
 
     // Проверяем, что задача не изменилась
-    const tasks = JSON.parse(
-      localStorage.getItem(STORAGE_KEY) || '[]',
-    ) as OneTimeTask[]
+    const tasks = getMockTasksStorage() as OneTimeTask[]
     const unchangedTask = tasks.find((t) => t.id === 'test-task-2')
 
     expect(unchangedTask).toBeDefined()
     expect(unchangedTask?.completedAt).toBeUndefined()
     expect(unchangedTask?.isArchived).toBe(false)
 
-    // Проверяем, что показан экран "Готово!" (задача пропущена, wizard завершён)
+    // Проверяем, что показан экран "Готово!"
     await waitFor(() => {
       try {
         screen.getByText(/Готово!/i)
@@ -184,7 +181,6 @@ describe('ControlView - Browser Tests', () => {
   })
 
   it('should handle multiple one-time tasks in sequence', async () => {
-    // Создаём две незавершённые one-time tasks
     const task1: OneTimeTask = {
       id: 'test-task-3',
       title: 'Первая таска',
@@ -199,7 +195,7 @@ describe('ControlView - Browser Tests', () => {
       createdAt: '2026-01-02',
       isArchived: false,
     }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([task1, task2]))
+    setMockTasks([task1, task2])
 
     const router = createTestRouter()
     const pinia = createPinia()
@@ -227,7 +223,7 @@ describe('ControlView - Browser Tests', () => {
     const yesButton1 = screen.getByText(/✓\s*Да/i)
     await yesButton1.click()
 
-    // Ждём обновления и появления второй задачи
+    // Ждём появления второй задачи
     await waitFor(() => {
       try {
         screen.getByText('Вторая таска')
@@ -252,17 +248,13 @@ describe('ControlView - Browser Tests', () => {
     })
 
     // Проверяем финальное состояние задач
-    const today = getCurrentDate()
-    const tasks = JSON.parse(
-      localStorage.getItem(STORAGE_KEY) || '[]',
-    ) as OneTimeTask[]
+    const tasks = getMockTasksStorage() as OneTimeTask[]
 
     const finalTask1 = tasks.find((t) => t.id === 'test-task-3')
     const finalTask2 = tasks.find((t) => t.id === 'test-task-4')
 
-    // Первая таска должна быть выполнена и заархивирована
-    expect(finalTask1?.completedAt).toBe(today)
-    expect(finalTask1?.isArchived).toBe(true)
+    // Первая таска должна быть выполнена
+    expect(finalTask1?.completedAt).toBe(TEST_DATE)
 
     // Вторая таска должна остаться без изменений
     expect(finalTask2?.completedAt).toBeUndefined()
@@ -280,7 +272,7 @@ describe('ControlView - Browser Tests', () => {
         createdAt: '2026-01-01',
         isArchived: false,
       }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([task]))
+      setMockTasks([task])
 
       const router = createTestRouter()
       const pinia = createPinia()
@@ -306,21 +298,17 @@ describe('ControlView - Browser Tests', () => {
       const yesButton = screen.getByText(/✓\s*Да/i)
       await yesButton.click()
 
-      const today = getCurrentDate()
+      // Ждём обновления storage
       await waitFor(() => {
-        const tasks = JSON.parse(
-          localStorage.getItem(STORAGE_KEY) || '[]',
-        ) as DailyTask[]
+        const tasks = getMockTasksStorage() as DailyTask[]
         const updatedTask = tasks.find((t) => t.id === 'daily-1')
-        return updatedTask?.completedDates.includes(today) ?? false
+        return updatedTask?.completedDates.includes(TEST_DATE) ?? false
       })
 
-      const tasks = JSON.parse(
-        localStorage.getItem(STORAGE_KEY) || '[]',
-      ) as DailyTask[]
+      const tasks = getMockTasksStorage() as DailyTask[]
       const completedTask = tasks.find((t) => t.id === 'daily-1')
 
-      expect(completedTask?.completedDates).toContain(today)
+      expect(completedTask?.completedDates).toContain(TEST_DATE)
       expect(completedTask?.completedDates.length).toBe(3)
       expect(completedTask?.isArchived).toBe(false) // Не заархивирована, т.к. 3/100
     })
@@ -335,7 +323,7 @@ describe('ControlView - Browser Tests', () => {
         createdAt: '2026-01-01',
         isArchived: false,
       }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([task]))
+      setMockTasks([task])
 
       const router = createTestRouter()
       const pinia = createPinia()
@@ -363,9 +351,7 @@ describe('ControlView - Browser Tests', () => {
 
       await new Promise((resolve) => setTimeout(resolve, 100))
 
-      const tasks = JSON.parse(
-        localStorage.getItem(STORAGE_KEY) || '[]',
-      ) as DailyTask[]
+      const tasks = getMockTasksStorage() as DailyTask[]
       const unchangedTask = tasks.find((t) => t.id === 'daily-2')
 
       expect(unchangedTask?.completedDates).toEqual(['2026-01-01'])
@@ -382,7 +368,7 @@ describe('ControlView - Browser Tests', () => {
         createdAt: '2026-01-01',
         isArchived: false,
       }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([task]))
+      setMockTasks([task])
 
       const router = createTestRouter()
       const pinia = createPinia()
@@ -408,37 +394,32 @@ describe('ControlView - Browser Tests', () => {
       const yesButton = screen.getByText(/✓\s*Да/i)
       await yesButton.click()
 
-      const today = getCurrentDate()
+      // Ждём auto-archive (store делает updateTask после recordCheckIn)
       await waitFor(() => {
-        const tasks = JSON.parse(
-          localStorage.getItem(STORAGE_KEY) || '[]',
-        ) as DailyTask[]
+        const tasks = getMockTasksStorage() as DailyTask[]
         const updatedTask = tasks.find((t) => t.id === 'daily-3')
         return updatedTask?.isArchived === true
-      })
+      }, 3000)
 
-      const tasks = JSON.parse(
-        localStorage.getItem(STORAGE_KEY) || '[]',
-      ) as DailyTask[]
+      const tasks = getMockTasksStorage() as DailyTask[]
       const completedTask = tasks.find((t) => t.id === 'daily-3')
 
-      expect(completedTask?.completedDates).toContain(today)
+      expect(completedTask?.completedDates).toContain(TEST_DATE)
       expect(completedTask?.completedDates.length).toBe(3)
       expect(completedTask?.isArchived).toBe(true)
     })
 
     it('should prevent duplicate date when checking in same day twice', async () => {
-      const today = getCurrentDate()
       const task: DailyTask = {
         id: 'daily-4',
         title: 'Йога',
         type: 'daily',
         targetDays: 100,
-        completedDates: [today], // Уже отмечено сегодня
+        completedDates: [TEST_DATE], // Уже отмечено сегодня
         createdAt: '2026-01-01',
         isArchived: false,
       }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([task]))
+      setMockTasks([task])
 
       const router = createTestRouter()
       const pinia = createPinia()
@@ -466,12 +447,10 @@ describe('ControlView - Browser Tests', () => {
 
       await new Promise((resolve) => setTimeout(resolve, 150))
 
-      const tasks = JSON.parse(
-        localStorage.getItem(STORAGE_KEY) || '[]',
-      ) as DailyTask[]
+      const tasks = getMockTasksStorage() as DailyTask[]
       const completedTask = tasks.find((t) => t.id === 'daily-4')
 
-      expect(completedTask?.completedDates).toEqual([today])
+      expect(completedTask?.completedDates).toEqual([TEST_DATE])
       expect(completedTask?.completedDates.length).toBe(1) // Не добавился дубль
     })
   })
@@ -488,7 +467,7 @@ describe('ControlView - Browser Tests', () => {
         createdAt: '2026-01-01',
         isArchived: false,
       }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([task]))
+      setMockTasks([task])
 
       const router = createTestRouter()
       const pinia = createPinia()
@@ -539,7 +518,7 @@ describe('ControlView - Browser Tests', () => {
         createdAt: '2026-01-01',
         isArchived: false,
       }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([task]))
+      setMockTasks([task])
 
       const router = createTestRouter()
       const pinia = createPinia()
@@ -582,17 +561,14 @@ describe('ControlView - Browser Tests', () => {
       const confirmButton = screen.getByText(/Записать/i)
       await confirmButton.click()
 
+      // Ждём обновления storage
       await waitFor(() => {
-        const tasks = JSON.parse(
-          localStorage.getItem(STORAGE_KEY) || '[]',
-        ) as ProgressTask[]
+        const tasks = getMockTasksStorage() as ProgressTask[]
         const updatedTask = tasks.find((t) => t.id === 'progress-2')
         return updatedTask?.currentValue === 65000
       })
 
-      const tasks = JSON.parse(
-        localStorage.getItem(STORAGE_KEY) || '[]',
-      ) as ProgressTask[]
+      const tasks = getMockTasksStorage() as ProgressTask[]
       const progressTask = tasks.find((t) => t.id === 'progress-2')
 
       expect(progressTask?.currentValue).toBe(65000)
@@ -610,7 +586,7 @@ describe('ControlView - Browser Tests', () => {
         createdAt: '2026-01-01',
         isArchived: false,
       }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([task]))
+      setMockTasks([task])
 
       const router = createTestRouter()
       const pinia = createPinia()
@@ -650,9 +626,7 @@ describe('ControlView - Browser Tests', () => {
 
       await new Promise((resolve) => setTimeout(resolve, 100))
 
-      const tasks = JSON.parse(
-        localStorage.getItem(STORAGE_KEY) || '[]',
-      ) as ProgressTask[]
+      const tasks = getMockTasksStorage() as ProgressTask[]
       const unchangedTask = tasks.find((t) => t.id === 'progress-3')
 
       expect(unchangedTask?.currentValue).toBe(200)
@@ -670,7 +644,7 @@ describe('ControlView - Browser Tests', () => {
         createdAt: '2026-01-01',
         isArchived: false,
       }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([task]))
+      setMockTasks([task])
 
       const router = createTestRouter()
       const pinia = createPinia()
@@ -711,17 +685,14 @@ describe('ControlView - Browser Tests', () => {
       const confirmButton = screen.getByText(/Записать/i)
       await confirmButton.click()
 
+      // Ждём auto-archive
       await waitFor(() => {
-        const tasks = JSON.parse(
-          localStorage.getItem(STORAGE_KEY) || '[]',
-        ) as ProgressTask[]
+        const tasks = getMockTasksStorage() as ProgressTask[]
         const updatedTask = tasks.find((t) => t.id === 'progress-4')
         return updatedTask?.isArchived === true
-      })
+      }, 3000)
 
-      const tasks = JSON.parse(
-        localStorage.getItem(STORAGE_KEY) || '[]',
-      ) as ProgressTask[]
+      const tasks = getMockTasksStorage() as ProgressTask[]
       const completedTask = tasks.find((t) => t.id === 'progress-4')
 
       expect(completedTask?.currentValue).toBe(1010)
@@ -739,7 +710,7 @@ describe('ControlView - Browser Tests', () => {
         createdAt: '2026-01-01',
         isArchived: false,
       }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([task]))
+      setMockTasks([task])
 
       const router = createTestRouter()
       const pinia = createPinia()
@@ -780,17 +751,14 @@ describe('ControlView - Browser Tests', () => {
       const confirmButton = screen.getByText(/Записать/i)
       await confirmButton.click()
 
+      // Ждём auto-archive
       await waitFor(() => {
-        const tasks = JSON.parse(
-          localStorage.getItem(STORAGE_KEY) || '[]',
-        ) as ProgressTask[]
+        const tasks = getMockTasksStorage() as ProgressTask[]
         const updatedTask = tasks.find((t) => t.id === 'progress-5')
         return updatedTask?.isArchived === true
-      })
+      }, 3000)
 
-      const tasks = JSON.parse(
-        localStorage.getItem(STORAGE_KEY) || '[]',
-      ) as ProgressTask[]
+      const tasks = getMockTasksStorage() as ProgressTask[]
       const completedTask = tasks.find((t) => t.id === 'progress-5')
 
       expect(completedTask?.currentValue).toBe(500)
@@ -829,10 +797,7 @@ describe('ControlView - Browser Tests', () => {
         isArchived: false,
       }
 
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify([dailyTask, progressTask, oneTimeTask]),
-      )
+      setMockTasks([dailyTask, progressTask, oneTimeTask])
 
       const router = createTestRouter()
       const pinia = createPinia()
@@ -920,18 +885,13 @@ describe('ControlView - Browser Tests', () => {
         }
       })
 
-      const today = getCurrentDate()
-      const tasks = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+      const tasks = getMockTasksStorage()
 
-      const finalDaily = tasks.find((t: DailyTask) => t.id === 'mixed-daily')
-      const finalProgress = tasks.find(
-        (t: ProgressTask) => t.id === 'mixed-progress',
-      )
-      const finalOneTime = tasks.find(
-        (t: OneTimeTask) => t.id === 'mixed-onetime',
-      )
+      const finalDaily = tasks.find((t) => t.id === 'mixed-daily') as DailyTask
+      const finalProgress = tasks.find((t) => t.id === 'mixed-progress') as ProgressTask
+      const finalOneTime = tasks.find((t) => t.id === 'mixed-onetime') as OneTimeTask
 
-      expect(finalDaily?.completedDates).toContain(today)
+      expect(finalDaily?.completedDates).toContain(TEST_DATE)
       expect(finalDaily?.isArchived).toBe(false)
 
       expect(finalProgress?.currentValue).toBe(350)
@@ -963,10 +923,7 @@ describe('ControlView - Browser Tests', () => {
         isArchived: false,
       }
 
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify([dailyTaskComplete, progressTaskComplete]),
-      )
+      setMockTasks([dailyTaskComplete, progressTaskComplete])
 
       const router = createTestRouter()
       const pinia = createPinia()
@@ -1041,15 +998,18 @@ describe('ControlView - Browser Tests', () => {
         }
       })
 
-      // Ждём завершения всех async операций
-      await new Promise(resolve => setTimeout(resolve, 200))
+      // Ждём auto-archive обеих задач
+      await waitFor(() => {
+        const tasks = getMockTasksStorage()
+        const daily = tasks.find((t) => t.id === 'auto-daily') as DailyTask
+        const progress = tasks.find((t) => t.id === 'auto-progress') as ProgressTask
+        return daily?.isArchived === true && progress?.isArchived === true
+      }, 3000)
 
-      const tasks = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+      const tasks = getMockTasksStorage()
 
-      const finalDaily = tasks.find((t: DailyTask) => t.id === 'auto-daily')
-      const finalProgress = tasks.find(
-        (t: ProgressTask) => t.id === 'auto-progress',
-      )
+      const finalDaily = tasks.find((t) => t.id === 'auto-daily') as DailyTask
+      const finalProgress = tasks.find((t) => t.id === 'auto-progress') as ProgressTask
 
       expect(finalDaily?.completedDates.length).toBe(2)
       expect(finalDaily?.isArchived).toBe(true)

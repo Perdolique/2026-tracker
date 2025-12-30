@@ -104,6 +104,7 @@ src/
 ├── models/        # TypeScript interfaces/types
 │   └── __tests__/ # Unit tests for models
 ├── stores/        # Pinia stores (task-store, auth-store)
+├── test-utils/    # Test utilities (MSW mocks, helpers)
 ├── views/         # Page components (routed)
 │   └── __tests__/ # Browser tests for views
 ├── router/        # Vue Router config
@@ -127,27 +128,31 @@ drizzle/           # Generated SQL migrations
 
 #### ControlView (Check-in Flow)
 
-**✅ Working Tests:**
+**✅ Working Tests (14 tests):**
 
 - One-time tasks: completion, skipping, multiple tasks in sequence
 - Daily tasks: adding completion dates, skipping, auto-archiving, duplicate prevention
 - Progress tasks: value input display, accumulation, skipping, auto-archiving (exact and exceeded targets)
-
-**⏸️ TODO (Known Issues):**
-
 - Mixed task types in single check-in session (daily + progress + one-time)
 - Multiple auto-archiving tasks in one session
 
-**Root Cause:** CheckInWizard uses reactive `props.tasks` computed property which filters out archived tasks mid-session. When a task auto-archives during check-in, it disappears from `tasksForCheckIn`, causing index mismatch between wizard state and available tasks.
+#### AddTaskView (Task Creation)
 
-**Future Fix Options:**
+**✅ Working Tests (4 tests):**
 
-1. Snapshot task IDs at mount, fetch fresh data on each render
-2. Pass completion handler as prop instead of event emission
-3. Refactor `tasksForCheckIn` to include tasks being processed in current session
-4. Implement state machine for wizard progression independent of task list changes
+- Creating daily tasks with target days
+- Creating progress tasks with target value and unit
+- Creating one-time tasks
+- Validation: cannot create task without title
 
-Пока marked as `.todo()` в тестах до реализации архитектурного фикса💡
+**API Mocking:**
+
+Browser tests use **MSW (Mock Service Worker)** for HTTP request interception.
+
+- Setup: `startMockServer()` / `stopMockServer()` in `beforeAll`/`afterAll`
+- Data management: `setMockTasks()`, `getMockTasksStorage()`, `resetMockStorage()`
+- Fixed test date: `TEST_DATE = '2026-01-15'` for deterministic results
+- Mock handlers in `src/test-utils/api-mocks.ts`
 
 ## Naming Conventions
 
