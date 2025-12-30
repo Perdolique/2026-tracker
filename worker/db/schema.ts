@@ -5,28 +5,61 @@ export const taskTypes = ['daily', 'progress', 'one-time'] as const
 export type TaskType = (typeof taskTypes)[number]
 
 /**
+ * Users table for Twitch OAuth
+ */
+export const users = sqliteTable('users', {
+  id: text('id').primaryKey(), // UUID
+  twitchId: text('twitch_id').unique().notNull(),
+  displayName: text('display_name').notNull(),
+  avatarUrl: text('avatar_url'),
+  isPublic: integer('is_public', { mode: 'boolean' }).notNull().default(false),
+  createdAt: text('created_at').notNull(), // ISO timestamp
+})
+
+/**
+ * Sessions table for auth
+ */
+export const sessions = sqliteTable(
+  'sessions',
+  {
+    id: text('id').primaryKey(), // Session token
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    expiresAt: text('expires_at').notNull(), // ISO timestamp
+    createdAt: text('created_at').notNull(), // ISO timestamp
+  },
+  (table) => [index('sessions_user_id_idx').on(table.userId)]
+)
+
+/**
  * Main tasks table
  * Uses single-table design with nullable type-specific columns
  */
-export const tasks = sqliteTable('tasks', {
-  id: text('id').primaryKey(), // UUID
-  title: text('title').notNull(),
-  description: text('description'),
-  type: text('type', { enum: taskTypes }).notNull(),
-  createdAt: text('created_at').notNull(), // ISO timestamp
-  isArchived: integer('is_archived', { mode: 'boolean' }).notNull().default(false),
+export const tasks = sqliteTable(
+  'tasks',
+  {
+    id: text('id').primaryKey(), // UUID
+    userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }), // nullable for migration
+    title: text('title').notNull(),
+    description: text('description'),
+    type: text('type', { enum: taskTypes }).notNull(),
+    createdAt: text('created_at').notNull(), // ISO timestamp
+    isArchived: integer('is_archived', { mode: 'boolean' }).notNull().default(false),
 
-  // Daily task fields
-  targetDays: integer('target_days'),
+    // Daily task fields
+    targetDays: integer('target_days'),
 
-  // Progress task fields
-  targetValue: integer('target_value'),
-  currentValue: integer('current_value'),
-  unit: text('unit'),
+    // Progress task fields
+    targetValue: integer('target_value'),
+    currentValue: integer('current_value'),
+    unit: text('unit'),
 
-  // One-time task fields
-  completedAt: text('completed_at'),
-})
+    // One-time task fields
+    completedAt: text('completed_at'),
+  },
+  (table) => [index('tasks_user_id_idx').on(table.userId)]
+)
 
 /**
  * Daily task completion dates
@@ -48,6 +81,10 @@ export const dailyCompletions = sqliteTable(
 )
 
 // TypeScript types inferred from schema
+export type UserRow = typeof users.$inferSelect
+export type NewUserRow = typeof users.$inferInsert
+export type SessionRow = typeof sessions.$inferSelect
+export type NewSessionRow = typeof sessions.$inferInsert
 export type TaskRow = typeof tasks.$inferSelect
 export type NewTaskRow = typeof tasks.$inferInsert
 export type DailyCompletionRow = typeof dailyCompletions.$inferSelect

@@ -10,6 +10,12 @@ Mobile-first SPA task tracker with three goal types:
 - **Progress tasks** — accumulate value (e.g., 1,000,000 steps)
 - **One-time tasks** — single completion
 
+### Authentication
+
+- **Twitch OAuth** — users login via Twitch
+- **Session-based auth** — httpOnly cookies with D1 session storage
+- **Public profiles** — users can share their progress via `/user/:userId` link
+
 ## Agent Guidelines
 
 ### Critical Evaluation
@@ -97,16 +103,16 @@ src/
 ├── components/    # Reusable Vue components
 ├── models/        # TypeScript interfaces/types
 │   └── __tests__/ # Unit tests for models
-├── stores/        # Pinia stores
+├── stores/        # Pinia stores (task-store, auth-store)
 ├── views/         # Page components (routed)
 │   └── __tests__/ # Browser tests for views
 ├── router/        # Vue Router config
 ├── App.vue        # Root component
 └── main.ts        # Entry point
 worker/
-├── index.ts       # Hono app entry point
+├── index.ts       # Hono app entry point (API + OAuth)
 └── db/
-    ├── schema.ts  # Drizzle schema (tables)
+    ├── schema.ts  # Drizzle schema (users, sessions, tasks)
     └── queries.ts # DB query functions
 drizzle/           # Generated SQL migrations
 ```
@@ -286,31 +292,27 @@ type Task = DailyTask | ProgressTask | OneTimeTask
 
 ### Tables
 
-```sql
--- Main tasks table (single-table design with nullable type-specific columns)
-CREATE TABLE tasks (
-  id TEXT PRIMARY KEY,           -- UUID
-  title TEXT NOT NULL,
-  description TEXT,
-  type TEXT NOT NULL,            -- 'daily' | 'progress' | 'one-time'
-  created_at TEXT NOT NULL,      -- ISO timestamp
-  is_archived INTEGER DEFAULT 0, -- boolean
-  target_days INTEGER,           -- daily tasks
-  target_value INTEGER,          -- progress tasks
-  current_value INTEGER,         -- progress tasks
-  unit TEXT,                     -- progress tasks
-  completed_at TEXT              -- one-time tasks
-);
-
--- Separate table for daily task completion dates (SQLite doesn't support arrays)
-CREATE TABLE daily_completions (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  task_id TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
-  completed_date TEXT NOT NULL   -- YYYY-MM-DD
-);
-```
+Tables can be found in `worker/db/schema.ts`.
 
 ### API Endpoints
+
+#### Auth Routes (public)
+
+| Method | Endpoint | Description |
+| ------ | -------- | ----------- |
+| GET | `/api/auth/twitch` | Redirect to Twitch OAuth |
+| GET | `/api/auth/twitch/callback` | OAuth callback handler |
+| GET | `/api/auth/me` | Get current user (or null) |
+| POST | `/api/auth/logout` | Logout, clear session |
+| PATCH | `/api/users/me` | Update user settings (isPublic) |
+
+#### Public Profile
+
+| Method | Endpoint | Description |
+| ------ | -------- | ----------- |
+| GET | `/api/users/:userId/profile` | Get public user profile with tasks |
+
+#### Task Routes (require auth)
 
 | Method | Endpoint | Description |
 | ------ | -------- | ----------- |

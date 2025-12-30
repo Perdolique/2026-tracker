@@ -23,6 +23,11 @@ const router = createRouter({
       name: 'add-task',
       component: () => import('@/views/AddTaskView.vue'),
     },
+    {
+      path: '/user/:userId',
+      name: 'user-profile',
+      component: () => import('@/views/UserProfileView.vue'),
+    },
   ],
 })
 

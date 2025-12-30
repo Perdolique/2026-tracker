@@ -9,6 +9,8 @@ Mobile-first task tracker for 2026 goals with three completion types.
 - **✅ One-time tasks** — Single completion actions
 - **🎮 Check-in wizard** — Daily review of all active tasks one-by-one
 - **📦 Archive** — Completed goals move to archive automatically
+- **🔐 Twitch OAuth** — Login via Twitch account
+- **🔗 Public profiles** — Share your progress via `/user/:userId` link
 
 ## Tech Stack
 
@@ -79,6 +81,24 @@ npm run db:migrate:prod
 npm run db:studio
 ```
 
+### Environment Variables
+
+For local development, copy a `.env.example` to a `.env` file and set your Twitch credentials:
+
+```bash
+TWITCH_CLIENT_ID=your_twitch_client_id
+TWITCH_CLIENT_SECRET=your_twitch_client_secret
+```
+
+For production, set secrets via Wrangler:
+
+```bash
+wrangler secret put TWITCH_CLIENT_ID
+wrangler secret put TWITCH_CLIENT_SECRET
+```
+
+Get Twitch credentials at https://dev.twitch.tv/console
+
 ## Project Structure
 
 ```text
@@ -87,16 +107,16 @@ src/
 ├── components/    # Reusable Vue components
 ├── models/        # TypeScript interfaces/types
 │   └── __tests__/ # Unit tests
-├── stores/        # Pinia stores
+├── stores/        # Pinia stores (task-store, auth-store)
 ├── views/         # Page components (routed)
 │   └── __tests__/ # Browser tests
 ├── router/        # Vue Router config
 ├── App.vue        # Root component
 └── main.ts        # Entry point
 worker/
-├── index.ts       # Hono app entry point
+├── index.ts       # Hono app entry point (API + OAuth)
 └── db/
-    ├── schema.ts  # Drizzle schema
+    ├── schema.ts  # Drizzle schema (users, sessions, tasks)
     └── queries.ts # DB query functions
 drizzle/           # Generated SQL migrations
 ```

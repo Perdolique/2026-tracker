@@ -1,202 +1,102 @@
 <template>
   <div :class="$style.container">
-    <header :class="$style.header">
-      <h1 :class="$style.title">2026 Tracker 🎯</h1>
-      <p :class="$style.subtitle">Отслеживай свои цели</p>
-    </header>
-
-    <!-- Action buttons -->
-    <div :class="$style.actions">
-      <button
-        :class="$style.controlBtn"
-        :disabled="store.getTasksForCheckIn().length === 0"
-        @click="goToControl"
-      >
-        🎮 Check-in
-      </button>
-      <button :class="$style.archiveBtn" @click="goToArchive">
-        📦 Архив
-      </button>
-    </div>
-
-    <!-- Loading state -->
-    <div v-if="store.isLoading" :class="$style.loading">
+    <!-- Loading -->
+    <div v-if="authStore.isLoading" :class="$style.loading">
       Загрузка...
     </div>
 
-    <!-- Empty state -->
-    <div v-else-if="store.activeTasks.length === 0" :class="$style.empty">
-      <p :class="$style.emptyText">Пока нет задач 🤷</p>
-      <p :class="$style.emptyHint">Добавь первую цель!</p>
-    </div>
+    <!-- Landing page for non-authenticated users -->
+    <template v-else>
+      <div :class="$style.landing">
+        <h1 :class="$style.title">2026 Tracker 🎯</h1>
+        <p :class="$style.subtitle">Отслеживай свои цели на 2026 год</p>
 
-    <!-- Task list -->
-    <div v-else :class="$style.taskList">
-      <TaskCard
-        v-for="task in store.activeTasks"
-        :key="task.id"
-        :task="task"
-        @delete="handleDelete"
-      />
-    </div>
-
-    <!-- FAB -->
-    <button :class="$style.fab" @click="goToAddTask" aria-label="Добавить задачу">
-      +
-    </button>
+        <button :class="$style.loginBtn" @click="authStore.login">
+          <svg :class="$style.twitchIcon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
+          </svg>
+          Войти через Twitch
+        </button>
+      </div>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
   import { onMounted } from 'vue'
   import { useRouter } from 'vue-router'
-  import { useTaskStore } from '@/stores/task-store'
-  import TaskCard from '@/components/TaskCard.vue'
+  import { useAuthStore } from '@/stores/auth-store'
 
   const router = useRouter()
-  const store = useTaskStore()
+  const authStore = useAuthStore()
 
-  onMounted(() => {
-    store.fetchTasks()
-  })
+  onMounted(async () => {
+    await authStore.fetchMe()
 
-  function goToAddTask() {
-    router.push({ name: 'add-task' })
-  }
-
-  function goToControl() {
-    router.push({ name: 'control' })
-  }
-
-  function goToArchive() {
-    router.push({ name: 'archive' })
-  }
-
-  async function handleDelete(taskId: string) {
-    if (confirm('Удалить задачу?')) {
-      await store.removeTask(taskId)
+    // Redirect to user profile if logged in
+    if (authStore.isLoggedIn && authStore.user) {
+      router.replace({ name: 'user-profile', params: { userId: authStore.user.id } })
     }
-  }
+  })
 </script>
 
 <style module>
   .container {
     min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding: 16px;
-    padding-bottom: 100px;
-  }
-
-  .header {
-    text-align: center;
-    margin-bottom: 24px;
-  }
-
-  .title {
-    margin: 0;
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--color-text);
-  }
-  .subtitle {
-    margin: 4px 0 0;
-    font-size: 0.875rem;
-    color: var(--color-text-secondary);
-  }
-
-  .actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 24px;
-  }
-
-  .controlBtn,
-  .archiveBtn {
-    padding: 14px 16px;
-    font-size: 1rem;
-    font-weight: 600;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: transform 0.1s, opacity 0.2s;
-  }
-
-  .controlBtn:active,
-  .archiveBtn:active {
-    transform: scale(0.98);
-  }
-
-  .controlBtn {
-    background: var(--color-primary);
-    color: white;
-  }
-
-  .controlBtn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  .archiveBtn {
-    background: var(--color-surface);
-    color: var(--color-text);
-    border: 2px solid var(--color-border);
   }
 
   .loading {
     text-align: center;
-    padding: 40px;
     color: var(--color-text-secondary);
   }
 
-  .empty {
+  .landing {
     text-align: center;
-    padding: 60px 20px;
+    max-width: 320px;
   }
 
-  .emptyText {
+  .title {
     margin: 0;
-    font-size: 1.25rem;
+    font-size: 2rem;
+    font-weight: 700;
     color: var(--color-text);
   }
 
-  .emptyHint {
-    margin: 8px 0 0;
-    font-size: 0.875rem;
+  .subtitle {
+    margin: 8px 0 32px;
+    font-size: 1rem;
     color: var(--color-text-secondary);
   }
 
-  .taskList {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .fab {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    border: none;
-    background: var(--color-primary);
-    color: white;
-    font-size: 2rem;
-    font-weight: 300;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s, box-shadow 0.2s;
-    display: flex;
+  .loginBtn {
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
+    gap: 10px;
+    padding: 14px 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    background: #9146ff;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.2s;
   }
 
-  .fab:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  .loginBtn:hover {
+    box-shadow: 0 4px 16px rgba(145, 70, 255, 0.4);
   }
 
-  .fab:active {
-    transform: scale(0.95);
+  .loginBtn:active {
+    transform: scale(0.98);
+  }
+
+  .twitchIcon {
+    width: 20px;
+    height: 20px;
   }
 </style>
