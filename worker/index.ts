@@ -101,6 +101,7 @@ const checkInSchema = v.object({
 
 const updateUserSchema = v.object({
   isPublic: v.optional(v.boolean()),
+  language: v.optional(v.picklist(['en', 'ru'])),
 })
 
 // =============================================================================

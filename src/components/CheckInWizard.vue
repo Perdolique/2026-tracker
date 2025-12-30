@@ -25,40 +25,40 @@
     <!-- Value input for progress tasks -->
     <div v-if="showValueInput && currentTask && isProgressTask(currentTask)" :class="$style.valueInput">
       <label :class="$style.valueLabel">
-        Сколько {{ currentTask.unit }} сегодня?
+        {{ $t('checkIn.howMuchToday', { unit: currentTask.unit }) }}
       </label>
       <input
         v-model.number="inputValue"
         :class="$style.input"
         type="number"
         min="0"
-        :placeholder="`Введи количество ${currentTask.unit}`"
+        :placeholder="$t('checkIn.enterAmount', { unit: currentTask.unit })"
         :disabled="isProcessing"
         autofocus
       />
       <div :class="$style.valueActions">
         <button :class="$style.skipBtn" :disabled="isProcessing" @click="handleValueSkip">
-          Пропустить
+          {{ $t('common.skip') }}
         </button>
         <button
           :class="$style.confirmBtn"
           :disabled="!inputValue || inputValue <= 0 || isProcessing"
           @click="handleValueSubmit"
         >
-          Записать
+          {{ $t('checkIn.record') }}
         </button>
       </div>
     </div>
 
     <!-- Yes/No buttons -->
     <div v-else :class="$style.actions">
-      <p :class="$style.question">Выполнено сегодня?</p>
+      <p :class="$style.question">{{ $t('checkIn.question') }}</p>
       <div :class="$style.buttons">
         <button :class="$style.noBtn" :disabled="isProcessing" @click="handleNo">
-          ✕ Нет
+          ✕ {{ $t('common.no') }}
         </button>
         <button :class="$style.yesBtn" :disabled="isProcessing" @click="handleYes">
-          ✓ Да
+          ✓ {{ $t('common.yes') }}
         </button>
       </div>
     </div>
@@ -67,8 +67,11 @@
 
 <script setup lang="ts">
   import { ref, computed, watch } from 'vue'
+  import { useI18n } from 'vue-i18n'
   import type { Task } from '@/models/task'
   import { isDailyTask, isProgressTask, isOneTimeTask, getTaskProgress } from '@/models/task'
+
+  const { t } = useI18n()
 
   const props = defineProps<{
     tasks: Task[]
@@ -119,13 +122,13 @@
     if (!task) return ''
 
     if (isDailyTask(task)) {
-      return `${task.completedDates.length} / ${task.targetDays} дней`
+      return t('taskCard.daysProgress', { completed: task.completedDates.length, target: task.targetDays })
     }
     if (isProgressTask(task)) {
       return `${task.currentValue.toLocaleString()} / ${task.targetValue.toLocaleString()} ${task.unit}`
     }
     if (isOneTimeTask(task)) {
-      return task.completedAt ? 'Выполнено' : 'Ожидает выполнения'
+      return task.completedAt ? t('taskCard.completed') : t('checkIn.waitingForCompletion')
     }
     return ''
   })

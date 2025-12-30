@@ -13,6 +13,7 @@ import {
   stopMockServer,
   resetTaskIdCounter,
 } from '@/test-utils/api-mocks'
+import { createTestI18n } from '@/test-utils/i18n'
 
 function createTestRouter() {
   return createRouter({
@@ -57,52 +58,53 @@ describe('AddTaskView - Browser Tests', () => {
 
     const router = createTestRouter()
     const pinia = createPinia()
+    const i18n = createTestI18n()
 
     await router.push('/add')
     await router.isReady()
 
     const screen = render(AddTaskView, {
       global: {
-        plugins: [router, pinia],
+        plugins: [router, pinia, i18n],
       },
     })
 
-    // Ждём загрузки формы
+    // Wait for form to load
     await waitFor(() => {
       try {
-        screen.getByLabelText(/^Название$/i)
+        screen.getByLabelText(/^Title$/i)
         return true
       } catch {
         return false
       }
     })
 
-    // Заполняем название
-    const titleInput = screen.getByLabelText(/^Название$/i)
-    await titleInput.fill('Бегать каждый день')
+    // Fill title
+    const titleInput = screen.getByLabelText(/^Title$/i)
+    await titleInput.fill('Run every day')
 
-    // Выбираем тип "Дни" (daily)
-    const dailyButton = screen.getByText('Дни')
+    // Select "Days" type (daily)
+    const dailyButton = screen.getByText('Days')
     await dailyButton.click()
 
-    // Вводим целевое количество дней
+    // Enter target days
     await waitFor(() => {
       try {
-        screen.getByLabelText(/Целевое количество дней/i)
+        screen.getByLabelText(/Target number of days/i)
         return true
       } catch {
         return false
       }
     })
 
-    const daysInput = screen.getByLabelText(/Целевое количество дней/i)
+    const daysInput = screen.getByLabelText(/Target number of days/i)
     await daysInput.fill('300')
 
-    // Нажимаем кнопку создания
-    const submitButton = screen.getByText(/Создать/i)
+    // Click create button
+    const submitButton = screen.getByText(/Create/i)
     await submitButton.click()
 
-    // Ждём создания задачи
+    // Wait for task creation
     await waitFor(() => {
       const tasks = getMockTasksStorage()
       return tasks.length === 1
@@ -112,7 +114,7 @@ describe('AddTaskView - Browser Tests', () => {
     expect(tasks.length).toBe(1)
 
     const createdTask = tasks[0] as DailyTask
-    expect(createdTask.title).toBe('Бегать каждый день')
+    expect(createdTask.title).toBe('Run every day')
     expect(createdTask.type).toBe('daily')
     expect(createdTask.targetDays).toBe(300)
     expect(createdTask.completedDates).toEqual([])
@@ -123,54 +125,55 @@ describe('AddTaskView - Browser Tests', () => {
 
     const router = createTestRouter()
     const pinia = createPinia()
+    const i18n = createTestI18n()
 
     await router.push('/add')
     await router.isReady()
 
     const screen = render(AddTaskView, {
       global: {
-        plugins: [router, pinia],
+        plugins: [router, pinia, i18n],
       },
     })
 
     await waitFor(() => {
       try {
-        screen.getByLabelText(/^Название$/i)
+        screen.getByLabelText(/^Title$/i)
         return true
       } catch {
         return false
       }
     })
 
-    // Заполняем название
-    const titleInput = screen.getByLabelText(/^Название$/i)
-    await titleInput.fill('Пройти миллион шагов')
+    // Fill title
+    const titleInput = screen.getByLabelText(/^Title$/i)
+    await titleInput.fill('Walk a million steps')
 
-    // Выбираем тип "Прогресс"
-    const progressButton = screen.getByText('Прогресс')
+    // Select "Progress" type
+    const progressButton = screen.getByText('Progress')
     await progressButton.click()
 
-    // Вводим целевое значение и единицу измерения
+    // Enter target value and unit
     await waitFor(() => {
       try {
-        screen.getByLabelText(/Целевое значение/i)
+        screen.getByLabelText(/Target value/i)
         return true
       } catch {
         return false
       }
     })
 
-    const targetInput = screen.getByLabelText(/Целевое значение/i)
+    const targetInput = screen.getByLabelText(/Target value/i)
     await targetInput.fill('1000000')
 
-    const unitInput = screen.getByLabelText(/Единица измерения/i)
-    await unitInput.fill('шагов')
+    const unitInput = screen.getByLabelText(/Unit of measurement/i)
+    await unitInput.fill('steps')
 
-    // Нажимаем кнопку создания
-    const submitButton = screen.getByText(/Создать/i)
+    // Click create button
+    const submitButton = screen.getByText(/Create/i)
     await submitButton.click()
 
-    // Ждём создания задачи
+    // Wait for task creation
     await waitFor(() => {
       const tasks = getMockTasksStorage()
       return tasks.length === 1
@@ -180,11 +183,11 @@ describe('AddTaskView - Browser Tests', () => {
     expect(tasks.length).toBe(1)
 
     const createdTask = tasks[0] as ProgressTask
-    expect(createdTask.title).toBe('Пройти миллион шагов')
+    expect(createdTask.title).toBe('Walk a million steps')
     expect(createdTask.type).toBe('progress')
     expect(createdTask.targetValue).toBe(1000000)
     expect(createdTask.currentValue).toBe(0)
-    expect(createdTask.unit).toBe('шагов')
+    expect(createdTask.unit).toBe('steps')
   })
 
   it('should create a one-time task', async () => {
@@ -192,38 +195,39 @@ describe('AddTaskView - Browser Tests', () => {
 
     const router = createTestRouter()
     const pinia = createPinia()
+    const i18n = createTestI18n()
 
     await router.push('/add')
     await router.isReady()
 
     const screen = render(AddTaskView, {
       global: {
-        plugins: [router, pinia],
+        plugins: [router, pinia, i18n],
       },
     })
 
     await waitFor(() => {
       try {
-        screen.getByLabelText(/^Название$/i)
+        screen.getByLabelText(/^Title$/i)
         return true
       } catch {
         return false
       }
     })
 
-    // Заполняем название
-    const titleInput = screen.getByLabelText(/^Название$/i)
-    await titleInput.fill('Купить велосипед')
+    // Fill title
+    const titleInput = screen.getByLabelText(/^Title$/i)
+    await titleInput.fill('Buy a bicycle')
 
-    // Выбираем тип "Разовая"
-    const oneTimeButton = screen.getByText('Разовая')
+    // Select "One-time" type
+    const oneTimeButton = screen.getByText('One-time')
     await oneTimeButton.click()
 
-    // Нажимаем кнопку создания
-    const submitButton = screen.getByText(/Создать/i)
+    // Click create button
+    const submitButton = screen.getByText(/Create/i)
     await submitButton.click()
 
-    // Ждём создания задачи
+    // Wait for task creation
     await waitFor(() => {
       const tasks = getMockTasksStorage()
       return tasks.length === 1
@@ -233,7 +237,7 @@ describe('AddTaskView - Browser Tests', () => {
     expect(tasks.length).toBe(1)
 
     const createdTask = tasks[0] as OneTimeTask
-    expect(createdTask.title).toBe('Купить велосипед')
+    expect(createdTask.title).toBe('Buy a bicycle')
     expect(createdTask.type).toBe('one-time')
     expect(createdTask.completedAt).toBeUndefined()
   })
@@ -243,36 +247,36 @@ describe('AddTaskView - Browser Tests', () => {
 
     const router = createTestRouter()
     const pinia = createPinia()
+    const i18n = createTestI18n()
 
     await router.push('/add')
     await router.isReady()
 
     const screen = render(AddTaskView, {
       global: {
-        plugins: [router, pinia],
+        plugins: [router, pinia, i18n],
       },
     })
 
     await waitFor(() => {
       try {
-        screen.getByLabelText(/^Название$/i)
+        screen.getByLabelText(/^Title$/i)
         return true
       } catch {
         return false
       }
     })
 
-    // Не заполняем название, выбираем тип
-    const oneTimeButton = screen.getByText('Разовая')
+    // Don't fill title, just select type
+    const oneTimeButton = screen.getByText('One-time')
     await oneTimeButton.click()
 
-    // Пытаемся создать — кнопка должна быть disabled
-    // Не кликаем, т.к. кнопка disabled. Просто проверяем что задача не создалась
+    // Don't click since button should be disabled. Just verify task wasn't created
 
-    // Даём время на возможное создание
+    // Give time for potential creation
     await new Promise((resolve) => setTimeout(resolve, 200))
 
-    // Проверяем, что задача не создалась
+    // Verify task wasn't created
     const tasks = getMockTasksStorage()
     expect(tasks.length).toBe(0)
   })

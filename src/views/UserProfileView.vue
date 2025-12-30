@@ -2,26 +2,26 @@
   <div :class="$style.container">
     <!-- Loading -->
     <div v-if="isLoading" :class="$style.loading">
-      Загрузка...
+      {{ $t('common.loading') }}
     </div>
 
     <!-- Error: Private profile (show login for non-owners) -->
     <div v-else-if="error === 'private'" :class="$style.error">
       <p :class="$style.errorIcon">🔒</p>
-      <p :class="$style.errorText">Профиль приватный</p>
+      <p :class="$style.errorText">{{ $t('profile.privateProfile') }}</p>
       <button :class="$style.loginBtn" @click="authStore.login">
         <svg :class="$style.twitchIcon" viewBox="0 0 24 24" fill="currentColor">
           <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
         </svg>
-        Войти через Twitch
+        {{ $t('common.loginTwitch') }}
       </button>
     </div>
 
     <!-- Error: Other errors -->
     <div v-else-if="error" :class="$style.error">
       <p :class="$style.errorIcon">😢</p>
-      <p :class="$style.errorText">{{ error }}</p>
-      <router-link to="/" :class="$style.homeLink">На главную</router-link>
+      <p :class="$style.errorText">{{ errorText }}</p>
+      <router-link to="/" :class="$style.homeLink">{{ $t('common.toHome') }}</router-link>
     </div>
 
     <!-- Profile -->
@@ -40,10 +40,10 @@
           </div>
           <div :class="$style.userActions">
             <button :class="$style.shareBtn" @click="toggleShare">
-              {{ authStore.user?.isPublic ? '🔗' : '🔒' }}
+              ⚙️
             </button>
             <button :class="$style.logoutBtn" @click="handleLogout">
-              Выйти
+              {{ $t('profile.logout') }}
             </button>
           </div>
         </div>
@@ -59,28 +59,50 @@
           <h1 :class="$style.title">{{ profile.user.displayName }}</h1>
         </template>
 
-        <p :class="$style.subtitle">Прогресс по целям 2026 🎯</p>
+        <p :class="$style.subtitle">{{ $t('profile.progressTitle') }}</p>
 
-        <!-- CTA for visitors (not own profile) -->
-        <div v-if="!isOwnProfile" :class="$style.visitorCta">
-          <router-link v-if="authStore.isLoggedIn" to="/" :class="$style.myGoalsLink">
-            К своим целям →
+        <!-- Floating controls for visitors (not own profile) -->
+        <div v-if="!isOwnProfile" :class="$style.visitorControls">
+          <div :class="$style.visitorLanguageSelector">
+            <button
+              :class="[$style.visitorLangBtn, locale === 'en' && $style.visitorLangActive]"
+              @click="setLocale('en')"
+              :title="'English'"
+            >
+              EN
+            </button>
+            <button
+              :class="[$style.visitorLangBtn, locale === 'ru' && $style.visitorLangActive]"
+              @click="setLocale('ru')"
+              :title="'Русский'"
+            >
+              RU
+            </button>
+          </div>
+
+          <router-link v-if="authStore.isLoggedIn" to="/" :class="$style.myGoalsLink" :title="$t('profile.myGoals')">
+            →
           </router-link>
-          <button v-else :class="$style.loginBtn" @click="authStore.login">
-            <svg :class="$style.twitchIcon" viewBox="0 0 24 24" fill="currentColor">
+          <button v-else :class="$style.compactLoginBtn" @click="authStore.login" :title="$t('common.loginTwitch')">
+            <svg :class="$style.twitchIconSmall" viewBox="0 0 24 24" fill="currentColor">
               <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
             </svg>
-            Войти и начать трекать
           </button>
         </div>
       </header>
 
-      <!-- Share modal (only for own profile) -->
-      <div v-if="showShareModal && isOwnProfile" :class="$style.shareModal" @click.self="showShareModal = false">
-        <div :class="$style.shareModalContent">
-          <h3 :class="$style.shareTitle">Поделиться прогрессом</h3>
+      <!-- Settings modal (only for own profile) -->
+      <div v-if="showShareModal && isOwnProfile" :class="$style.settingsModal" @click.self="showShareModal = false">
+        <div :class="$style.settingsContent">
+          <button :class="$style.modalCloseBtn" @click="showShareModal = false" :title="$t('common.close')">
+            ✕
+          </button>
+          <h3 :class="$style.settingsTitle">{{ $t('profile.settings') }}</h3>
 
-          <div :class="$style.shareToggle">
+          <!-- Sharing section -->
+          <div :class="$style.settingsSection">
+            <h4 :class="$style.sectionTitle">{{ $t('profile.sharing') }}</h4>
+            <div :class="$style.shareToggle">
             <label :class="$style.toggleLabel">
               <input
                 type="checkbox"
@@ -88,7 +110,7 @@
                 @change="handlePublicToggle"
               />
               <span :class="$style.toggleText">
-                {{ authStore.user?.isPublic ? 'Профиль публичный 🌍' : 'Профиль приватный 🔒' }}
+                {{ authStore.user?.isPublic ? $t('profile.publicProfile') : $t('profile.privateProfileToggle') }}
               </span>
             </label>
           </div>
@@ -105,10 +127,26 @@
               {{ copied ? '✅' : '📋' }}
             </button>
           </div>
+          </div>
 
-          <button :class="$style.closeBtn" @click="showShareModal = false">
-            Закрыть
-          </button>
+          <!-- Language section -->
+          <div :class="$style.settingsSection">
+            <h4 :class="$style.sectionTitle">{{ $t('profile.language') }}</h4>
+            <div :class="$style.languageButtons">
+              <button
+                :class="[$style.langBtn, locale === 'en' && $style.langActive]"
+                @click="setLocale('en')"
+              >
+                EN
+              </button>
+              <button
+                :class="[$style.langBtn, locale === 'ru' && $style.langActive]"
+                @click="setLocale('ru')"
+              >
+                RU
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -125,13 +163,13 @@
 
       <!-- Loading tasks -->
       <div v-if="isOwnProfile && taskStore.isLoading" :class="$style.loadingTasks">
-        Загрузка задач...
+        {{ $t('profile.loadingTasks') }}
       </div>
 
       <!-- Empty state -->
       <div v-else-if="activeTasks.length === 0 && completedTasks.length === 0" :class="$style.empty">
-        <p :class="$style.emptyText">Пока нет задач 🤷</p>
-        <p v-if="isOwnProfile" :class="$style.emptyHint">Добавь первую цель!</p>
+        <p :class="$style.emptyText">{{ $t('profile.noTasksYet') }}</p>
+        <p v-if="isOwnProfile" :class="$style.emptyHint">{{ $t('profile.addFirstGoal') }}</p>
       </div>
 
       <!-- Task list -->
@@ -177,7 +215,7 @@
       <template v-if="completedTasks.length > 0">
         <!-- Section for own profile -->
         <template v-if="isOwnProfile">
-          <h2 :class="$style.sectionTitle">Достигнуто 🏆</h2>
+          <h2 :class="$style.sectionTitle">{{ $t('profile.achieved') }}</h2>
           <div :class="$style.taskList">
             <TaskCard
               v-for="task in completedTasks"
@@ -191,7 +229,7 @@
 
         <!-- Section for public profile -->
         <template v-else>
-          <h2 :class="$style.sectionTitle">Достигнуто 🏆</h2>
+          <h2 :class="$style.sectionTitle">{{ $t('profile.achieved') }}</h2>
           <div :class="$style.taskList">
             <div
               v-for="task in completedTasks"
@@ -221,7 +259,7 @@
       </template>
 
       <!-- FAB (only for own profile) -->
-      <button v-if="isOwnProfile" :class="$style.fab" @click="goToAddTask" aria-label="Добавить задачу">
+      <button v-if="isOwnProfile" :class="$style.fab" @click="goToAddTask" :aria-label="$t('profile.addTask')">
         +
       </button>
     </template>
@@ -231,8 +269,10 @@
 <script setup lang="ts">
   import { ref, computed, onMounted, watch } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
+  import { useI18n } from 'vue-i18n'
   import { useAuthStore } from '@/stores/auth-store'
   import { useTaskStore } from '@/stores/task-store'
+  import { useLocale } from '@/composables/use-locale'
   import TaskCard from '@/components/TaskCard.vue'
   import type { Task, DailyTask, ProgressTask, OneTimeTask } from '@/models/task'
   import { isTaskCompleted } from '@/models/task'
@@ -249,10 +289,12 @@
     isOwner: boolean
   }
 
+  const { t } = useI18n()
   const route = useRoute()
   const router = useRouter()
   const authStore = useAuthStore()
   const taskStore = useTaskStore()
+  const { locale, setLocale, syncLocaleFromUser } = useLocale()
 
   const profile = ref<Profile | null>(null)
   const isLoading = ref(true)
@@ -261,6 +303,19 @@
   const copied = ref(false)
 
   const isOwnProfile = computed(() => profile.value?.isOwner ?? false)
+
+  const errorText = computed(() => {
+    switch (error.value) {
+      case 'not-found':
+        return t('profile.userNotFound')
+      case 'load-error':
+        return t('profile.loadError')
+      case 'network':
+        return t('profile.networkError')
+      default:
+        return error.value
+    }
+  })
 
   // For own profile, use taskStore; for public profile, use profile.tasks
   const activeTasks = computed(() => {
@@ -279,6 +334,7 @@
 
   onMounted(async () => {
     await authStore.fetchMe()
+    syncLocaleFromUser()
     await loadProfile()
   })
 
@@ -296,7 +352,7 @@
       const response = await fetch(`/api/users/${userId}/profile`)
 
       if (response.status === 404) {
-        error.value = 'Пользователь не найден'
+        error.value = 'not-found'
         return
       }
 
@@ -306,7 +362,7 @@
       }
 
       if (!response.ok) {
-        error.value = 'Ошибка загрузки профиля'
+        error.value = 'load-error'
         return
       }
 
@@ -317,7 +373,7 @@
         await taskStore.fetchTasks()
       }
     } catch (e) {
-      error.value = 'Ошибка сети'
+      error.value = 'network'
     } finally {
       isLoading.value = false
     }
@@ -332,7 +388,7 @@
   }
 
   async function handleDelete(taskId: string) {
-    if (confirm('Удалить задачу?')) {
+    if (confirm(t('profile.deleteTask'))) {
       await taskStore.removeTask(taskId)
     }
   }
@@ -387,14 +443,14 @@
     switch (task.type) {
       case 'daily': {
         const daily = task as DailyTask
-        return `${daily.completedDates.length} / ${daily.targetDays} дней`
+        return t('taskCard.daysProgress', { completed: daily.completedDates.length, target: daily.targetDays })
       }
       case 'progress': {
         const progress = task as ProgressTask
         return `${progress.currentValue.toLocaleString()} / ${progress.targetValue.toLocaleString()} ${progress.unit}`
       }
       case 'one-time':
-        return (task as OneTimeTask).completedAt ? 'Выполнено ✓' : 'В процессе'
+        return (task as OneTimeTask).completedAt ? t('taskCard.completed') : t('profile.inProgress')
     }
   }
 </script>
@@ -494,6 +550,97 @@
     color: white;
   }
 
+  .visitorControls {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 50;
+  }
+
+  .visitorLanguageSelector {
+    display: flex;
+    gap: 4px;
+    background: var(--color-surface);
+    border-radius: 8px;
+    padding: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .visitorLangBtn {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .visitorLangBtn:hover {
+    background: var(--color-background);
+    color: var(--color-text);
+  }
+
+  .visitorLangActive {
+    background: var(--color-primary-bg);
+    color: var(--color-primary);
+  }
+
+  .compactLoginBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 8px;
+    background: #9146ff;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .compactLoginBtn:hover {
+    box-shadow: 0 4px 12px rgba(145, 70, 255, 0.4);
+    transform: translateY(-1px);
+  }
+
+  .compactLoginBtn:active {
+    transform: scale(0.95);
+  }
+
+  .twitchIconSmall {
+    width: 18px;
+    height: 18px;
+  }
+
+  .myGoalsLink {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    font-size: 1.25rem;
+    font-weight: 600;
+    border-radius: 8px;
+    background: var(--color-surface);
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: background 0.2s, transform 0.1s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .myGoalsLink:hover {
+    background: var(--color-primary-bg);
+    transform: translateY(-1px);
+  }
+
   .header {
     text-align: center;
     margin-bottom: 24px;
@@ -569,7 +716,7 @@
     color: var(--color-text-secondary);
   }
 
-  .shareModal {
+  .settingsModal {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.5);
@@ -580,75 +727,140 @@
     padding: 16px;
   }
 
-  .shareModalContent {
+  .settingsContent {
+    position: relative;
     background: var(--color-surface);
     border-radius: 16px;
-    padding: 24px;
+    padding: 20px;
     width: 100%;
     max-width: 360px;
   }
 
-  .shareTitle {
+  .modalCloseBtn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 6px;
+    background: var(--color-background);
+    color: var(--color-text-secondary);
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    padding: 0;
+    line-height: 1;
+  }
+
+  .modalCloseBtn:hover {
+    background: var(--color-border);
+    color: var(--color-text);
+  }
+
+  .settingsTitle {
     margin: 0 0 16px;
     font-size: 1.125rem;
+    font-weight: 600;
     text-align: center;
   }
 
+  .settingsSection {
+    margin-bottom: 12px;
+    padding: 12px;
+    background: var(--color-background);
+    border-radius: 8px;
+  }
+
+  .settingsSection:last-of-type {
+    margin-bottom: 0;
+  }
+
+  .sectionTitle {
+    margin: 0 0 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--color-text-secondary);
+  }
+
   .shareToggle {
-    margin-bottom: 16px;
+    margin-bottom: 8px;
   }
 
   .toggleLabel {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     cursor: pointer;
   }
 
   .toggleLabel input {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     cursor: pointer;
+    flex-shrink: 0;
   }
 
   .toggleText {
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
   }
 
   .shareLink {
     display: flex;
     gap: 8px;
-    margin-bottom: 16px;
   }
 
   .shareLinkInput {
     flex: 1;
-    padding: 10px;
-    font-size: 0.75rem;
+    padding: 8px;
+    font-size: 0.7rem;
     border: 1px solid var(--color-border);
-    border-radius: 8px;
-    background: var(--color-background);
+    border-radius: 6px;
+    background: var(--color-surface);
     color: var(--color-text);
   }
 
   .copyBtn {
-    padding: 10px;
+    padding: 8px 10px;
     border: none;
-    border-radius: 8px;
+    border-radius: 6px;
     background: var(--color-primary);
     cursor: pointer;
+    font-size: 0.875rem;
   }
 
-  .closeBtn {
-    width: 100%;
-    padding: 12px;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: none;
-    border-radius: 8px;
-    background: var(--color-border);
-    color: var(--color-text);
+  .languageButtons {
+    display: flex;
+    gap: 8px;
+  }
+
+  .langBtn {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    border: 2px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
     cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .langBtn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-text);
+  }
+
+  .langActive {
+    border-color: var(--color-primary);
+    background: var(--color-primary-bg);
+    color: var(--color-primary);
   }
 
   .actions {

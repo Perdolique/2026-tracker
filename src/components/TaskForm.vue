@@ -1,30 +1,30 @@
 <template>
   <form :class="$style.form" @submit.prevent="handleSubmit">
     <div :class="$style.field">
-      <label :class="$style.label" for="title">Название</label>
+      <label :class="$style.label" for="title">{{ $t('taskForm.titleLabel') }}</label>
       <input
         id="title"
         v-model="title"
         :class="$style.input"
         type="text"
-        placeholder="Что хочешь отслеживать?"
+        :placeholder="$t('taskForm.titlePlaceholder')"
         required
       />
     </div>
 
     <div :class="$style.field">
-      <label :class="$style.label" for="description">Описание (опционально)</label>
+      <label :class="$style.label" for="description">{{ $t('taskForm.descriptionLabel') }}</label>
       <textarea
         id="description"
         v-model="description"
         :class="$style.textarea"
-        placeholder="Подробности..."
+        :placeholder="$t('taskForm.descriptionPlaceholder')"
         rows="2"
       />
     </div>
 
     <div :class="$style.field">
-      <label :class="$style.label">Тип задачи</label>
+      <label :class="$style.label">{{ $t('taskForm.typeLabel') }}</label>
       <div :class="$style.typeSelector">
         <label :class="[$style.typeOption, taskType === 'daily' && $style.typeOptionActive]">
           <input
@@ -34,7 +34,7 @@
             :class="$style.radioHidden"
           />
           <span :class="$style.typeIcon">📅</span>
-          <span>Дни</span>
+          <span>{{ $t('taskForm.typeDaily') }}</span>
         </label>
         <label :class="[$style.typeOption, taskType === 'progress' && $style.typeOptionActive]">
           <input
@@ -44,7 +44,7 @@
             :class="$style.radioHidden"
           />
           <span :class="$style.typeIcon">📊</span>
-          <span>Прогресс</span>
+          <span>{{ $t('taskForm.typeProgress') }}</span>
         </label>
         <label :class="[$style.typeOption, taskType === 'one-time' && $style.typeOptionActive]">
           <input
@@ -54,14 +54,14 @@
             :class="$style.radioHidden"
           />
           <span :class="$style.typeIcon">✅</span>
-          <span>Разовая</span>
+          <span>{{ $t('taskForm.typeOneTime') }}</span>
         </label>
       </div>
     </div>
 
     <!-- Daily task options -->
     <div v-if="taskType === 'daily'" :class="$style.field">
-      <label :class="$style.label" for="targetDays">Целевое количество дней</label>
+      <label :class="$style.label" for="targetDays">{{ $t('taskForm.targetDays') }}</label>
       <input
         id="targetDays"
         v-model.number="targetDays"
@@ -75,7 +75,7 @@
     <!-- Progress task options -->
     <template v-if="taskType === 'progress'">
       <div :class="$style.field">
-        <label :class="$style.label" for="targetValue">Целевое значение</label>
+        <label :class="$style.label" for="targetValue">{{ $t('taskForm.targetValue') }}</label>
         <input
           id="targetValue"
           v-model.number="targetValue"
@@ -85,13 +85,13 @@
         />
       </div>
       <div :class="$style.field">
-        <label :class="$style.label" for="unit">Единица измерения</label>
+        <label :class="$style.label" for="unit">{{ $t('taskForm.unit') }}</label>
         <input
           id="unit"
           v-model="unit"
           :class="$style.input"
           type="text"
-          placeholder="шагов, страниц, км..."
+          :placeholder="$t('taskForm.unitPlaceholder')"
           required
         />
       </div>
@@ -103,14 +103,14 @@
         :class="$style.cancelBtn"
         @click="handleCancel"
       >
-        Отмена
+        {{ $t('common.cancel') }}
       </button>
       <button
         type="submit"
         :class="$style.submitBtn"
         :disabled="!isValid"
       >
-        Создать
+        {{ $t('common.create') }}
       </button>
     </div>
   </form>

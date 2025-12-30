@@ -2,33 +2,33 @@
   <div :class="$style.container">
     <header :class="$style.header">
       <button :class="$style.backBtn" @click="goBack">
-        ← Назад
+        {{ $t('common.back') }}
       </button>
 
-      <h1 :class="$style.title">Check-in 🎮</h1>
+      <h1 :class="$style.title">{{ $t('checkIn.pageTitle') }}</h1>
     </header>
 
     <!-- Loading (только при начальной загрузке) -->
     <div v-if="store.isLoading && !wizardActive" :class="$style.loading">
-      Загрузка...
+      {{ $t('common.loading') }}
     </div>
 
     <!-- No tasks -->
     <div v-else-if="!hasTasksForCheckIn && !isComplete" :class="$style.empty">
       <p :class="$style.emptyEmoji">🎉</p>
-      <p :class="$style.emptyText">Нет задач для check-in!</p>
+      <p :class="$style.emptyText">{{ $t('checkIn.noTasks') }}</p>
       <button :class="$style.homeBtn" @click="goBack">
-        На главную
+        {{ $t('common.toHome') }}
       </button>
     </div>
 
     <!-- Completed state -->
     <div v-else-if="isComplete" :class="$style.complete">
       <p :class="$style.completeEmoji">🚀</p>
-      <p :class="$style.completeText">Готово!</p>
-      <p :class="$style.completeHint">Все задачи проверены</p>
+      <p :class="$style.completeText">{{ $t('checkIn.allDone') }}</p>
+      <p :class="$style.completeHint">{{ $t('checkIn.allTasksChecked') }}</p>
       <button :class="$style.homeBtn" @click="goBack">
-        На главную
+        {{ $t('common.toHome') }}
       </button>
     </div>
 

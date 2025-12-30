@@ -6,16 +6,16 @@
         <button
           :class="$style.menuBtn"
           :popovertarget="menuId"
-          aria-label="Меню задачи"
+          :aria-label="$t('taskCard.menuLabel')"
         >
           ⋮
         </button>
         <div :id="menuId" popover="auto" :class="$style.dropdown">
           <button :class="$style.dropdownItem" @click="openEditModal">
-            ✏️ Редактировать
+            ✏️ {{ $t('common.edit') }}
           </button>
           <button :class="[$style.dropdownItem, $style.dangerItem]" @click="handleDelete">
-            🗑️ Удалить
+            🗑️ {{ $t('common.delete') }}
           </button>
         </div>
       </div>
@@ -40,12 +40,12 @@
     <!-- Edit Modal -->
     <div v-if="showEditModal" :class="$style.modal" @click.self="closeEditModal">
       <div :class="$style.modalContent">
-        <h3 :class="$style.modalTitle">Редактирование 📝</h3>
+        <h3 :class="$style.modalTitle">{{ $t('taskCard.editTitle') }}</h3>
 
         <form :class="$style.modalForm" @submit.prevent="saveChanges">
           <div :class="$style.modalScrollArea">
             <div :class="$style.formGroup">
-              <label :class="$style.label">Название</label>
+              <label :class="$style.label">{{ $t('taskForm.titleLabel') }}</label>
               <input
                 v-model="editForm.title"
                 :class="$style.input"
@@ -55,7 +55,7 @@
             </div>
 
             <div :class="$style.formGroup">
-              <label :class="$style.label">Описание</label>
+              <label :class="$style.label">{{ $t('taskForm.descriptionLabel') }}</label>
               <textarea
                 v-model="editForm.description"
                 :class="$style.textarea"
@@ -66,7 +66,7 @@
             <!-- Daily task fields -->
             <template v-if="isDailyTask(task)">
               <div :class="$style.formGroup">
-                <label :class="$style.label">Цель (дней)</label>
+                <label :class="$style.label">{{ $t('taskCard.goalDays') }}</label>
                 <input
                   v-model.number="editForm.targetDays"
                   :class="$style.input"
@@ -77,7 +77,7 @@
               </div>
 
               <div :class="$style.formGroup">
-                <label :class="$style.label">Выполненные дни ({{ editForm.completedDates.length }})</label>
+                <label :class="$style.label">{{ $t('taskCard.completedDays') }} ({{ editForm.completedDates.length }})</label>
 
                 <div :class="$style.addDateRow">
                   <input
@@ -107,20 +107,20 @@
                       type="button"
                       :class="$style.dateRemoveBtn"
                       @click="removeDate(date)"
-                      aria-label="Удалить дату"
+                      :aria-label="$t('taskCard.removeDate')"
                     >
                       ×
                     </button>
                   </div>
                 </div>
-                <div v-else :class="$style.emptyDates">Нет выполненных дней</div>
+                <div v-else :class="$style.emptyDates">{{ $t('taskCard.noCompletedDays') }}</div>
               </div>
             </template>
 
             <!-- Progress task fields -->
             <template v-if="isProgressTask(task)">
               <div :class="$style.formGroup">
-                <label :class="$style.label">Текущий прогресс</label>
+                <label :class="$style.label">{{ $t('taskCard.currentProgress') }}</label>
                 <input
                   v-model.number="editForm.currentValue"
                   :class="$style.input"
@@ -130,7 +130,7 @@
                 />
               </div>
               <div :class="$style.formGroup">
-                <label :class="$style.label">Цель</label>
+                <label :class="$style.label">{{ $t('taskCard.goal') }}</label>
                 <input
                   v-model.number="editForm.targetValue"
                   :class="$style.input"
@@ -140,7 +140,7 @@
                 />
               </div>
               <div :class="$style.formGroup">
-                <label :class="$style.label">Единица измерения</label>
+                <label :class="$style.label">{{ $t('taskForm.unit') }}</label>
                 <input
                   v-model="editForm.unit"
                   :class="$style.input"
@@ -153,10 +153,10 @@
 
           <div :class="$style.modalActions">
             <button type="button" :class="$style.cancelBtn" @click="closeEditModal">
-              Отмена
+              {{ $t('common.cancel') }}
             </button>
             <button type="submit" :class="$style.saveBtn" :disabled="isSaving">
-              {{ isSaving ? 'Сохранение...' : 'Сохранить' }}
+              {{ isSaving ? $t('common.saving') : $t('common.save') }}
             </button>
           </div>
         </form>
@@ -167,9 +167,12 @@
 
 <script setup lang="ts">
   import { computed, ref, reactive } from 'vue'
+  import { useI18n } from 'vue-i18n'
   import type { Task, DailyTask, ProgressTask } from '@/models/task'
   import { getTaskProgress, isDailyTask, isProgressTask, isOneTimeTask } from '@/models/task'
   import { useTaskStore } from '@/stores/task-store'
+
+  const { t } = useI18n()
 
   const props = defineProps<{
     task: Task
@@ -207,13 +210,13 @@
   const progressText = computed(() => {
     const task = props.task
     if (isDailyTask(task)) {
-      return `${task.completedDates.length} / ${task.targetDays} дней`
+      return t('taskCard.daysProgress', { completed: task.completedDates.length, target: task.targetDays })
     }
     if (isProgressTask(task)) {
       return `${task.currentValue.toLocaleString()} / ${task.targetValue.toLocaleString()} ${task.unit}`
     }
     if (isOneTimeTask(task)) {
-      return task.completedAt ? 'Выполнено ✓' : 'Не выполнено'
+      return task.completedAt ? t('taskCard.completed') : t('taskCard.notCompleted')
     }
     return ''
   })
@@ -221,11 +224,11 @@
   const typeLabel = computed(() => {
     switch (props.task.type) {
       case 'daily':
-        return '📅 Ежедневная'
+        return t('taskCard.dailyLabel')
       case 'progress':
-        return '📊 Прогресс'
+        return t('taskCard.progressLabel')
       case 'one-time':
-        return '✅ Разовая'
+        return t('taskCard.oneTimeLabel')
     }
   })
 

@@ -19,6 +19,7 @@ export interface User {
   displayName: string
   avatarUrl: string | null
   isPublic: boolean
+  language: 'en' | 'ru'
   createdAt: string
 }
 
@@ -45,6 +46,7 @@ export async function createUser(
     displayName: data.displayName,
     avatarUrl: data.avatarUrl ?? null,
     isPublic: false,
+    language: 'en',
     createdAt,
   })
 
@@ -54,6 +56,7 @@ export async function createUser(
     displayName: data.displayName,
     avatarUrl: data.avatarUrl ?? null,
     isPublic: false,
+    language: 'en',
     createdAt,
   }
 }
@@ -61,7 +64,7 @@ export async function createUser(
 export async function updateUser(
   db: Database,
   id: string,
-  data: { displayName?: string; avatarUrl?: string; isPublic?: boolean }
+  data: { displayName?: string; avatarUrl?: string; isPublic?: boolean; language?: 'en' | 'ru' }
 ): Promise<User | null> {
   await db.update(users).set(data).where(eq(users.id, id))
   return getUserById(db, id)

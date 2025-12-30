@@ -2,9 +2,9 @@
   <div :class="$style.container">
     <header :class="$style.header">
       <button :class="$style.backBtn" @click="handleCancel">
-        ← Назад
+        {{ $t('common.back') }}
       </button>
-      <h1 :class="$style.title">Новая цель ✨</h1>
+      <h1 :class="$style.title">{{ $t('addTask.pageTitle') }}</h1>
     </header>
 
     <TaskForm @submit="handleSubmit" @cancel="handleCancel" />

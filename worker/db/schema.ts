@@ -7,12 +7,17 @@ export type TaskType = (typeof taskTypes)[number]
 /**
  * Users table for Twitch OAuth
  */
+// Supported languages
+export const languages = ['en', 'ru'] as const
+export type Language = (typeof languages)[number]
+
 export const users = sqliteTable('users', {
   id: text('id').primaryKey(), // UUID
   twitchId: text('twitch_id').unique().notNull(),
   displayName: text('display_name').notNull(),
   avatarUrl: text('avatar_url'),
   isPublic: integer('is_public', { mode: 'boolean' }).notNull().default(false),
+  language: text('language', { enum: languages }).notNull().default('en'),
   createdAt: text('created_at').notNull(), // ISO timestamp
 })
 

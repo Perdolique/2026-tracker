@@ -14,6 +14,7 @@ import {
   stopMockServer,
   resetTaskIdCounter,
 } from '@/test-utils/api-mocks'
+import { createTestI18n } from '@/test-utils/i18n'
 
 function createTestRouter() {
   return createRouter({
@@ -53,10 +54,10 @@ describe('ControlView - Browser Tests', () => {
     setActivePinia(createPinia())
   })
 
-  it('should complete one-time task when clicking "Да"', async () => {
+  it('should complete one-time task when clicking "Yes"', async () => {
     const task: OneTimeTask = {
       id: 'test-task-1',
-      title: 'Сделать тестовую таску',
+      title: 'Test task',
       type: 'one-time',
       createdAt: '2026-01-01',
     }
@@ -64,67 +65,68 @@ describe('ControlView - Browser Tests', () => {
 
     const router = createTestRouter()
     const pinia = createPinia()
+    const i18n = createTestI18n()
 
     await router.push('/control')
     await router.isReady()
 
     const screen = render(ControlView, {
       global: {
-        plugins: [router, pinia],
+        plugins: [router, pinia, i18n],
       },
     })
 
-    // Ждём загрузки задач и отображения wizard
+    // Wait for tasks to load and wizard to display
     await waitFor(() => {
       try {
-        screen.getByText('Сделать тестовую таску')
+        screen.getByText('Test task')
         return true
       } catch {
         return false
       }
     })
 
-    // Проверяем наличие кнопок
-    const yesButton = screen.getByText(/✓\s*Да/i)
-    const noButton = screen.getByText(/✕\s*Нет/i)
+    // Check buttons are present
+    const yesButton = screen.getByText(/✓\s*Yes/i)
+    const noButton = screen.getByText(/✕\s*No/i)
     expect(yesButton).toBeDefined()
     expect(noButton).toBeDefined()
 
-    // Кликаем "Да"
+    // Click "Yes"
     await yesButton.click()
 
-    // Ждём обновления storage (API вызов через route mock)
+    // Wait for storage update (API call via route mock)
     await waitFor(() => {
       const tasks = getMockTasksStorage() as OneTimeTask[]
       const updatedTask = tasks.find((t) => t.id === 'test-task-1')
       return updatedTask?.completedAt === TEST_DATE
     })
 
-    // Проверяем финальное состояние
+    // Check final state
     const tasks = getMockTasksStorage() as OneTimeTask[]
     const completedTask = tasks.find((t) => t.id === 'test-task-1')
 
     expect(completedTask).toBeDefined()
     expect(completedTask?.completedAt).toBe(TEST_DATE)
 
-    // Проверяем, что показан экран "Готово!"
+    // Check that "All done!" screen is shown
     await waitFor(() => {
       try {
-        screen.getByText(/Готово!/i)
+        screen.getByText(/All done!/i)
         return true
       } catch {
         return false
       }
     })
 
-    const doneScreen = screen.getByText(/Готово!/i)
+    const doneScreen = screen.getByText(/All done!/i)
     expect(doneScreen).toBeDefined()
   })
 
-  it('should not change one-time task when clicking "Нет"', async () => {
+  it('should not change one-time task when clicking "No"', async () => {
     const task: OneTimeTask = {
       id: 'test-task-2',
-      title: 'Проверка кнопки Нет',
+      title: 'Test No button',
       type: 'one-time',
       createdAt: '2026-01-01',
     }
@@ -132,44 +134,45 @@ describe('ControlView - Browser Tests', () => {
 
     const router = createTestRouter()
     const pinia = createPinia()
+    const i18n = createTestI18n()
 
     await router.push('/control')
     await router.isReady()
 
     const screen = render(ControlView, {
       global: {
-        plugins: [router, pinia],
+        plugins: [router, pinia, i18n],
       },
     })
 
-    // Ждём загрузки задач и отображения wizard
+    // Wait for tasks to load and wizard to display
     await waitFor(() => {
       try {
-        screen.getByText('Проверка кнопки Нет')
+        screen.getByText('Test No button')
         return true
       } catch {
         return false
       }
     })
 
-    // Кликаем "Нет"
-    const noButton = screen.getByText(/✕\s*Нет/i)
+    // Click "No"
+    const noButton = screen.getByText(/✕\s*No/i)
     await noButton.click()
 
-    // Даём время на возможное обновление
+    // Give time for potential update
     await new Promise((resolve) => setTimeout(resolve, 100))
 
-    // Проверяем, что задача не изменилась
+    // Check task wasn't changed
     const tasks = getMockTasksStorage() as OneTimeTask[]
     const unchangedTask = tasks.find((t) => t.id === 'test-task-2')
 
     expect(unchangedTask).toBeDefined()
     expect(unchangedTask?.completedAt).toBeUndefined()
 
-    // Проверяем, что показан экран "Готово!"
+    // Check that "All done!" screen is shown
     await waitFor(() => {
       try {
-        screen.getByText(/Готово!/i)
+        screen.getByText(/All done!/i)
         return true
       } catch {
         return false
@@ -180,13 +183,13 @@ describe('ControlView - Browser Tests', () => {
   it('should handle multiple one-time tasks in sequence', async () => {
     const task1: OneTimeTask = {
       id: 'test-task-3',
-      title: 'Первая таска',
+      title: 'First task',
       type: 'one-time',
       createdAt: '2026-01-01',
     }
     const task2: OneTimeTask = {
       id: 'test-task-4',
-      title: 'Вторая таска',
+      title: 'Second task',
       type: 'one-time',
       createdAt: '2026-01-02',
     }
@@ -194,72 +197,73 @@ describe('ControlView - Browser Tests', () => {
 
     const router = createTestRouter()
     const pinia = createPinia()
+    const i18n = createTestI18n()
 
     await router.push('/control')
     await router.isReady()
 
     const screen = render(ControlView, {
       global: {
-        plugins: [router, pinia],
+        plugins: [router, pinia, i18n],
       },
     })
 
-    // Ждём загрузки первой задачи
+    // Wait for first task to load
     await waitFor(() => {
       try {
-        screen.getByText('Первая таска')
+        screen.getByText('First task')
         return true
       } catch {
         return false
       }
     })
 
-    // Кликаем "Да" на первой задаче
-    const yesButton1 = screen.getByText(/✓\s*Да/i)
+    // Click "Yes" on first task
+    const yesButton1 = screen.getByText(/✓\s*Yes/i)
     await yesButton1.click()
 
-    // Ждём появления второй задачи
+    // Wait for second task to appear
     await waitFor(() => {
       try {
-        screen.getByText('Вторая таска')
+        screen.getByText('Second task')
         return true
       } catch {
         return false
       }
     })
 
-    // Кликаем "Нет" на второй задаче
-    const noButton2 = screen.getByText(/✕\s*Нет/i)
+    // Click "No" on second task
+    const noButton2 = screen.getByText(/✕\s*No/i)
     await noButton2.click()
 
-    // Ждём завершения wizard
+    // Wait for wizard completion
     await waitFor(() => {
       try {
-        screen.getByText(/Готово!/i)
+        screen.getByText(/All done!/i)
         return true
       } catch {
         return false
       }
     })
 
-    // Проверяем финальное состояние задач
+    // Check final task state
     const tasks = getMockTasksStorage() as OneTimeTask[]
 
     const finalTask1 = tasks.find((t) => t.id === 'test-task-3')
     const finalTask2 = tasks.find((t) => t.id === 'test-task-4')
 
-    // Первая таска должна быть выполнена
+    // First task should be completed
     expect(finalTask1?.completedAt).toBe(TEST_DATE)
 
-    // Вторая таска должна остаться без изменений
+    // Second task should remain unchanged
     expect(finalTask2?.completedAt).toBeUndefined()
   })
 
   describe('Daily Tasks', () => {
-    it('should add date to completedDates when clicking "Да"', async () => {
+    it('should add date to completedDates when clicking "Yes"', async () => {
       const task: DailyTask = {
         id: 'daily-1',
-        title: 'Бегать каждый день',
+        title: 'Run every day',
         type: 'daily',
         targetDays: 100,
         completedDates: ['2026-01-01', '2026-01-02'],
@@ -269,29 +273,30 @@ describe('ControlView - Browser Tests', () => {
 
       const router = createTestRouter()
       const pinia = createPinia()
+      const i18n = createTestI18n()
 
       await router.push('/control')
       await router.isReady()
 
       const screen = render(ControlView, {
         global: {
-          plugins: [router, pinia],
+          plugins: [router, pinia, i18n],
         },
       })
 
       await waitFor(() => {
         try {
-          screen.getByText('Бегать каждый день')
+          screen.getByText('Run every day')
           return true
         } catch {
           return false
         }
       })
 
-      const yesButton = screen.getByText(/✓\s*Да/i)
+      const yesButton = screen.getByText(/✓\s*Yes/i)
       await yesButton.click()
 
-      // Ждём обновления storage
+      // Wait for storage update
       await waitFor(() => {
         const tasks = getMockTasksStorage() as DailyTask[]
         const updatedTask = tasks.find((t) => t.id === 'daily-1')
@@ -305,10 +310,10 @@ describe('ControlView - Browser Tests', () => {
       expect(completedTask?.completedDates.length).toBe(3)
     })
 
-    it('should not change task when clicking "Нет"', async () => {
+    it('should not change task when clicking "No"', async () => {
       const task: DailyTask = {
         id: 'daily-2',
-        title: 'Читать книгу',
+        title: 'Read a book',
         type: 'daily',
         targetDays: 50,
         completedDates: ['2026-01-01'],
@@ -318,26 +323,27 @@ describe('ControlView - Browser Tests', () => {
 
       const router = createTestRouter()
       const pinia = createPinia()
+      const i18n = createTestI18n()
 
       await router.push('/control')
       await router.isReady()
 
       const screen = render(ControlView, {
         global: {
-          plugins: [router, pinia],
+          plugins: [router, pinia, i18n],
         },
       })
 
       await waitFor(() => {
         try {
-          screen.getByText('Читать книгу')
+          screen.getByText('Read a book')
           return true
         } catch {
           return false
         }
       })
 
-      const noButton = screen.getByText(/✕\s*Нет/i)
+      const noButton = screen.getByText(/✕\s*No/i)
       await noButton.click()
 
       await new Promise((resolve) => setTimeout(resolve, 100))
@@ -351,36 +357,37 @@ describe('ControlView - Browser Tests', () => {
     it('should prevent duplicate date when checking in same day twice', async () => {
       const task: DailyTask = {
         id: 'daily-4',
-        title: 'Йога',
+        title: 'Yoga',
         type: 'daily',
         targetDays: 100,
-        completedDates: [TEST_DATE], // Уже отмечено сегодня
+        completedDates: [TEST_DATE], // Already marked today
         createdAt: '2026-01-01',
       }
       setMockTasks([task])
 
       const router = createTestRouter()
       const pinia = createPinia()
+      const i18n = createTestI18n()
 
       await router.push('/control')
       await router.isReady()
 
       const screen = render(ControlView, {
         global: {
-          plugins: [router, pinia],
+          plugins: [router, pinia, i18n],
         },
       })
 
       await waitFor(() => {
         try {
-          screen.getByText('Йога')
+          screen.getByText('Yoga')
           return true
         } catch {
           return false
         }
       })
 
-      const yesButton = screen.getByText(/✓\s*Да/i)
+      const yesButton = screen.getByText(/✓\s*Yes/i)
       await yesButton.click()
 
       await new Promise((resolve) => setTimeout(resolve, 150))
@@ -389,115 +396,117 @@ describe('ControlView - Browser Tests', () => {
       const completedTask = tasks.find((t) => t.id === 'daily-4')
 
       expect(completedTask?.completedDates).toEqual([TEST_DATE])
-      expect(completedTask?.completedDates.length).toBe(1) // Не добавился дубль
+      expect(completedTask?.completedDates.length).toBe(1) // No duplicate added
     })
   })
 
   describe('Progress Tasks', () => {
-    it('should show value input after clicking "Да"', async () => {
+    it('should show value input after clicking "Yes"', async () => {
       const task: ProgressTask = {
         id: 'progress-1',
-        title: 'Пройти 1000000 шагов',
+        title: 'Walk 1000000 steps',
         type: 'progress',
         targetValue: 1000000,
         currentValue: 500000,
-        unit: 'шагов',
+        unit: 'steps',
         createdAt: '2026-01-01',
       }
       setMockTasks([task])
 
       const router = createTestRouter()
       const pinia = createPinia()
+      const i18n = createTestI18n()
 
       await router.push('/control')
       await router.isReady()
 
       const screen = render(ControlView, {
         global: {
-          plugins: [router, pinia],
+          plugins: [router, pinia, i18n],
         },
       })
 
       await waitFor(() => {
         try {
-          screen.getByText('Пройти 1000000 шагов')
+          screen.getByText('Walk 1000000 steps')
           return true
         } catch {
           return false
         }
       })
 
-      const yesButton = screen.getByText(/✓\s*Да/i)
+      const yesButton = screen.getByText(/✓\s*Yes/i)
       await yesButton.click()
 
-      // Должен появиться input для ввода значения
+      // Should show value input
       await waitFor(() => {
         try {
-          screen.getByText(/Сколько шагов сегодня\?/i)
+          screen.getByText(/How many steps today\?/i)
           return true
         } catch {
           return false
         }
       })
 
-      const inputLabel = screen.getByText(/Сколько шагов сегодня\?/i)
+      const inputLabel = screen.getByText(/How many steps today\?/i)
       expect(inputLabel).toBeDefined()
     })
 
     it('should accumulate value when submitting progress', async () => {
       const task: ProgressTask = {
         id: 'progress-2',
-        title: 'Накопить деньги',
+        title: 'Save money',
         type: 'progress',
         targetValue: 100000,
         currentValue: 50000,
-        unit: '₽',
+        unit: '$',
         createdAt: '2026-01-01',
       }
       setMockTasks([task])
 
       const router = createTestRouter()
       const pinia = createPinia()
+      const i18n = createTestI18n()
 
       await router.push('/control')
       await router.isReady()
 
       const screen = render(ControlView, {
         global: {
-          plugins: [router, pinia],
+          plugins: [router, pinia, i18n],
         },
       })
 
       await waitFor(() => {
         try {
-          screen.getByText('Накопить деньги')
+          screen.getByText('Save money')
           return true
         } catch {
           return false
         }
       })
 
-      const yesButton = screen.getByText(/✓\s*Да/i)
+      const yesButton = screen.getByText(/✓\s*Yes/i)
       await yesButton.click()
 
       await waitFor(() => {
         try {
-          screen.getByText(/Сколько ₽ сегодня\?/i)
+          screen.getByText(/How many \$ today\?/i)
           return true
         } catch {
           return false
         }
       })
 
-      // Находим input и вводим значение
-      const input = screen.getByPlaceholder(/Введи количество ₽/i)
+      // Find input and fill value
+      const input = screen.getByPlaceholder(/Enter amount of \$/i)
       await input.fill('15000')
 
-      // Находим кнопку подтверждения
-      const confirmButton = screen.getByText(/Записать/i)
+      // Find confirm button
+      const confirmButton = screen.getByText(/Record/i)
       await confirmButton.click()
 
-      // Ждём обновления storage
+      // Wait for storage update
       await waitFor(() => {
         const tasks = getMockTasksStorage() as ProgressTask[]
         const updatedTask = tasks.find((t) => t.id === 'progress-2')
@@ -510,52 +519,53 @@ describe('ControlView - Browser Tests', () => {
       expect(progressTask?.currentValue).toBe(65000)
     })
 
-    it('should not change task when clicking "Пропустить"', async () => {
+    it('should not change task when clicking "Skip"', async () => {
       const task: ProgressTask = {
         id: 'progress-3',
-        title: 'Бегать километры',
+        title: 'Run kilometers',
         type: 'progress',
         targetValue: 500,
         currentValue: 200,
-        unit: 'км',
+        unit: 'km',
         createdAt: '2026-01-01',
       }
       setMockTasks([task])
 
       const router = createTestRouter()
       const pinia = createPinia()
+      const i18n = createTestI18n()
 
       await router.push('/control')
       await router.isReady()
 
       const screen = render(ControlView, {
         global: {
-          plugins: [router, pinia],
+          plugins: [router, pinia, i18n],
         },
       })
 
       await waitFor(() => {
         try {
-          screen.getByText('Бегать километры')
+          screen.getByText('Run kilometers')
           return true
         } catch {
           return false
         }
       })
 
-      const yesButton = screen.getByText(/✓\s*Да/i)
+      const yesButton = screen.getByText(/✓\s*Yes/i)
       await yesButton.click()
 
       await waitFor(() => {
         try {
-          screen.getByText(/Сколько км сегодня\?/i)
+          screen.getByText(/How many km today\?/i)
           return true
         } catch {
           return false
         }
       })
 
-      const skipButton = screen.getByText(/Пропустить/i)
+      const skipButton = screen.getByText(/Skip/i)
       await skipButton.click()
 
       await new Promise((resolve) => setTimeout(resolve, 100))
@@ -571,7 +581,7 @@ describe('ControlView - Browser Tests', () => {
     it('should handle daily + progress + one-time in one session', async () => {
       const dailyTask: DailyTask = {
         id: 'mixed-daily',
-        title: 'Daily задача',
+        title: 'Daily task',
         type: 'daily',
         targetDays: 100,
         completedDates: [],
@@ -580,17 +590,17 @@ describe('ControlView - Browser Tests', () => {
 
       const progressTask: ProgressTask = {
         id: 'mixed-progress',
-        title: 'Progress задача',
+        title: 'Progress task',
         type: 'progress',
         targetValue: 1000,
         currentValue: 100,
-        unit: 'очков',
+        unit: 'points',
         createdAt: '2026-01-01',
       }
 
       const oneTimeTask: OneTimeTask = {
         id: 'mixed-onetime',
-        title: 'One-time задача',
+        title: 'One-time task',
         type: 'one-time',
         createdAt: '2026-01-01',
       }
@@ -599,84 +609,85 @@ describe('ControlView - Browser Tests', () => {
 
       const router = createTestRouter()
       const pinia = createPinia()
+      const i18n = createTestI18n()
 
       await router.push('/control')
       await router.isReady()
 
       const screen = render(ControlView, {
         global: {
-          plugins: [router, pinia],
+          plugins: [router, pinia, i18n],
         },
       })
 
-      // Daily задача - нажать "Да"
+      // Daily task - click "Yes"
       await waitFor(() => {
         try {
-          screen.getByText('Daily задача')
+          screen.getByText('Daily task')
           return true
         } catch {
           return false
         }
       })
 
-      let yesButton = screen.getByText(/✓\s*Да/i)
+      let yesButton = screen.getByText(/✓\s*Yes/i)
       await yesButton.click()
 
-      // Progress задача - нажать "Да" и ввести значение
+      // Progress task - click "Yes" and enter value
       await waitFor(() => {
         try {
-          screen.getByText('Progress задача')
+          screen.getByText('Progress task')
           return true
         } catch {
           return false
         }
       })
 
-      yesButton = screen.getByText(/✓\s*Да/i)
+      yesButton = screen.getByText(/✓\s*Yes/i)
       await yesButton.click()
 
       await waitFor(() => {
         try {
-          screen.getByText(/Сколько очков сегодня\?/i)
+          screen.getByText(/How many points today\?/i)
           return true
         } catch {
           return false
         }
       })
 
-      // Ждём появления input
+      // Wait for input to appear
       await waitFor(() => {
         try {
-          screen.getByPlaceholder(/Введи количество очков/i)
+          screen.getByPlaceholder(/Enter amount of points/i)
           return true
         } catch {
           return false
         }
       })
 
-      const input = screen.getByPlaceholder(/Введи количество очков/i)
+      const input = screen.getByPlaceholder(/Enter amount of points/i)
       await input.fill('250')
 
-      const confirmButton = screen.getByText(/Записать/i)
+      const confirmButton = screen.getByText(/Record/i)
       await confirmButton.click()
 
-      // One-time задача - нажать "Нет"
+      // One-time task - click "No"
       await waitFor(() => {
         try {
-          screen.getByText('One-time задача')
+          screen.getByText('One-time task')
           return true
         } catch {
           return false
         }
       })
 
-      const noButton = screen.getByText(/✕\s*Нет/i)
+      const noButton = screen.getByText(/✕\s*No/i)
       await noButton.click()
 
-      // Проверяем финальное состояние
+      // Check final state
       await waitFor(() => {
         try {
-          screen.getByText(/Готово!/i)
+          screen.getByText(/All done!/i)
           return true
         } catch {
           return false

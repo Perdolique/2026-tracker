@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { saveLocaleToStorage, type Locale } from '@/locales'
 
 export interface User {
   id: string
@@ -7,6 +8,7 @@ export interface User {
   displayName: string
   avatarUrl: string | null
   isPublic: boolean
+  language: Locale
   createdAt: string
 }
 
@@ -91,6 +93,29 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function setLanguage(language: Locale): Promise<void> {
+    // Always save to localStorage (for guests and as fallback)
+    saveLocaleToStorage(language)
+
+    // If logged in, also save to profile
+    if (user.value) {
+      try {
+        const response = await fetch('/api/users/me', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ language }),
+        })
+
+        if (response.ok) {
+          const data = (await response.json()) as { user: User }
+          user.value = data.user
+        }
+      } catch {
+        // Silently fail API call, localStorage already saved
+      }
+    }
+  }
+
   return {
     user,
     isLoading,
@@ -101,5 +126,6 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     logout,
     setPublic,
+    setLanguage,
   }
 })
