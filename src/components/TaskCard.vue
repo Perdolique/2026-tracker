@@ -5,12 +5,12 @@
       <div :class="$style.menuWrapper">
         <button
           :class="$style.menuBtn"
-          @click="toggleMenu"
+          :popovertarget="menuId"
           aria-label="Меню задачи"
         >
           ⋮
         </button>
-        <div v-if="showMenu" :class="$style.dropdown">
+        <div :id="menuId" popover="auto" :class="$style.dropdown">
           <button :class="$style.dropdownItem" @click="openEditModal">
             ✏️ Редактировать
           </button>
@@ -166,7 +166,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, ref, reactive, watch, onMounted, onUnmounted } from 'vue'
+  import { computed, ref, reactive } from 'vue'
   import type { Task, DailyTask, ProgressTask } from '@/models/task'
   import { getTaskProgress, isDailyTask, isProgressTask, isOneTimeTask } from '@/models/task'
   import { useTaskStore } from '@/stores/task-store'
@@ -183,8 +183,10 @@
 
   const store = useTaskStore()
 
+  // Unique ID for popover
+  const menuId = computed(() => `menu-${props.task.id}`)
+
   // Menu state
-  const showMenu = ref(false)
   const showEditModal = ref(false)
   const isSaving = ref(false)
 
@@ -237,7 +239,7 @@
   const canAddDate = computed(() => {
     const date = editForm.newDate
     if (!date) return false
-    if (date > todayDate.value) return false
+    if (date > todayDate.value!) return false
     if (editForm.completedDates.includes(date)) return false
     return true
   })
@@ -260,24 +262,9 @@
     }
   }
 
-  function toggleMenu() {
-    showMenu.value = !showMenu.value
+  function hideMenu() {
+    document.getElementById(menuId.value)?.hidePopover()
   }
-
-  function closeMenu(event: MouseEvent) {
-    const target = event.target as HTMLElement
-    if (!target.closest(`.${$style.menuWrapper}`)) {
-      showMenu.value = false
-    }
-  }
-
-  onMounted(() => {
-    document.addEventListener('click', closeMenu)
-  })
-
-  onUnmounted(() => {
-    document.removeEventListener('click', closeMenu)
-  })
 
   function initEditForm() {
     editForm.title = props.task.title
@@ -297,7 +284,7 @@
   }
 
   function openEditModal() {
-    showMenu.value = false
+    hideMenu()
     initEditForm()
     showEditModal.value = true
   }
@@ -349,7 +336,7 @@
   }
 
   function handleDelete() {
-    showMenu.value = false
+    hideMenu()
     emit('delete', props.task.id)
   }
 </script>
@@ -400,14 +387,21 @@
 
   .dropdown {
     position: absolute;
-    top: 100%;
-    right: 0;
+    inset: unset;
+    top: anchor(bottom);
+    right: anchor(right);
+    margin: 0;
+    padding: 0;
     background: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     overflow: hidden;
-    z-index: 10;
     min-width: 160px;
+  }
+
+  .dropdown::backdrop {
+    background: transparent;
   }
 
   .dropdownItem {

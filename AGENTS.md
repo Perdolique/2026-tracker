@@ -45,6 +45,7 @@ A task is considered complete only when you have personally verified:
 - **No linter errors** — code passes linting checks
 - **No type errors** — TypeScript compilation succeeds
 - **No runtime issues** — application runs without errors
+- **Build succeeds** — `npm run build` completes without errors
 - **Documentation updated** — AGENTS.md and README.md updated if changes affect them
 
 Do not mark a task as done until you have checked all of these criteria.
@@ -78,6 +79,13 @@ Changes that don't require documentation updates:
 - **CSS Modules** — component-scoped styles
 - **Vite** — build tool
 - **Vitest** — testing framework
+
+### Browser Support
+
+Modern browsers only, no polyfills:
+
+- **Chrome/Edge** — 133+ (required for Popover API `hint` state)
+- **Firefox/Safari** — not supported for `popover="hint"` (falls back to `manual`)
 
 ### Backend
 
