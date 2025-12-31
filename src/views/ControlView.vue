@@ -15,7 +15,7 @@
 
     <!-- No tasks -->
     <div v-else-if="!hasTasksForCheckIn && !isComplete" :class="$style.empty">
-      <p :class="$style.emptyEmoji">🎉</p>
+      <Icon icon="tabler:confetti" :class="$style.emptyIcon" />
       <p :class="$style.emptyText">{{ $t('checkIn.noTasks') }}</p>
       <button :class="$style.homeBtn" @click="goBack">
         {{ $t('common.toHome') }}
@@ -24,7 +24,7 @@
 
     <!-- Completed state -->
     <div v-else-if="isComplete" :class="$style.complete">
-      <p :class="$style.completeEmoji">🚀</p>
+      <Icon icon="tabler:rocket" :class="$style.completeIcon" />
       <p :class="$style.completeText">{{ $t('checkIn.allDone') }}</p>
       <p :class="$style.completeHint">{{ $t('checkIn.allTasksChecked') }}</p>
       <button :class="$style.homeBtn" @click="goBack">
@@ -45,6 +45,7 @@
 <script setup lang="ts">
   import { onMounted, ref, computed } from 'vue'
   import { useRouter } from 'vue-router'
+  import { Icon } from '@iconify/vue'
   import { useTaskStore } from '@/stores/task-store'
   import CheckInWizard from '@/components/CheckInWizard.vue'
 
@@ -130,10 +131,12 @@
     padding: 40px;
   }
 
-  .emptyEmoji,
-  .completeEmoji {
-    font-size: 4rem;
-    margin: 0 0 16px;
+  .emptyIcon,
+  .completeIcon {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+    color: var(--color-primary);
   }
 
   .emptyText,

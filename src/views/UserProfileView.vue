@@ -7,7 +7,7 @@
 
     <!-- Error: Private profile (show login for non-owners) -->
     <div v-else-if="error === 'private'" :class="$style.error">
-      <p :class="$style.errorIcon">🔒</p>
+      <Icon icon="tabler:lock" :class="$style.errorIcon" />
       <p :class="$style.errorText">{{ $t('profile.privateProfile') }}</p>
       <button :class="$style.loginBtn" @click="authStore.login">
         <svg :class="$style.twitchIcon" viewBox="0 0 24 24" fill="currentColor">
@@ -19,7 +19,7 @@
 
     <!-- Error: Other errors -->
     <div v-else-if="error" :class="$style.error">
-      <p :class="$style.errorIcon">😢</p>
+      <Icon icon="tabler:mood-sad" :class="$style.errorIcon" />
       <p :class="$style.errorText">{{ errorText }}</p>
       <router-link to="/" :class="$style.homeLink">{{ $t('common.toHome') }}</router-link>
     </div>
@@ -40,7 +40,7 @@
           </div>
           <div :class="$style.userActions">
             <button :class="$style.shareBtn" @click="toggleShare">
-              ⚙️
+              <Icon icon="tabler:settings" :class="$style.settingsIcon" />
             </button>
             <button :class="$style.logoutBtn" @click="handleLogout">
               {{ $t('profile.logout') }}
@@ -95,7 +95,7 @@
       <div v-if="showShareModal && isOwnProfile" :class="$style.settingsModal" @click.self="showShareModal = false">
         <div :class="$style.settingsContent">
           <button :class="$style.modalCloseBtn" @click="showShareModal = false" :title="$t('common.close')">
-            ✕
+            <Icon icon="tabler:x" :class="$style.closeIcon" />
           </button>
           <h3 :class="$style.settingsTitle">{{ $t('profile.settings') }}</h3>
 
@@ -124,7 +124,7 @@
               @click="($event.target as HTMLInputElement).select()"
             />
             <button :class="$style.copyBtn" @click="copyShareLink">
-              {{ copied ? '✅' : '📋' }}
+              <Icon :icon="copied ? 'tabler:check' : 'tabler:clipboard'" :class="$style.copyIcon" />
             </button>
           </div>
           </div>
@@ -163,12 +163,12 @@
           :disabled="taskStore.getTasksForCheckIn().length === 0"
           @click="goToControl"
         >
-          🎮 Check-in
+          <Icon icon="tabler:device-gamepad-2" :class="$style.checkInIcon" /> Check-in
         </button>
       </div>
 
-      <!-- Loading tasks -->
-      <div v-if="isOwnProfile && taskStore.isLoading" :class="$style.loadingTasks">
+      <!-- Loading tasks (only on initial load) -->
+      <div v-if="isOwnProfile && taskStore.isLoading && taskStore.tasks.length === 0" :class="$style.loadingTasks">
         {{ $t('profile.loadingTasks') }}
       </div>
 
@@ -192,28 +192,12 @@
 
         <!-- Public profile: read-only cards -->
         <template v-else>
-          <div
+          <TaskCard
             v-for="task in activeTasks"
             :key="task.id"
-            :class="$style.taskCard"
-          >
-            <div :class="$style.taskHeader">
-              <span :class="$style.taskIcon">{{ getTaskIcon(task) }}</span>
-              <h3 :class="$style.taskTitle">{{ task.title }}</h3>
-            </div>
-
-            <p v-if="task.description" :class="$style.taskDescription">{{ task.description }}</p>
-
-            <div :class="$style.taskProgress">
-              <div :class="$style.progressBar">
-                <div
-                  :class="$style.progressFill"
-                  :style="{ width: `${getProgress(task)}%` }"
-                />
-              </div>
-              <span :class="$style.progressText">{{ getProgressText(task) }}</span>
-            </div>
-          </div>
+            :task="task"
+            readonly
+          />
         </template>
       </div>
 
@@ -237,29 +221,13 @@
         <template v-else>
           <h2 :class="$style.sectionTitle">{{ $t('profile.achieved') }}</h2>
           <div :class="$style.taskList">
-            <div
+            <TaskCard
               v-for="task in completedTasks"
               :key="task.id"
-              :class="[$style.taskCard, $style.completedCard]"
-            >
-              <div :class="$style.taskHeader">
-                <span :class="$style.taskIcon">{{ getTaskIcon(task) }}</span>
-                <h3 :class="$style.taskTitle">{{ task.title }}</h3>
-                <span :class="$style.completedBadge">✅</span>
-              </div>
-
-              <p v-if="task.description" :class="$style.taskDescription">{{ task.description }}</p>
-
-              <div :class="$style.taskProgress">
-                <div :class="$style.progressBar">
-                  <div
-                    :class="[$style.progressFill, $style.completedFill]"
-                    :style="{ width: '100%' }"
-                  />
-                </div>
-                <span :class="$style.progressText">{{ getProgressText(task) }}</span>
-              </div>
-            </div>
+              :task="task"
+              :completed="true"
+              readonly
+            />
           </div>
         </template>
       </template>
@@ -276,12 +244,13 @@
   import { ref, computed, onMounted, watch } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
   import { useI18n } from 'vue-i18n'
+  import { Icon } from '@iconify/vue'
   import { useAuthStore } from '@/stores/auth-store'
   import { useTaskStore } from '@/stores/task-store'
   import { useLocale } from '@/composables/use-locale'
   import TaskCard from '@/components/TaskCard.vue'
   import GlobalProgress from '@/components/GlobalProgress.vue'
-  import { isTaskCompleted, type Task, type DailyTask, type ProgressTask, type OneTimeTask } from '@/models/task'
+  import { isTaskCompleted, type Task } from '@/models/task'
 
   interface PublicUser {
     id: string
@@ -434,50 +403,6 @@
     await authStore.logout()
     router.push({ name: 'home' })
   }
-
-  function getTaskIcon(task: Task): string {
-    switch (task.type) {
-      case 'daily': {
-        return '📅'
-      }
-      case 'progress': {
-        return '📊'
-      }
-      case 'one-time': {
-        return '✅'
-      }
-    }
-  }
-
-  function getProgress(task: Task): number {
-    switch (task.type) {
-      case 'daily': {
-        return Math.min(100, ((task as DailyTask).completedDates.length / (task as DailyTask).targetDays) * 100)
-      }
-      case 'progress': {
-        return Math.min(100, ((task as ProgressTask).currentValue / (task as ProgressTask).targetValue) * 100)
-      }
-      case 'one-time': {
-        return (task as OneTimeTask).completedAt ? 100 : 0
-      }
-    }
-  }
-
-  function getProgressText(task: Task): string {
-    switch (task.type) {
-      case 'daily': {
-        const daily = task as DailyTask
-        return t('taskCard.daysProgress', { completed: daily.completedDates.length, target: daily.targetDays })
-      }
-      case 'progress': {
-        const progress = task as ProgressTask
-        return `${progress.currentValue.toLocaleString()} / ${progress.targetValue.toLocaleString()} ${progress.unit}`
-      }
-      case 'one-time': {
-        return (task as OneTimeTask).completedAt ? t('taskCard.completed') : t('profile.inProgress')
-      }
-    }
-  }
 </script>
 
 <style module>
@@ -505,8 +430,10 @@
   }
 
   .errorIcon {
-    font-size: 3rem;
-    margin: 0 0 16px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+    color: var(--color-text-secondary);
   }
 
   .errorText {
@@ -703,12 +630,20 @@
   }
 
   .shareBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding: 6px 10px;
-    font-size: 1rem;
     border: none;
     border-radius: 8px;
     background: var(--color-surface);
     cursor: pointer;
+  }
+
+  .settingsIcon {
+    width: 20px;
+    height: 20px;
+    color: var(--color-text);
   }
 
   .logoutBtn {
@@ -771,14 +706,17 @@
     border-radius: 6px;
     background: var(--color-background);
     color: var(--color-text-secondary);
-    font-size: 1rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
     padding: 0;
-    line-height: 1;
+  }
+
+  .closeIcon {
+    width: 16px;
+    height: 16px;
   }
 
   .modalCloseBtn:hover {
@@ -851,12 +789,20 @@
   }
 
   .copyBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding: 8px 10px;
     border: none;
     border-radius: 6px;
     background: var(--color-primary);
     cursor: pointer;
-    font-size: 0.875rem;
+  }
+
+  .copyIcon {
+    width: 16px;
+    height: 16px;
+    color: white;
   }
 
   .languageButtons {
@@ -895,6 +841,9 @@
   }
 
   .controlBtn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     padding: 14px 24px;
     font-size: 1rem;
     font-weight: 600;
@@ -904,6 +853,11 @@
     transition: transform 0.1s, opacity 0.2s;
     background: var(--color-primary);
     color: white;
+  }
+
+  .checkInIcon {
+    width: 20px;
+    height: 20px;
   }
 
   .controlBtn:active {
@@ -943,76 +897,6 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
-  }
-
-  /* Read-only task cards for public profiles */
-  .taskCard {
-    background: var(--color-surface);
-    border-radius: 12px;
-    padding: 16px;
-  }
-
-  /* completed cards have full opacity now */
-
-  .taskHeader {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-  }
-
-  .taskIcon {
-    font-size: 1.25rem;
-  }
-
-  .taskTitle {
-    flex: 1;
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--color-text);
-  }
-
-  .completedBadge {
-    font-size: 0.875rem;
-  }
-
-  .taskDescription {
-    margin: 0 0 12px;
-    font-size: 0.875rem;
-    color: var(--color-text-secondary);
-    line-height: 1.4;
-  }
-
-  .taskProgress {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .progressBar {
-    flex: 1;
-    height: 8px;
-    background: var(--color-border);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-
-  .progressFill {
-    height: 100%;
-    background: var(--color-primary);
-    border-radius: 4px;
-    transition: width 0.3s ease;
-  }
-
-  .completedFill {
-    background: var(--color-success, #22c55e);
-  }
-
-  .progressText {
-    font-size: 0.75rem;
-    color: var(--color-text-secondary);
-    white-space: nowrap;
   }
 
   .fab {

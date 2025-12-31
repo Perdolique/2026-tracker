@@ -86,9 +86,15 @@ export function isTaskCompleted(task: Task): boolean {
 export function getTaskProgress(task: Task): number {
   switch (task.type) {
     case 'daily': {
+      if (task.targetDays === 0) {
+        return 100
+      }
       return Math.min(100, (task.completedDates.length / task.targetDays) * 100)
     }
     case 'progress': {
+      if (task.targetValue === 0) {
+        return 100
+      }
       return Math.min(100, (task.currentValue / task.targetValue) * 100)
     }
     case 'one-time': {

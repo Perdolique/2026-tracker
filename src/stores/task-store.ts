@@ -38,7 +38,6 @@ export const useTaskStore = defineStore('tasks', () => {
   }
 
   async function addTask(data: CreateTaskData): Promise<Task | null> {
-    isLoading.value = true
     errorMessage.value = null
     try {
       const task = await taskApi.createTask(data)
@@ -47,13 +46,10 @@ export const useTaskStore = defineStore('tasks', () => {
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : 'Failed to create task'
       return null
-    } finally {
-      isLoading.value = false
     }
   }
 
   async function removeTask(taskId: string): Promise<void> {
-    isLoading.value = true
     errorMessage.value = null
 
     try {
@@ -61,13 +57,10 @@ export const useTaskStore = defineStore('tasks', () => {
       tasks.value = tasks.value.filter((t) => t.id !== taskId)
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : 'Failed to delete task'
-    } finally {
-      isLoading.value = false
     }
   }
 
   async function updateTask(task: Task): Promise<Task | null> {
-    isLoading.value = true
     errorMessage.value = null
 
     try {
@@ -80,8 +73,6 @@ export const useTaskStore = defineStore('tasks', () => {
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : 'Failed to update task'
       return null
-    } finally {
-      isLoading.value = false
     }
   }
 
@@ -90,7 +81,6 @@ export const useTaskStore = defineStore('tasks', () => {
     completed: boolean,
     value?: number
   ): Promise<void> {
-    isLoading.value = true
     errorMessage.value = null
     try {
       const updatedTask = await taskApi.recordCheckIn(taskId, completed, value)
@@ -102,8 +92,6 @@ export const useTaskStore = defineStore('tasks', () => {
       }
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : 'Failed to process check-in'
-    } finally {
-      isLoading.value = false
     }
   }
 

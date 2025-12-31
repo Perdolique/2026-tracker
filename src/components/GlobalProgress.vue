@@ -6,7 +6,7 @@
     </div>
     <div :class="$style.progressBar">
       <div
-        :class="[$style.progressFill, progress === 100 && $style.complete]"
+        :class="[$style.progressFill, formattedProgress >= 100 && $style.complete]"
         :style="{ width: `${progress}%` }"
       />
     </div>

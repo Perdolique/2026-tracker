@@ -16,6 +16,10 @@
     "import/no-namespace": "off",
     "import/no-default-export": "off",
     "import/group-exports": "off",
+    "import/no-unassigned-import": [
+      "warn",
+      { "allow": ["@fontsource-variable/**"] }
+    ],
     "vue/define-props-destructuring": "off",
     "eslint/no-alert": "off"
   },

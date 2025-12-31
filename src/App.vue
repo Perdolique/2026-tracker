@@ -22,8 +22,16 @@
     --color-danger-bg: rgba(239, 68, 68, 0.15);
     --color-progress-bg: #2a2a2a;
 
+    /* Type chip colors */
+    --color-daily: #60a5fa;
+    --color-daily-bg: rgba(96, 165, 250, 0.15);
+    --color-progress-chip: #fbbf24;
+    --color-progress-chip-bg: rgba(251, 191, 36, 0.15);
+    --color-onetime: #4ade80;
+    --color-onetime-bg: rgba(74, 222, 128, 0.15);
+
     /* Typography */
-    --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-family: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   }
   @media (prefers-color-scheme: light) {
     :root {
@@ -35,6 +43,14 @@
       --color-primary-bg: rgba(99, 102, 241, 0.1);
       --color-danger-bg: rgba(239, 68, 68, 0.1);
       --color-progress-bg: #e5e5e5;
+
+      /* Type chip colors - light theme */
+      --color-daily: #2563eb;
+      --color-daily-bg: rgba(37, 99, 235, 0.1);
+      --color-progress-chip: #d97706;
+      --color-progress-chip-bg: rgba(217, 119, 6, 0.1);
+      --color-onetime: #16a34a;
+      --color-onetime-bg: rgba(22, 163, 74, 0.1);
     }
   }
 
