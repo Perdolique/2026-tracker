@@ -45,7 +45,7 @@ A task is considered complete only when you have personally verified:
 - **No linter errors** — code passes linting checks
 - **No type errors** — TypeScript compilation succeeds
 - **No runtime issues** — application runs without errors
-- **Build succeeds** — `npm run build` completes without errors
+- **Build succeeds** — `pnpm run build` completes without errors
 - **Documentation updated** — AGENTS.md and README.md updated if changes affect them
 
 Do not mark a task as done until you have checked all of these criteria.
@@ -99,6 +99,7 @@ This ensures continuous improvement of agent effectiveness across iterations.
 - **TypeScript** — strict mode, ES2024 target
 - **Pinia** — state management
 - **Vue Router 4** — SPA routing
+- **vue-i18n** — internationalization (en/ru locales)
 - **CSS Modules** — component-scoped styles
 - **ky** — HTTP client (fetch wrapper) for API requests
 - **Vite** — build tool
@@ -135,6 +136,8 @@ All data mutations go through Pinia actions. API client uses `ky` (fetch wrapper
 src/
 ├── api/           # API client (ky-based)
 ├── components/    # Reusable Vue components
+├── composables/   # Vue composables (useLocale, etc.)
+├── locales/       # i18n translations (en.ts, ru.ts)
 ├── models/        # TypeScript interfaces/types
 │   └── __tests__/ # Unit tests for models
 ├── stores/        # Pinia stores (task-store, auth-store)
@@ -264,29 +267,32 @@ Browser tests use **MSW (Mock Service Worker)** for HTTP request interception.
 
 ```bash
 # Frontend
-npm run dev            # Start Vite dev server
-npm run build          # Production build
-npm run preview        # Preview production build
+pnpm run dev            # Start Vite dev server
+pnpm run build          # Production build
+pnpm run preview        # Preview production build
 
 # Linting
-npm run lint           # Run oxlint
-npm run lint:fix       # Run oxlint with auto-fix
+pnpm run lint           # Run oxlint
+pnpm run lint:fix       # Run oxlint with auto-fix
 
 # Backend
-npm run dev:worker     # Start Cloudflare Worker locally
-npm run deploy         # Build & deploy to Cloudflare
+pnpm run dev:worker     # Start Cloudflare Worker locally
+pnpm run deploy         # Build & deploy to Cloudflare
 
 # Database
-npm run db:generate    # Generate migrations + convert to wrangler format
-npm run db:migrate     # Apply migrations to local D1
-npm run db:migrate:prod # Apply migrations to production D1
-npm run db:studio      # Open Drizzle Studio
+pnpm run db:generate    # Generate migrations + convert to wrangler format
+pnpm run db:migrate     # Apply migrations to local D1
+pnpm run db:migrate:prod # Apply migrations to production D1
+pnpm run db:studio      # Open Drizzle Studio
 
 # Testing
-npm run test           # Run unit tests once
-npm run test:browser   # Run browser tests (Playwright)
-npm run test:ui        # Run tests with UI
-npm run test:watch     # Run tests in watch mode
+pnpm run test           # Run unit tests once
+pnpm run test:browser   # Run browser tests (Playwright)
+pnpm run test:ui        # Run tests with UI
+pnpm run test:watch     # Run tests in watch mode
+
+# Dependencies
+pnpm run update:all    # Update all deps to latest versions (taze)
 ```
 
 ## Data Models

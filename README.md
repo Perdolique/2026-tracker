@@ -19,6 +19,7 @@ Mobile-first task tracker for 2026 goals with three completion types.
 - Vue 3 + Composition API + TypeScript
 - Pinia for state management
 - Vue Router 4 for SPA navigation
+- vue-i18n for internationalization (en/ru)
 - CSS Modules (no frameworks)
 - Vitest for testing
 - Vite + Rolldown for blazing fast builds
@@ -37,56 +38,59 @@ Mobile-first task tracker for 2026 goals with three completion types.
 
 ```bash
 # Install dependencies
-npm install
+pnpm install
 
 # Start Vite dev server (frontend only)
-npm run dev
+pnpm run dev
 
 # Start Cloudflare Worker locally (full stack)
-npm run dev:worker
+pnpm run dev:worker
 
 # Build for production
-npm run build
+pnpm run build
 
 # Deploy to Cloudflare
-npm run deploy
+pnpm run deploy
 
 # Preview production build
-npm run preview
+pnpm run preview
 
 # Run unit tests
-npm run test
+pnpm run test
 
 # Run browser tests (Playwright)
-npm run test:browser
+pnpm run test:browser
 
 # Run tests with UI
-npm run test:ui
+pnpm run test:ui
 
 # Run tests in watch mode
-npm run test:watch
+pnpm run test:watch
 
 # Lint code
-npm run lint
+pnpm run lint
 
 # Lint and auto-fix
-npm run lint:fix
+pnpm run lint:fix
+
+# Update all dependencies to latest versions
+pnpm run update:all
 ```
 
 ### Database Commands
 
 ```bash
 # Generate migrations and convert to wrangler format
-npm run db:generate
+pnpm run db:generate
 
 # Apply migrations to local D1 database
-npm run db:migrate
+pnpm run db:migrate
 
 # Apply migrations to production D1
-npm run db:migrate:prod
+pnpm run db:migrate:prod
 
 # Open Drizzle Studio to browse database
-npm run db:studio
+pnpm run db:studio
 ```
 
 ### Environment Variables
@@ -113,6 +117,8 @@ Get Twitch credentials at https://dev.twitch.tv/console
 src/
 ├── api/           # API client (ky-based)
 ├── components/    # Reusable Vue components
+├── composables/   # Vue composables (useLocale, etc.)
+├── locales/       # i18n translations (en.ts, ru.ts)
 ├── models/        # TypeScript interfaces/types
 │   └── __tests__/ # Unit tests
 ├── stores/        # Pinia stores (task-store, auth-store)

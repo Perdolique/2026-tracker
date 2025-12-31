@@ -77,7 +77,7 @@
 
 <style module>
   .container {
-    min-height: 100vh;
+    height: 100%;
     padding: 16px;
     display: flex;
     flex-direction: column;

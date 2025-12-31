@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config'
+import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from 'node:url'
 import { createHash, type BinaryLike } from 'node:crypto';
@@ -40,11 +40,5 @@ export default defineConfig({
         return `${baseName}_${className}_${hash}`;
       }
     }
-  },
-
-  test: {
-    environment: 'happy-dom',
-    include: ['src/**/__tests__/*.test.ts'],
-    exclude: ['**/__tests__/*.browser.test.ts', 'node_modules/**'],
-  },
+  }
 })
