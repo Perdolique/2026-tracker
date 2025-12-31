@@ -1,7 +1,7 @@
 <template>
   <article :class="[$style.card, completed && $style.completed]">
     <header :class="$style.header">
-      <span :class="$style.type">{{ typeLabel }}</span>
+      <TypeChip :type="task.type" />
       <div :class="$style.menuWrapper">
         <button
           :class="$style.menuBtn"
@@ -12,10 +12,10 @@
         </button>
         <div :id="menuId" popover="auto" :class="$style.dropdown">
           <button :class="$style.dropdownItem" @click="openEditModal">
-            ✏️ {{ $t('common.edit') }}
+            <Icon icon="tabler:pencil" :class="$style.dropdownIcon" /> {{ $t('common.edit') }}
           </button>
           <button :class="[$style.dropdownItem, $style.dangerItem]" @click="handleDelete">
-            🗑️ {{ $t('common.delete') }}
+            <Icon icon="tabler:trash" :class="$style.dropdownIcon" /> {{ $t('common.delete') }}
           </button>
         </div>
       </div>
@@ -228,8 +228,10 @@
 <script setup lang="ts">
   import { computed, ref, reactive } from 'vue'
   import { useI18n } from 'vue-i18n'
+  import { Icon } from '@iconify/vue'
   import { getTaskProgress, isDailyTask, isProgressTask, isOneTimeTask, type Task, type DailyTask, type ProgressTask } from '@/models/task'
   import { useTaskStore } from '@/stores/task-store'
+  import TypeChip from '@/components/TypeChip.vue'
 
   const { t } = useI18n()
 
@@ -283,20 +285,6 @@
       return task.completedAt ? t('taskCard.completed') : t('taskCard.notCompleted')
     }
     return ''
-  })
-
-  const typeLabel = computed(() => {
-    switch (props.task.type) {
-      case 'daily': {
-        return t('taskCard.dailyLabel')
-      }
-      case 'progress': {
-        return t('taskCard.progressLabel')
-      }
-      case 'one-time': {
-        return t('taskCard.oneTimeLabel')
-      }
-    }
   })
 
   // Date management for daily tasks
@@ -443,11 +431,6 @@
     margin-bottom: 8px;
   }
 
-  .type {
-    font-size: 0.75rem;
-    color: var(--color-text-secondary);
-  }
-
   .menuWrapper {
     position: relative;
   }
@@ -488,7 +471,9 @@
   }
 
   .dropdownItem {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 8px;
     width: 100%;
     padding: 12px 16px;
     background: none;
@@ -498,6 +483,11 @@
     color: var(--color-text);
     font-size: 0.875rem;
     transition: background-color 0.2s;
+  }
+
+  .dropdownIcon {
+    width: 16px;
+    height: 16px;
   }
 
   .dropdownItem:hover {
@@ -793,7 +783,7 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
-    padding: 12px;
+    padding: 12px 0;
     background: var(--color-hover);
     border-radius: 8px;
     margin-top: 8px;

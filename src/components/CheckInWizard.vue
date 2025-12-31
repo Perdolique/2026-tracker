@@ -7,7 +7,7 @@
 
     <!-- Task card -->
     <article v-if="currentTask" :class="$style.taskCard">
-      <span :class="$style.emoji">{{ typeEmoji }}</span>
+      <Icon :icon="typeIcon" :class="$style.emoji" />
       <h2 :class="$style.title">{{ currentTask.title }}</h2>
       <p v-if="currentTask.description" :class="$style.description">
         {{ currentTask.description }}
@@ -54,11 +54,11 @@
     <div v-else :class="$style.actions">
       <p :class="$style.question">{{ $t('checkIn.question') }}</p>
       <div :class="$style.buttons">
-        <button :class="$style.noBtn" :disabled="isProcessing" @click="handleNo">
-          ✕ {{ $t('common.no') }}
+        <button :class="$style.noBtn" data-testid="checkin-no" :disabled="isProcessing" @click="handleNo">
+          <Icon icon="tabler:x" :class="$style.btnIcon" /> {{ $t('common.no') }}
         </button>
-        <button :class="$style.yesBtn" :disabled="isProcessing" @click="handleYes">
-          ✓ {{ $t('common.yes') }}
+        <button :class="$style.yesBtn" data-testid="checkin-yes" :disabled="isProcessing" @click="handleYes">
+          <Icon icon="tabler:check" :class="$style.btnIcon" /> {{ $t('common.yes') }}
         </button>
       </div>
     </div>
@@ -68,6 +68,7 @@
 <script setup lang="ts">
   import { ref, computed, watch } from 'vue'
   import { useI18n } from 'vue-i18n'
+  import { Icon } from '@iconify/vue'
   import { isDailyTask, isProgressTask, isOneTimeTask, getTaskProgress, type Task } from '@/models/task'
 
   const { t } = useI18n()
@@ -132,19 +133,19 @@
     return ''
   })
 
-  const typeEmoji = computed(() => {
+  const typeIcon = computed(() => {
     switch (currentTask.value?.type) {
       case 'daily': {
-        return '📅'
+        return 'tabler:calendar-check'
       }
       case 'progress': {
-        return '📊'
+        return 'tabler:chart-line'
       }
       case 'one-time': {
-        return '✅'
+        return 'tabler:circle-check'
       }
       default: {
-        return ''
+        return 'tabler:help'
       }
     }
   })
@@ -251,9 +252,11 @@
   }
 
   .emoji {
-    font-size: 3rem;
+    width: 48px;
+    height: 48px;
     display: block;
-    margin-bottom: 16px;
+    margin: 0 auto 16px;
+    color: var(--color-primary);
   }
 
   .title {
@@ -314,6 +317,10 @@
 
   .noBtn,
   .yesBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     padding: 16px 24px;
     font-size: 1.125rem;
     font-weight: 600;
@@ -321,6 +328,11 @@
     border-radius: 12px;
     cursor: pointer;
     transition: transform 0.1s, opacity 0.2s;
+  }
+
+  .btnIcon {
+    width: 20px;
+    height: 20px;
   }
 
   .noBtn:active,

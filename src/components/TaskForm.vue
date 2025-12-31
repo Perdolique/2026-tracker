@@ -33,7 +33,7 @@
             value="daily"
             :class="$style.radioHidden"
           />
-          <span :class="$style.typeIcon">📅</span>
+          <Icon icon="tabler:calendar-check" :class="$style.typeIcon" />
           <span>{{ $t('taskForm.typeDaily') }}</span>
         </label>
         <label :class="[$style.typeOption, taskType === 'progress' && $style.typeOptionActive]">
@@ -43,7 +43,7 @@
             value="progress"
             :class="$style.radioHidden"
           />
-          <span :class="$style.typeIcon">📊</span>
+          <Icon icon="tabler:chart-line" :class="$style.typeIcon" />
           <span>{{ $t('taskForm.typeProgress') }}</span>
         </label>
         <label :class="[$style.typeOption, taskType === 'one-time' && $style.typeOptionActive]">
@@ -53,7 +53,7 @@
             value="one-time"
             :class="$style.radioHidden"
           />
-          <span :class="$style.typeIcon">✅</span>
+          <Icon icon="tabler:circle-check" :class="$style.typeIcon" />
           <span>{{ $t('taskForm.typeOneTime') }}</span>
         </label>
       </div>
@@ -130,6 +130,7 @@
 
 <script setup lang="ts">
   import { ref, computed } from 'vue'
+  import { Icon } from '@iconify/vue'
   import type { CreateTaskData, TaskType } from '@/models/task'
 
   const emit = defineEmits<{
@@ -248,7 +249,8 @@
   }
 
   .typeIcon {
-    font-size: 1.5rem;
+    width: 24px;
+    height: 24px;
   }
 
   .radioHidden {

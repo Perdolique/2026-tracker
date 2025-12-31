@@ -76,8 +76,8 @@ describe('ControlView - Browser Tests', () => {
     })
 
     // Check buttons are present
-    const yesButton = screen.getByText(/✓\s*Yes/i)
-    const noButton = screen.getByText(/✕\s*No/i)
+    const yesButton = screen.getByTestId('checkin-yes')
+    const noButton = screen.getByTestId('checkin-no')
     expect(yesButton).toBeDefined()
     expect(noButton).toBeDefined()
 
@@ -146,7 +146,7 @@ describe('ControlView - Browser Tests', () => {
     })
 
     // Click "No"
-    const noButton = screen.getByText(/✕\s*No/i)
+    const noButton = screen.getByTestId('checkin-no')
     await noButton.click()
 
     // Give time for potential update
@@ -211,7 +211,7 @@ describe('ControlView - Browser Tests', () => {
     })
 
     // Click "Yes" on first task
-    const yesButton1 = screen.getByText(/✓\s*Yes/i)
+    const yesButton1 = screen.getByTestId('checkin-yes')
     await yesButton1.click()
 
     // Wait for second task to appear
@@ -225,7 +225,7 @@ describe('ControlView - Browser Tests', () => {
     })
 
     // Click "No" on second task
-    const noButton2 = screen.getByText(/✕\s*No/i)
+    const noButton2 = screen.getByTestId('checkin-no')
     await noButton2.click()
 
     // Wait for wizard completion
@@ -286,7 +286,7 @@ describe('ControlView - Browser Tests', () => {
         }
       })
 
-      const yesButton = screen.getByText(/✓\s*Yes/i)
+      const yesButton = screen.getByTestId('checkin-yes')
       await yesButton.click()
 
       // Wait for storage update
@@ -337,7 +337,7 @@ describe('ControlView - Browser Tests', () => {
         }
       })
 
-      const noButton = screen.getByText(/✕\s*No/i)
+      const noButton = screen.getByTestId('checkin-no')
       await noButton.click()
 
       await delay(100)
@@ -382,7 +382,7 @@ describe('ControlView - Browser Tests', () => {
         }
       })
 
-      const yesButton = screen.getByText(/✓\s*Yes/i)
+      const yesButton = screen.getByTestId('checkin-yes')
       await yesButton.click()
 
       await delay(150)
@@ -431,7 +431,7 @@ describe('ControlView - Browser Tests', () => {
         }
       })
 
-      const yesButton = screen.getByText(/✓\s*Yes/i)
+      const yesButton = screen.getByTestId('checkin-yes')
       await yesButton.click()
 
       // Should show value input
@@ -483,7 +483,7 @@ describe('ControlView - Browser Tests', () => {
         }
       })
 
-      const yesButton = screen.getByText(/✓\s*Yes/i)
+      const yesButton = screen.getByTestId('checkin-yes')
       await yesButton.click()
 
       await waitFor(() => {
@@ -551,7 +551,7 @@ describe('ControlView - Browser Tests', () => {
         }
       })
 
-      const yesButton = screen.getByText(/✓\s*Yes/i)
+      const yesButton = screen.getByTestId('checkin-yes')
       await yesButton.click()
 
       await waitFor(() => {
@@ -631,7 +631,7 @@ describe('ControlView - Browser Tests', () => {
         }
       })
 
-      let yesButton = screen.getByText(/✓\s*Yes/i)
+      let yesButton = screen.getByTestId('checkin-yes')
       await yesButton.click()
 
       // Progress task - click "Yes" and enter value
@@ -644,7 +644,7 @@ describe('ControlView - Browser Tests', () => {
         }
       })
 
-      yesButton = screen.getByText(/✓\s*Yes/i)
+      yesButton = screen.getByTestId('checkin-yes')
       await yesButton.click()
 
       await waitFor(() => {
@@ -682,7 +682,7 @@ describe('ControlView - Browser Tests', () => {
         }
       })
 
-      const noButton = screen.getByText(/✕\s*No/i)
+      const noButton = screen.getByTestId('checkin-no')
       await noButton.click()
 
       // Check final state
