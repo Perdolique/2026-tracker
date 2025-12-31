@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { saveLocaleToStorage, type Locale } from '@/locales'
+import * as authApi from '@/api/auth-api'
 
 export interface User {
   id: string
@@ -36,14 +37,7 @@ export const useAuthStore = defineStore('auth', () => {
     errorMessage.value = null
 
     try {
-      const response = await fetch('/api/auth/me')
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch user')
-      }
-
-      const data = (await response.json()) as { user: User | null }
-      user.value = data.user
+      user.value = await authApi.getMe()
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : 'Failed to fetch user'
       user.value = null
@@ -60,12 +54,7 @@ export const useAuthStore = defineStore('auth', () => {
     errorMessage.value = null
 
     try {
-      const response = await fetch('/api/auth/logout', { method: 'POST' })
-
-      if (!response.ok) {
-        throw new Error('Failed to logout')
-      }
-
+      await authApi.logout()
       user.value = null
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : 'Failed to logout'
@@ -81,18 +70,7 @@ export const useAuthStore = defineStore('auth', () => {
     errorMessage.value = null
 
     try {
-      const response = await fetch('/api/users/me', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isPublic }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to update settings')
-      }
-
-      const data = (await response.json()) as { user: User }
-      user.value = data.user
+      user.value = await authApi.updateUser({ isPublic })
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : 'Failed to update settings'
     } finally {
@@ -107,16 +85,7 @@ export const useAuthStore = defineStore('auth', () => {
     // If logged in, also save to profile
     if (user.value) {
       try {
-        const response = await fetch('/api/users/me', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ language }),
-        })
-
-        if (response.ok) {
-          const data = (await response.json()) as { user: User }
-          user.value = data.user
-        }
+        user.value = await authApi.updateUser({ language })
       } catch {
         // Silently fail API call, localStorage already saved
       }

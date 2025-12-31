@@ -1,6 +1,5 @@
+import { api } from './client'
 import type { Task, CreateTaskData } from '@/models/task'
-
-const API_BASE = '/api'
 
 // Get current ISO date string (YYYY-MM-DD)
 export function getCurrentDate(): string {
@@ -8,38 +7,15 @@ export function getCurrentDate(): string {
   return date ?? ''
 }
 
-// Helper for API requests
-async function apiFetch<TResult>(path: string, options?: RequestInit): Promise<TResult> {
-  const response = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
-  })
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Unknown error' }))
-    throw new Error((error as { error?: string }).error ?? `HTTP ${response.status}`)
-  }
-
-  // Handle 204 No Content
-  if (response.status === 204) {
-    return undefined as TResult
-  }
-
-  return response.json() as Promise<TResult>
-}
-
 // Get all tasks
 export async function getAllTasks(): Promise<Task[]> {
-  return apiFetch<Task[]>('/tasks')
+  return api.get('tasks').json<Task[]>()
 }
 
 // Get single task by ID
 export async function getTaskById(id: string): Promise<Task | undefined> {
   try {
-    return await apiFetch<Task>(`/tasks/${id}`)
+    return await api.get(`tasks/${id}`).json<Task>()
   } catch {
     return undefined
   }
@@ -47,25 +23,17 @@ export async function getTaskById(id: string): Promise<Task | undefined> {
 
 // Create new task
 export async function createTask(data: CreateTaskData): Promise<Task> {
-  return apiFetch<Task>('/tasks', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  })
+  return api.post('tasks', { json: data }).json<Task>()
 }
 
 // Update existing task
 export async function updateTask(task: Task): Promise<Task> {
-  return apiFetch<Task>(`/tasks/${task.id}`, {
-    method: 'PUT',
-    body: JSON.stringify(task),
-  })
+  return api.put(`tasks/${task.id}`, { json: task }).json<Task>()
 }
 
 // Delete task
 export async function deleteTask(id: string): Promise<void> {
-  await apiFetch<void>(`/tasks/${id}`, {
-    method: 'DELETE',
-  })
+  await api.delete(`tasks/${id}`)
 }
 
 // Record daily check-in for a task
@@ -74,8 +42,5 @@ export async function recordCheckIn(
   completed: boolean,
   value?: number
 ): Promise<Task> {
-  return apiFetch<Task>(`/tasks/${taskId}/checkin`, {
-    method: 'POST',
-    body: JSON.stringify({ completed, value }),
-  })
+  return api.post(`tasks/${taskId}/checkin`, { json: { completed, value } }).json<Task>()
 }
