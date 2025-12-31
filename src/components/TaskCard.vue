@@ -2,7 +2,7 @@
   <article :class="[$style.card, completed && $style.completed]">
     <header :class="$style.header">
       <TypeChip :type="task.type" />
-      <div :class="$style.menuWrapper">
+      <div v-if="!readonly" :class="$style.menuWrapper">
         <button
           :class="$style.menuBtn"
           :popovertarget="menuId"
@@ -238,6 +238,7 @@
   const props = defineProps<{
     task: Task
     completed?: boolean
+    readonly?: boolean
   }>()
 
   const emit = defineEmits<{
