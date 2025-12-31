@@ -8,8 +8,8 @@
       <h1 :class="$style.title">{{ $t('checkIn.pageTitle') }}</h1>
     </header>
 
-    <!-- Loading (только при начальной загрузке) -->
-    <div v-if="store.isLoading && !wizardActive" :class="$style.loading">
+    <!-- Loading (only on first fetch) -->
+    <div v-if="!store.hasFetched" :class="$style.loading">
       {{ $t('common.loading') }}
     </div>
 
@@ -52,7 +52,6 @@
   const router = useRouter()
   const store = useTaskStore()
   const isComplete = ref(false)
-  const wizardActive = ref(false)
 
   // Используем computed чтобы всегда получать актуальные данные из store
   const tasksForCheckIn = computed(() => store.getTasksForCheckIn())
@@ -61,10 +60,6 @@
 
   onMounted(async () => {
     await store.fetchTasks()
-    // Активируем wizard только после загрузки задач
-    if (tasksForCheckIn.value.length > 0) {
-      wizardActive.value = true
-    }
   })
 
   function goBack() {

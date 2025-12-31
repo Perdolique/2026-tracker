@@ -6,7 +6,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, useCssModule } from 'vue'
+  import { computed } from 'vue'
   import { useI18n } from 'vue-i18n'
   import { Icon } from '@iconify/vue'
   import type { TaskType } from '@/models/task'
@@ -48,18 +48,16 @@
   const typeClass = computed(() => {
     switch (props.type) {
       case 'daily': {
-        return $style.daily
+        return 'daily'
       }
       case 'progress': {
-        return $style.progress
+        return 'progress'
       }
       case 'one-time': {
-        return $style.onetime
+        return 'onetime'
       }
     }
   })
-
-  const $style = useCssModule()
 </script>
 
 <style module>
@@ -71,25 +69,25 @@
     border-radius: 6px;
     font-size: 0.75rem;
     font-weight: 500;
+
+    &:global(.daily) {
+      background: var(--color-daily-bg);
+      color: var(--color-daily);
+    }
+
+    &:global(.progress) {
+      background: var(--color-progress-chip-bg);
+      color: var(--color-progress-chip);
+    }
+
+    &:global(.onetime) {
+      background: var(--color-onetime-bg);
+      color: var(--color-onetime);
+    }
   }
 
   .icon {
     width: 14px;
     height: 14px;
-  }
-
-  .daily {
-    background: var(--color-daily-bg);
-    color: var(--color-daily);
-  }
-
-  .progress {
-    background: var(--color-progress-chip-bg);
-    color: var(--color-progress-chip);
-  }
-
-  .onetime {
-    background: var(--color-onetime-bg);
-    color: var(--color-onetime);
   }
 </style>

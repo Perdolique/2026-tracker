@@ -1,12 +1,12 @@
 <template>
   <div :class="$style.container">
-    <!-- Loading -->
-    <div v-if="authStore.isLoading" :class="$style.loading">
+    <!-- Loading (only on very first app load) -->
+    <div v-if="!authStore.hasFetched" :class="$style.loading">
       {{ $t('common.loading') }}
     </div>
 
-    <!-- Landing page for non-authenticated users -->
-    <template v-else>
+    <!-- Landing page for non-authenticated users only -->
+    <template v-else-if="!authStore.isLoggedIn">
       <div :class="$style.landing">
         <h1 :class="$style.title">{{ $t('home.title') }}</h1>
         <p :class="$style.subtitle">{{ $t('home.subtitle') }}</p>

@@ -6,21 +6,7 @@
     </div>
 
     <!-- Task card -->
-    <article v-if="currentTask" :class="$style.taskCard">
-      <Icon :icon="typeIcon" :class="$style.emoji" />
-      <h2 :class="$style.title">{{ currentTask.title }}</h2>
-      <p v-if="currentTask.description" :class="$style.description">
-        {{ currentTask.description }}
-      </p>
-
-      <!-- Progress bar -->
-      <div :class="$style.progressContainer">
-        <div :class="$style.progressBar">
-          <div :class="$style.progressFill" :style="{ width: `${progress}%` }" />
-        </div>
-        <span :class="$style.progressText">{{ progressText }}</span>
-      </div>
-    </article>
+    <TaskDetailsCard v-if="currentTask" :task="currentTask" />
 
     <!-- Value input for progress tasks -->
     <div v-if="showValueInput && currentTask && isProgressTask(currentTask)" :class="$style.valueInput">
@@ -67,11 +53,9 @@
 
 <script setup lang="ts">
   import { ref, computed, watch } from 'vue'
-  import { useI18n } from 'vue-i18n'
   import { Icon } from '@iconify/vue'
-  import { isDailyTask, isProgressTask, isOneTimeTask, getTaskProgress, type Task } from '@/models/task'
-
-  const { t } = useI18n()
+  import { isProgressTask, type Task } from '@/models/task'
+  import TaskDetailsCard from '@/components/TaskDetailsCard.vue'
 
   const props = defineProps<{
     tasks: Task[]
@@ -111,44 +95,6 @@
   const currentIndex = computed(() => currentIdIndex.value)
 
   const isLastTask = computed(() => currentIdIndex.value >= taskIds.value.length - 1)
-
-  const progress = computed(() => {
-    if (!currentTask.value) {return 0}
-    return getTaskProgress(currentTask.value)
-  })
-
-  const progressText = computed(() => {
-    const task = currentTask.value
-    if (!task) {return ''}
-
-    if (isDailyTask(task)) {
-      return t('taskCard.daysProgress', { completed: task.completedDates.length, target: task.targetDays })
-    }
-    if (isProgressTask(task)) {
-      return `${task.currentValue.toLocaleString()} / ${task.targetValue.toLocaleString()} ${task.unit}`
-    }
-    if (isOneTimeTask(task)) {
-      return task.completedAt ? t('taskCard.completed') : t('checkIn.waitingForCompletion')
-    }
-    return ''
-  })
-
-  const typeIcon = computed(() => {
-    switch (currentTask.value?.type) {
-      case 'daily': {
-        return 'tabler:calendar-check'
-      }
-      case 'progress': {
-        return 'tabler:chart-line'
-      }
-      case 'one-time': {
-        return 'tabler:circle-check'
-      }
-      default: {
-        return 'tabler:help'
-      }
-    }
-  })
 
   async function handleYes() {
     if (isProcessing.value) {return}
@@ -233,6 +179,7 @@
     display: flex;
     flex-direction: column;
     gap: 24px;
+    width: 100%;
     max-width: 400px;
     margin: 0 auto;
   }
@@ -240,61 +187,6 @@
   .stepIndicator {
     text-align: center;
     font-size: 0.875rem;
-    color: var(--color-text-secondary);
-  }
-
-  .taskCard {
-    background: var(--color-surface);
-    border-radius: 16px;
-    padding: 24px;
-    text-align: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  }
-
-  .emoji {
-    width: 48px;
-    height: 48px;
-    display: block;
-    margin: 0 auto 16px;
-    color: var(--color-primary);
-  }
-
-  .title {
-    margin: 0 0 8px;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--color-text);
-  }
-
-  .description {
-    margin: 0 0 16px;
-    font-size: 0.875rem;
-    color: var(--color-text-secondary);
-    line-height: 1.5;
-  }
-
-  .progressContainer {
-    margin-top: 16px;
-  }
-
-  .progressBar {
-    height: 10px;
-    background: var(--color-progress-bg);
-    border-radius: 5px;
-    overflow: hidden;
-  }
-
-  .progressFill {
-    height: 100%;
-    background: var(--color-primary);
-    border-radius: 5px;
-    transition: width 0.3s ease;
-  }
-
-  .progressText {
-    display: block;
-    margin-top: 8px;
-    font-size: 0.75rem;
     color: var(--color-text-secondary);
   }
 

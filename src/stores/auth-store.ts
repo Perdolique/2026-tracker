@@ -19,6 +19,7 @@ function redirectToTwitchAuth(): void {
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
   const isLoading = ref(false)
+  const hasFetched = ref(false)
   const errorMessage = ref<string | null>(null)
 
   const isLoggedIn = computed(() => user.value !== null)
@@ -28,7 +29,10 @@ export const useAuthStore = defineStore('auth', () => {
   })
 
   async function fetchMe(): Promise<void> {
-    isLoading.value = true
+    const isInitialLoad = !hasFetched.value
+    if (isInitialLoad) {
+      isLoading.value = true
+    }
     errorMessage.value = null
 
     try {
@@ -44,7 +48,10 @@ export const useAuthStore = defineStore('auth', () => {
       errorMessage.value = error instanceof Error ? error.message : 'Failed to fetch user'
       user.value = null
     } finally {
-      isLoading.value = false
+      hasFetched.value = true
+      if (isInitialLoad) {
+        isLoading.value = false
+      }
     }
   }
 
@@ -119,6 +126,7 @@ export const useAuthStore = defineStore('auth', () => {
   return {
     user,
     isLoading,
+    hasFetched,
     error: errorMessage,
     isLoggedIn,
     shareUrl,

@@ -7,6 +7,7 @@ export const useTaskStore = defineStore('tasks', () => {
   const tasks = ref<Task[]>([])
   const isLoading = ref(false)
   const errorMessage = ref<string | null>(null)
+  const hasFetched = ref(false)
   const activeTasks = computed(() => tasks.value.filter((t) => !isTaskCompleted(t)))
   const completedTasks = computed(() => tasks.value.filter((t) => isTaskCompleted(t)))
 
@@ -25,16 +26,28 @@ export const useTaskStore = defineStore('tasks', () => {
   }
 
   async function fetchTasks(): Promise<void> {
-    isLoading.value = true
-    errorMessage.value = null
+    // Only show loading indicator on first fetch (stale-while-revalidate)
+    const isInitialLoad = !hasFetched.value
+    if (isInitialLoad) {
+      isLoading.value = true
+    }
 
     try {
       tasks.value = await taskApi.getAllTasks()
+      hasFetched.value = true
+      // Clear error on successful refresh
+      errorMessage.value = null
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : 'Failed to fetch tasks'
     } finally {
-      isLoading.value = false
+      if (isInitialLoad) {
+        isLoading.value = false
+      }
     }
+  }
+
+  function clearError(): void {
+    errorMessage.value = null
   }
 
   async function addTask(data: CreateTaskData): Promise<Task | null> {
@@ -102,6 +115,7 @@ export const useTaskStore = defineStore('tasks', () => {
   return {
     tasks,
     isLoading,
+    hasFetched,
     error: errorMessage,
     activeTasks,
     completedTasks,
@@ -112,5 +126,6 @@ export const useTaskStore = defineStore('tasks', () => {
     updateTask,
     processCheckIn,
     getTaskById,
+    clearError,
   }
 })

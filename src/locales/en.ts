@@ -93,6 +93,13 @@ const enLocale = {
     inProgress: 'In progress',
     language: 'Language',
   },
+  errors: {
+    fetchTasks: 'Failed to load tasks',
+    createTask: 'Failed to create task',
+    updateTask: 'Failed to update task',
+    deleteTask: 'Failed to delete task',
+    checkIn: 'Failed to record check-in',
+  },
 }
 
 export default enLocale

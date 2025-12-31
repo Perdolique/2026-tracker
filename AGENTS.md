@@ -189,8 +189,11 @@ Browser tests use **MSW (Mock Service Worker)** for HTTP request interception.
   import { ref, computed } from 'vue'
   import type { Task } from '@/models/task'
 
-  // 2. Props & Emits
-  const props = defineProps<Props>()
+  // 2. Props & Emits (use destructuring with defaults)
+  const { title, count = 0 } = defineProps<{
+    title: string
+    count?: number
+  }>()
   const emit = defineEmits<Emits>()
 
   // 3. Composables & Stores

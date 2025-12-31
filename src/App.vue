@@ -1,10 +1,24 @@
 <template>
-  <RouterView />
+  <div :class="$style.app">
+    <ErrorBanner :message="taskStore.error" @dismiss="taskStore.clearError()" />
+    <RouterView />
+  </div>
 </template>
 
 <script setup lang="ts">
   import { RouterView } from 'vue-router'
+  import { useTaskStore } from '@/stores/task-store'
+  import ErrorBanner from '@/components/ErrorBanner.vue'
+
+  const taskStore = useTaskStore()
 </script>
+
+<style module>
+  .app {
+    max-width: var(--content-max-width);
+    margin: 0 auto;
+  }
+</style>
 
 <style>
   :root {
@@ -29,6 +43,9 @@
     --color-progress-chip-bg: rgba(251, 191, 36, 0.15);
     --color-onetime: #4ade80;
     --color-onetime-bg: rgba(74, 222, 128, 0.15);
+
+    /* Layout */
+    --content-max-width: 600px;
 
     /* Typography */
     --font-family: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
