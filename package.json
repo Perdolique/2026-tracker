@@ -22,6 +22,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@fontsource-variable/inter": "^5.2.8",
     "drizzle-orm": "^1.0.0-beta.6-7aaf14b",
     "hono": "^4.11.3",
     "pinia": "^3.0.4",
