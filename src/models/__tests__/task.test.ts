@@ -3,6 +3,7 @@ import {
   isDailyTaskCompletedToday,
   getCurrentDate,
   getGlobalProgress,
+  getTaskProgress,
   type DailyTask,
   type ProgressTask,
   type OneTimeTask,
@@ -283,5 +284,90 @@ describe('getGlobalProgress', () => {
     ]
 
     expect(getGlobalProgress(tasks)).toBe(100)
+  })
+})
+
+describe('getTaskProgress - division by zero edge cases', () => {
+  it('should return 100% for daily task with targetDays = 0', () => {
+    const task: DailyTask = {
+      id: '1',
+      title: 'Zero target daily',
+      type: 'daily',
+      targetDays: 0,
+      completedDates: [],
+      createdAt: '2026-01-01T00:00:00.000Z',
+      checkInEnabled: true,
+    }
+
+    expect(getTaskProgress(task)).toBe(100)
+  })
+
+  it('should return 100% for progress task with targetValue = 0 and currentValue = 0', () => {
+    const task: ProgressTask = {
+      id: '2',
+      title: 'Zero target progress',
+      type: 'progress',
+      targetValue: 0,
+      currentValue: 0,
+      unit: 'steps',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      checkInEnabled: true,
+    }
+
+    expect(getTaskProgress(task)).toBe(100)
+  })
+
+  it('should return 100% for progress task with targetValue = 0 and non-zero currentValue', () => {
+    const task: ProgressTask = {
+      id: '3',
+      title: 'Zero target with progress',
+      type: 'progress',
+      targetValue: 0,
+      currentValue: 100,
+      unit: 'pages',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      checkInEnabled: true,
+    }
+
+    expect(getTaskProgress(task)).toBe(100)
+  })
+
+  it('should not return NaN for getGlobalProgress with zero target tasks', () => {
+    const tasks: Task[] = [
+      {
+        id: '1',
+        title: 'Zero target daily',
+        type: 'daily',
+        targetDays: 0,
+        completedDates: [],
+        createdAt: '2026-01-01T00:00:00.000Z',
+        checkInEnabled: true,
+      },
+      {
+        id: '2',
+        title: 'Zero target progress',
+        type: 'progress',
+        targetValue: 0,
+        currentValue: 0,
+        unit: 'steps',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        checkInEnabled: true,
+      },
+      {
+        id: '3',
+        title: 'Normal task',
+        type: 'progress',
+        targetValue: 100,
+        currentValue: 50,
+        unit: 'pages',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        checkInEnabled: true,
+      },
+    ]
+
+    const progress = getGlobalProgress(tasks)
+    expect(progress).not.toBeNaN()
+    // (100 + 100 + 50) / 3 = 250 / 3 ≈ 83.33
+    expect(progress).toBeCloseTo(83.33, 2)
   })
 })
