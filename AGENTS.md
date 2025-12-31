@@ -68,6 +68,29 @@ Changes that don't require documentation updates:
 - Styling/CSS adjustments
 - Component implementation details that don't affect usage
 
+### Documentation Verification (Per Iteration)
+
+On each iteration, before marking task complete, verify:
+
+- Project structure in docs matches actual directories
+- New files/directories are documented
+- Removed or renamed entities are updated in docs
+- Data models in docs match actual TypeScript interfaces
+- API endpoints documented match actual routes
+
+If discrepancies found — fix them as part of the current task.
+
+### Agent Knowledge Evolution (MUST)
+
+You MUST update AGENTS.md if during work you discover:
+
+- New patterns or best practices useful for future tasks
+- Outdated or incorrect agent instructions
+- Missing guidelines that would have helped complete the task
+- Reusable solutions or workarounds worth documenting
+
+This ensures continuous improvement of agent effectiveness across iterations.
+
 ## Tech Stack
 
 ### Frontend
@@ -77,6 +100,7 @@ Changes that don't require documentation updates:
 - **Pinia** — state management
 - **Vue Router 4** — SPA routing
 - **CSS Modules** — component-scoped styles
+- **ky** — HTTP client (fetch wrapper) for API requests
 - **Vite** — build tool
 - **Vitest** — testing framework
 - **oxlint** — linting (via eslint-config-greenpie)
@@ -100,16 +124,16 @@ Modern browsers only, no polyfills:
 ## Architecture
 
 ```text
-Vue Components → Pinia Stores → API Client (fetch) → Cloudflare Worker (Hono) → D1 (SQLite)
+Vue Components → Pinia Stores → API Client (ky) → Cloudflare Worker (Hono) → D1 (SQLite)
 ```
 
-All data mutations go through Pinia actions. API client uses `fetch('/api/...')` to communicate with the backend.
+All data mutations go through Pinia actions. API client uses `ky` (fetch wrapper) with `/api` prefix to communicate with the backend.
 
 ## Project Structure
 
 ```text
 src/
-├── api/           # API client (fetch-based)
+├── api/           # API client (ky-based)
 ├── components/    # Reusable Vue components
 ├── models/        # TypeScript interfaces/types
 │   └── __tests__/ # Unit tests for models
