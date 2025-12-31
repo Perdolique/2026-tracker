@@ -150,6 +150,31 @@
               </div>
             </template>
 
+            <!-- One-time task fields -->
+            <template v-if="isOneTimeTask(task)">
+              <div :class="$style.formGroup">
+                <label :class="$style.checkboxLabel">
+                  <input
+                    v-model="editForm.isCompleted"
+                    type="checkbox"
+                    :class="$style.checkbox"
+                  />
+                  <span>{{ $t('taskCard.markCompleted') }}</span>
+                </label>
+              </div>
+
+              <div v-if="editForm.isCompleted" :class="$style.formGroup">
+                <label :class="$style.label">{{ $t('taskCard.completionDate') }}</label>
+                <input
+                  v-model="editForm.completedAt"
+                  :class="$style.input"
+                  type="date"
+                  :max="todayDate"
+                  required
+                />
+              </div>
+            </template>
+
             <!-- Check-in control (common for all task types) -->
             <div :class="$style.checkInField">
               <label :class="$style.checkboxLabel">
@@ -216,6 +241,9 @@
     completedDates: [] as string[],
     newDate: '',
     checkInEnabled: false,
+    // One-time task fields
+    isCompleted: false,
+    completedAt: '',
   })
 
   const progress = computed(() => getTaskProgress(props.task))
@@ -303,6 +331,11 @@
       editForm.targetValue = props.task.targetValue
       editForm.unit = props.task.unit
     }
+
+    if (isOneTimeTask(props.task)) {
+      editForm.isCompleted = Boolean(props.task.completedAt)
+      editForm.completedAt = props.task.completedAt ?? todayDate.value ?? ''
+    }
   }
 
   function openEditModal() {
@@ -341,12 +374,13 @@
         unit: editForm.unit.trim(),
         checkInEnabled: editForm.checkInEnabled,
       } satisfies ProgressTask
-    } else {
+    } else if (isOneTimeTask(props.task)) {
       updatedTask = {
         ...props.task,
         title: editForm.title.trim(),
         description: editForm.description.trim() || undefined,
         checkInEnabled: editForm.checkInEnabled,
+        completedAt: editForm.isCompleted ? editForm.completedAt : undefined,
       }
     }
 

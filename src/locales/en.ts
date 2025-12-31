@@ -47,6 +47,8 @@ const enLocale = {
     oneTimeLabel: '✅ One-time',
     completed: 'Completed ✓',
     notCompleted: 'Not completed',
+    markCompleted: 'Mark as completed',
+    completionDate: 'Completion date',
     goalDays: 'Goal (days)',
     completedDays: 'Completed days',
     noCompletedDays: 'No completed days',

@@ -47,6 +47,8 @@ const ruLocale = {
     oneTimeLabel: '✅ Разовая',
     completed: 'Выполнено ✓',
     notCompleted: 'Не выполнено',
+    markCompleted: 'Отметить как выполненную',
+    completionDate: 'Дата выполнения',
     goalDays: 'Цель (дней)',
     completedDays: 'Выполненные дни',
     noCompletedDays: 'Нет выполненных дней',
