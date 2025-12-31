@@ -73,6 +73,7 @@ const enLocale = {
     networkError: 'Network error',
     logout: 'Logout',
     progressTitle: '2026 Goals Progress 🎯',
+    globalProgress: 'Overall progress',
     myGoals: 'My goals →',
     loginAndTrack: 'Login and start tracking',
     settings: 'Settings',

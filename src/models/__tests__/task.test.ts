@@ -1,5 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { isDailyTaskCompletedToday, getCurrentDate, type DailyTask, type ProgressTask, type OneTimeTask } from '../task'
+import {
+  isDailyTaskCompletedToday,
+  getCurrentDate,
+  getGlobalProgress,
+  type DailyTask,
+  type ProgressTask,
+  type OneTimeTask,
+  type Task,
+} from '../task'
 
 describe('Task Types', () => {
   it('should create a valid DailyTask', () => {
@@ -133,5 +141,147 @@ describe('isDailyTaskCompletedToday', () => {
     }
 
     expect(isDailyTaskCompletedToday(task)).toBeFalsy()
+  })
+})
+
+describe('getGlobalProgress', () => {
+  it('should return 0 for empty task array', () => {
+    expect(getGlobalProgress([])).toBe(0)
+  })
+
+  it('should return 100 when all tasks are completed', () => {
+    const tasks: Task[] = [
+      {
+        id: '1',
+        title: 'Daily task',
+        type: 'daily',
+        targetDays: 10,
+        completedDates: Array.from({ length: 10 }, (_unused, index) => `2026-01-0${index + 1}`),
+        createdAt: '2026-01-01T00:00:00.000Z',
+        checkInEnabled: true,
+      },
+      {
+        id: '2',
+        title: 'Progress task',
+        type: 'progress',
+        targetValue: 100,
+        currentValue: 100,
+        unit: 'pages',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        checkInEnabled: true,
+      },
+      {
+        id: '3',
+        title: 'One-time task',
+        type: 'one-time',
+        completedAt: '2026-01-15T00:00:00.000Z',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        checkInEnabled: false,
+      },
+    ]
+
+    expect(getGlobalProgress(tasks)).toBe(100)
+  })
+
+  it('should return 0 when no tasks have progress', () => {
+    const tasks: Task[] = [
+      {
+        id: '1',
+        title: 'Daily task',
+        type: 'daily',
+        targetDays: 10,
+        completedDates: [],
+        createdAt: '2026-01-01T00:00:00.000Z',
+        checkInEnabled: true,
+      },
+      {
+        id: '2',
+        title: 'Progress task',
+        type: 'progress',
+        targetValue: 100,
+        currentValue: 0,
+        unit: 'pages',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        checkInEnabled: true,
+      },
+      {
+        id: '3',
+        title: 'One-time task',
+        type: 'one-time',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        checkInEnabled: false,
+      },
+    ]
+
+    expect(getGlobalProgress(tasks)).toBe(0)
+  })
+
+  it('should calculate average progress correctly', () => {
+    const tasks: Task[] = [
+      {
+        id: '1',
+        title: 'Daily task',
+        type: 'daily',
+        targetDays: 10,
+        completedDates: ['2026-01-01', '2026-01-02', '2026-01-03', '2026-01-04', '2026-01-05'], // 50%
+        createdAt: '2026-01-01T00:00:00.000Z',
+        checkInEnabled: true,
+      },
+      {
+        id: '2',
+        title: 'Progress task',
+        type: 'progress',
+        targetValue: 100,
+        currentValue: 50, // 50%
+        unit: 'pages',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        checkInEnabled: true,
+      },
+    ]
+
+    expect(getGlobalProgress(tasks)).toBe(50)
+  })
+
+  it('should handle mixed completion states', () => {
+    const tasks: Task[] = [
+      {
+        id: '1',
+        title: 'Completed daily',
+        type: 'daily',
+        targetDays: 10,
+        completedDates: Array.from({ length: 10 }, (_unused, index) => `2026-01-${String(index + 1).padStart(2, '0')}`), // 100%
+        createdAt: '2026-01-01T00:00:00.000Z',
+        checkInEnabled: true,
+      },
+      {
+        id: '2',
+        title: 'Not started',
+        type: 'progress',
+        targetValue: 100,
+        currentValue: 0, // 0%
+        unit: 'pages',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        checkInEnabled: true,
+      },
+    ]
+
+    expect(getGlobalProgress(tasks)).toBe(50)
+  })
+
+  it('should cap individual task progress at 100%', () => {
+    const tasks: Task[] = [
+      {
+        id: '1',
+        title: 'Over-completed',
+        type: 'progress',
+        targetValue: 100,
+        currentValue: 150, // should be capped at 100%
+        unit: 'pages',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        checkInEnabled: true,
+      },
+    ]
+
+    expect(getGlobalProgress(tasks)).toBe(100)
   })
 })

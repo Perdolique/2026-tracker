@@ -97,6 +97,16 @@ export function getTaskProgress(task: Task): number {
   }
 }
 
+// Get global progress across all tasks as percentage (0-100)
+export function getGlobalProgress(tasks: Task[]): number {
+  if (tasks.length === 0) {
+    return 0
+  }
+
+  const totalProgress = tasks.reduce((sum, task) => sum + getTaskProgress(task), 0)
+  return totalProgress / tasks.length
+}
+
 // Get current date in YYYY-MM-DD format (UTC)
 export function getCurrentDate(): string {
   const [date] = new Date().toISOString().split('T')

@@ -150,6 +150,12 @@
         </div>
       </div>
 
+      <!-- Global Progress -->
+      <GlobalProgress
+        v-if="allTasks.length > 0"
+        :tasks="allTasks"
+      />
+
       <!-- Action buttons (only for own profile) -->
       <div v-if="isOwnProfile" :class="$style.actions">
         <button
@@ -274,6 +280,7 @@
   import { useTaskStore } from '@/stores/task-store'
   import { useLocale } from '@/composables/use-locale'
   import TaskCard from '@/components/TaskCard.vue'
+  import GlobalProgress from '@/components/GlobalProgress.vue'
   import { isTaskCompleted, type Task, type DailyTask, type ProgressTask, type OneTimeTask } from '@/models/task'
 
   interface PublicUser {
@@ -333,6 +340,14 @@
       return taskStore.completedTasks
     }
     return profile.value?.tasks.filter(t => isTaskCompleted(t)) ?? []
+  })
+
+  // All tasks for global progress calculation
+  const allTasks = computed(() => {
+    if (isOwnProfile.value) {
+      return taskStore.tasks
+    }
+    return profile.value?.tasks ?? []
   })
 
   onMounted(async () => {
