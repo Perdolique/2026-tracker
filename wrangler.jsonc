@@ -4,6 +4,10 @@
   "main": "worker/index.ts",
   "compatibility_date": "2025-01-01",
 
+  "placement": {
+    "mode": "smart"
+  },
+
   // Static assets configuration (SPA mode)
   "assets": {
     "directory": "./dist",
