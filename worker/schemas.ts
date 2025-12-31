@@ -9,6 +9,7 @@ export const createTaskSchema = valibot.object({
   targetDays: valibot.optional(valibot.number()),
   targetValue: valibot.optional(valibot.number()),
   unit: valibot.optional(valibot.string()),
+  checkInEnabled: valibot.optional(valibot.boolean()),
 })
 
 export const updateTaskSchema = valibot.object({
@@ -17,6 +18,7 @@ export const updateTaskSchema = valibot.object({
   description: valibot.optional(valibot.string()),
   type: taskTypeSchema,
   createdAt: valibot.string(),
+  checkInEnabled: valibot.boolean(),
   // Daily
   targetDays: valibot.optional(valibot.number()),
   completedDates: valibot.optional(valibot.array(valibot.string())),

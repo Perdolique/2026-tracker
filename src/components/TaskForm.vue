@@ -97,6 +97,18 @@
       </div>
     </template>
 
+    <div :class="$style.checkInField">
+      <label :class="$style.checkboxLabel">
+        <input
+          v-model="checkInEnabled"
+          type="checkbox"
+          :class="$style.checkbox"
+        />
+        <span :class="$style.checkboxText">{{ $t('taskForm.checkInEnabled') }}</span>
+      </label>
+      <span :class="$style.checkInHint">{{ $t('taskForm.checkInEnabledHint') }}</span>
+    </div>
+
     <div :class="$style.actions">
       <button
         type="button"
@@ -131,6 +143,7 @@
   const targetDays = ref(30)
   const targetValue = ref(1000)
   const unit = ref('')
+  const checkInEnabled = ref(false)
 
   const isValid = computed(() => {
     if (!title.value.trim()) {return false}
@@ -146,6 +159,7 @@
       title: title.value.trim(),
       description: description.value.trim() || undefined,
       type: taskType.value,
+      checkInEnabled: checkInEnabled.value,
     }
 
     if (taskType.value === 'daily') {
@@ -283,5 +297,41 @@
   .submitBtn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  .checkInField {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 16px;
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: 8px;
+  }
+
+  .checkboxLabel {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+  }
+
+  .checkbox {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--color-primary);
+    cursor: pointer;
+  }
+
+  .checkboxText {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-text);
+  }
+
+  .checkInHint {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    padding-left: 30px;
   }
 </style>

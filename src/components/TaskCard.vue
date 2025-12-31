@@ -149,6 +149,19 @@
                 />
               </div>
             </template>
+
+            <!-- Check-in control (common for all task types) -->
+            <div :class="$style.checkInField">
+              <label :class="$style.checkboxLabel">
+                <input
+                  v-model="editForm.checkInEnabled"
+                  type="checkbox"
+                  :class="$style.checkbox"
+                />
+                <span>{{ $t('taskForm.checkInEnabled') }}</span>
+              </label>
+              <span :class="$style.checkInHint">{{ $t('taskForm.checkInEnabledHint') }}</span>
+            </div>
           </div>
 
           <div :class="$style.modalActions">
@@ -202,6 +215,7 @@
     unit: '',
     completedDates: [] as string[],
     newDate: '',
+    checkInEnabled: false,
   })
 
   const progress = computed(() => getTaskProgress(props.task))
@@ -277,6 +291,7 @@
     editForm.title = props.task.title
     editForm.description = props.task.description ?? ''
     editForm.newDate = ''
+    editForm.checkInEnabled = props.task.checkInEnabled
 
     if (isDailyTask(props.task)) {
       editForm.targetDays = props.task.targetDays
@@ -314,6 +329,7 @@
         description: editForm.description.trim() || undefined,
         targetDays: editForm.targetDays,
         completedDates: editForm.completedDates,
+        checkInEnabled: editForm.checkInEnabled,
       } satisfies DailyTask
     } else if (isProgressTask(props.task)) {
       updatedTask = {
@@ -323,12 +339,14 @@
         currentValue: editForm.currentValue,
         targetValue: editForm.targetValue,
         unit: editForm.unit.trim(),
+        checkInEnabled: editForm.checkInEnabled,
       } satisfies ProgressTask
     } else {
       updatedTask = {
         ...props.task,
         title: editForm.title.trim(),
         description: editForm.description.trim() || undefined,
+        checkInEnabled: editForm.checkInEnabled,
       }
     }
 
@@ -677,5 +695,35 @@
   .saveBtn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+  }
+
+  .checkInField {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px;
+    background: var(--color-hover);
+    border-radius: 8px;
+    margin-top: 8px;
+  }
+
+  .checkboxLabel {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+  }
+
+  .checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-primary);
+    cursor: pointer;
+  }
+
+  .checkInHint {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    padding-left: 28px;
   }
 </style>

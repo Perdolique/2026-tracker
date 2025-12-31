@@ -36,6 +36,8 @@ const enLocale = {
     targetValue: 'Target value',
     unit: 'Unit of measurement',
     unitPlaceholder: 'steps, pages, km...',
+    checkInEnabled: 'Include in check-in',
+    checkInEnabledHint: 'Task will appear during daily check-in',
   },
   taskCard: {
     menuLabel: 'Task menu',

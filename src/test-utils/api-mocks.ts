@@ -42,6 +42,7 @@ export function createMockOneTimeTask(overrides: Partial<OneTimeTask> = {}): One
     title: 'Test One-Time Task',
     type: 'one-time',
     createdAt: '2026-01-01',
+    checkInEnabled: true,
     ...overrides,
   }
 }
@@ -54,6 +55,7 @@ export function createMockDailyTask(overrides: Partial<DailyTask> = {}): DailyTa
     targetDays: 100,
     completedDates: [],
     createdAt: '2026-01-01',
+    checkInEnabled: true,
     ...overrides,
   }
 }
@@ -67,6 +69,7 @@ export function createMockProgressTask(overrides: Partial<ProgressTask> = {}): P
     currentValue: 0,
     unit: 'units',
     createdAt: '2026-01-01',
+    checkInEnabled: true,
     ...overrides,
   }
 }
@@ -78,6 +81,7 @@ function createTaskFromData(data: CreateTaskData): Task {
     title: data.title,
     description: data.description,
     createdAt: TEST_DATE,
+    checkInEnabled: data.checkInEnabled ?? false,
   }
 
   switch (data.type) {

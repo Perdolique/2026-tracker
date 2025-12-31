@@ -12,6 +12,10 @@ export const useTaskStore = defineStore('tasks', () => {
 
   function getTasksForCheckIn(): Task[] {
     return activeTasks.value.filter((task) => {
+      // Only include tasks with check-in enabled
+      if (!task.checkInEnabled) {
+        return false
+      }
       // Skip daily tasks that were already completed today
       if (isDailyTask(task) && isDailyTaskCompletedToday(task)) {
         return false

@@ -36,6 +36,8 @@ const ruLocale = {
     targetValue: 'Целевое значение',
     unit: 'Единица измерения',
     unitPlaceholder: 'шагов, страниц, км...',
+    checkInEnabled: 'Включить в check-in',
+    checkInEnabledHint: 'Задача будет появляться при ежедневном чекине',
   },
   taskCard: {
     menuLabel: 'Меню задачи',
