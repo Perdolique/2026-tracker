@@ -26,36 +26,21 @@
     <div :class="$style.field">
       <label :class="$style.label">{{ $t('taskForm.typeLabel') }}</label>
       <div :class="$style.typeSelector">
-        <label :class="[$style.typeOption, taskType === 'daily' && $style.typeOptionActive]">
-          <input
-            v-model="taskType"
-            type="radio"
-            value="daily"
-            :class="$style.radioHidden"
-          />
-          <Icon icon="tabler:calendar-check" :class="$style.typeIcon" />
-          <span>{{ $t('taskForm.typeDaily') }}</span>
-        </label>
-        <label :class="[$style.typeOption, taskType === 'progress' && $style.typeOptionActive]">
-          <input
-            v-model="taskType"
-            type="radio"
-            value="progress"
-            :class="$style.radioHidden"
-          />
-          <Icon icon="tabler:chart-line" :class="$style.typeIcon" />
-          <span>{{ $t('taskForm.typeProgress') }}</span>
-        </label>
-        <label :class="[$style.typeOption, taskType === 'one-time' && $style.typeOptionActive]">
-          <input
-            v-model="taskType"
-            type="radio"
-            value="one-time"
-            :class="$style.radioHidden"
-          />
-          <Icon icon="tabler:circle-check" :class="$style.typeIcon" />
-          <span>{{ $t('taskForm.typeOneTime') }}</span>
-        </label>
+        <TypeOption
+          type="daily"
+          :selected="taskType === 'daily'"
+          @select="taskType = $event"
+        />
+        <TypeOption
+          type="progress"
+          :selected="taskType === 'progress'"
+          @select="taskType = $event"
+        />
+        <TypeOption
+          type="one-time"
+          :selected="taskType === 'one-time'"
+          @select="taskType = $event"
+        />
       </div>
     </div>
 
@@ -130,7 +115,7 @@
 
 <script setup lang="ts">
   import { ref, computed } from 'vue'
-  import { Icon } from '@iconify/vue'
+  import TypeOption from '@/components/TypeOption.vue'
   import type { CreateTaskData, TaskType } from '@/models/task'
 
   const emit = defineEmits<{
@@ -223,40 +208,6 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
-  }
-
-  .typeOption {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    padding: 12px 8px;
-    border: 2px solid var(--color-border);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 0.875rem;
-    text-align: center;
-  }
-
-  .typeOption:hover {
-    border-color: var(--color-primary);
-  }
-
-  .typeOptionActive {
-    border-color: var(--color-primary);
-    background: var(--color-primary-bg);
-  }
-
-  .typeIcon {
-    width: 24px;
-    height: 24px;
-  }
-
-  .radioHidden {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
   }
 
   .actions {

@@ -159,11 +159,10 @@
       <!-- Action buttons (only for own profile) -->
       <div v-if="isOwnProfile" :class="$style.actions">
         <button
-          :class="$style.controlBtn"
-          :disabled="taskStore.getTasksForCheckIn().length === 0"
-          @click="goToControl"
+          :class="$style.addTaskBtn"
+          @click="goToAddTask"
         >
-          <Icon icon="tabler:device-gamepad-2" :class="$style.checkInIcon" /> Check-in
+          <Icon icon="tabler:plus" :class="$style.addTaskIcon" /> {{ $t('profile.addTask') }}
         </button>
       </div>
 
@@ -233,9 +232,13 @@
       </template>
 
       <!-- FAB (only for own profile) -->
-      <button v-if="isOwnProfile" :class="$style.fab" @click="goToAddTask" :aria-label="$t('profile.addTask')">
-        +
-      </button>
+      <FabButton
+        v-if="isOwnProfile"
+        icon="tabler:device-gamepad-2"
+        :aria-label="'Check-in'"
+        :disabled="taskStore.getTasksForCheckIn().length === 0"
+        @click="goToControl"
+      />
     </template>
   </div>
 </template>
@@ -250,6 +253,7 @@
   import { useLocale } from '@/composables/use-locale'
   import TaskCard from '@/components/TaskCard.vue'
   import GlobalProgress from '@/components/GlobalProgress.vue'
+  import FabButton from '@/components/FabButton.vue'
   import { isTaskCompleted, type Task } from '@/models/task'
 
   interface PublicUser {
@@ -840,33 +844,33 @@
     margin-bottom: 24px;
   }
 
-  .controlBtn {
+  .addTaskBtn {
     display: flex;
     align-items: center;
     gap: 8px;
     padding: 14px 24px;
     font-size: 1rem;
     font-weight: 600;
-    border: none;
+    border: 2px solid var(--color-primary);
     border-radius: 12px;
     cursor: pointer;
-    transition: transform 0.1s, opacity 0.2s;
+    transition: transform 0.1s, background 0.2s, color 0.2s;
+    background: transparent;
+    color: var(--color-primary);
+  }
+
+  .addTaskBtn:hover {
     background: var(--color-primary);
     color: white;
   }
 
-  .checkInIcon {
+  .addTaskIcon {
     width: 20px;
     height: 20px;
   }
 
-  .controlBtn:active {
+  .addTaskBtn:active {
     transform: scale(0.98);
-  }
-
-  .controlBtn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
   }
 
   .empty {
@@ -899,34 +903,5 @@
     gap: 16px;
   }
 
-  .fab {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    border: none;
-    padding: 0;
-    background: var(--color-primary);
-    color: white;
-    font-size: 2.5rem;
-    font-weight: 400;
-    line-height: 2.5rem;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s, box-shadow 0.2s;
-    display: grid;
-    align-items: center;
-    justify-content: center;
-  }
 
-  .fab:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-  }
-
-  .fab:active {
-    transform: scale(0.95);
-  }
 </style>
