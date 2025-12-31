@@ -111,7 +111,7 @@ Get Twitch credentials at https://dev.twitch.tv/console
 
 ```text
 src/
-├── api/           # API client (fetch-based)
+├── api/           # API client (ky-based)
 ├── components/    # Reusable Vue components
 ├── models/        # TypeScript interfaces/types
 │   └── __tests__/ # Unit tests
