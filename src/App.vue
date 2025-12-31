@@ -1,7 +1,12 @@
 <template>
   <div :class="$style.app">
     <ErrorBanner :message="taskStore.error" @dismiss="taskStore.clearError()" />
-    <RouterView />
+
+    <main :class="$style.main">
+      <RouterView />
+    </main>
+
+    <AppFooter />
   </div>
 </template>
 
@@ -9,14 +14,24 @@
   import { RouterView } from 'vue-router'
   import { useTaskStore } from '@/stores/task-store'
   import ErrorBanner from '@/components/ErrorBanner.vue'
+  import AppFooter from '@/components/AppFooter.vue'
 
   const taskStore = useTaskStore()
 </script>
 
 <style module>
   .app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
     max-width: var(--content-max-width);
     margin: 0 auto;
+  }
+
+  .main {
+    flex: 1;
+    overflow-y: auto;
   }
 </style>
 
@@ -82,6 +97,8 @@
     font-size: 16px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    height: 100%;
+    overflow: hidden;
   }
 
   body {
@@ -89,7 +106,8 @@
     padding: 0;
     background: var(--color-bg);
     color: var(--color-text);
-    min-height: 100vh;
+    height: 100%;
+    overflow: hidden;
   }
 
   /* Reset */

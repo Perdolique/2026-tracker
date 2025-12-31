@@ -34,7 +34,6 @@
 
 <style module>
   .container {
-    min-height: 100vh;
     padding: 16px;
   }
 

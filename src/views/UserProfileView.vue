@@ -432,9 +432,7 @@
 
 <style module>
   .container {
-    min-height: 100vh;
     padding: 16px;
-    padding-bottom: 100px;
   }
 
   .loading {
