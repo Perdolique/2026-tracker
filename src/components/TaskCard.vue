@@ -43,29 +43,48 @@
         <h3 :class="$style.modalTitle">{{ $t('taskCard.editTitle') }}</h3>
 
         <form :class="$style.modalForm" @submit.prevent="saveChanges">
+          <!-- Tab header for daily tasks -->
+          <div v-if="isDailyTask(task)" :class="$style.tabHeader">
+            <button
+              type="button"
+              :class="[$style.tabBtn, activeTab === 'general' && $style.tabActive]"
+              @click="activeTab = 'general'"
+            >
+              {{ $t('taskCard.tabGeneral') }}
+            </button>
+            <button
+              type="button"
+              :class="[$style.tabBtn, activeTab === 'days' && $style.tabActive]"
+              @click="activeTab = 'days'"
+            >
+              {{ $t('taskCard.tabDays') }} ({{ editForm.completedDates.length }})
+            </button>
+          </div>
+
           <div :class="$style.modalScrollArea">
-            <div :class="$style.formGroup">
-              <label :class="$style.label">{{ $t('taskForm.titleLabel') }}</label>
-              <input
-                v-model="editForm.title"
-                :class="$style.input"
-                type="text"
-                required
-              />
-            </div>
-
-            <div :class="$style.formGroup">
-              <label :class="$style.label">{{ $t('taskForm.descriptionLabel') }}</label>
-              <textarea
-                v-model="editForm.description"
-                :class="$style.textarea"
-                rows="3"
-              />
-            </div>
-
-            <!-- Daily task fields -->
-            <template v-if="isDailyTask(task)">
+            <!-- General tab content (or default for non-daily tasks) -->
+            <template v-if="!isDailyTask(task) || activeTab === 'general'">
               <div :class="$style.formGroup">
+                <label :class="$style.label">{{ $t('taskForm.titleLabel') }}</label>
+                <input
+                  v-model="editForm.title"
+                  :class="$style.input"
+                  type="text"
+                  required
+                />
+              </div>
+
+              <div :class="$style.formGroup">
+                <label :class="$style.label">{{ $t('taskForm.descriptionLabel') }}</label>
+                <textarea
+                  v-model="editForm.description"
+                  :class="$style.textarea"
+                  rows="3"
+                />
+              </div>
+
+              <!-- Daily task goal field -->
+              <div v-if="isDailyTask(task)" :class="$style.formGroup">
                 <label :class="$style.label">{{ $t('taskCard.goalDays') }}</label>
                 <input
                   v-model.number="editForm.targetDays"
@@ -75,7 +94,10 @@
                   required
                 />
               </div>
+            </template>
 
+            <!-- Days tab content (daily tasks only) -->
+            <template v-if="isDailyTask(task) && activeTab === 'days'">
               <div :class="$style.formGroup">
                 <label :class="$style.label">{{ $t('taskCard.completedDays') }} ({{ editForm.completedDates.length }})</label>
 
@@ -175,8 +197,8 @@
               </div>
             </template>
 
-            <!-- Check-in control (common for all task types) -->
-            <div :class="$style.checkInField">
+            <!-- Check-in control (shown in general tab for daily, always for others) -->
+            <div v-if="!isDailyTask(task) || activeTab === 'general'" :class="$style.checkInField">
               <label :class="$style.checkboxLabel">
                 <input
                   v-model="editForm.checkInEnabled"
@@ -229,6 +251,7 @@
   // Menu state
   const showEditModal = ref(false)
   const isSaving = ref(false)
+  const activeTab = ref<'general' | 'days'>('general')
 
   // Edit form state
   const editForm = reactive({
@@ -341,6 +364,7 @@
   function openEditModal() {
     hideMenu()
     initEditForm()
+    activeTab.value = 'general'
     showEditModal.value = true
   }
 
@@ -561,6 +585,40 @@
     flex-direction: column;
     min-height: 0;
     flex: 1;
+  }
+
+  .tabHeader {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-shrink: 0;
+  }
+
+  .tabBtn {
+    flex: 1;
+    padding: 10px 16px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: var(--color-background);
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+  }
+
+  .tabBtn:hover {
+    background: var(--color-hover);
+  }
+
+  .tabActive {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+  }
+
+  .tabActive:hover {
+    background: var(--color-primary-hover);
   }
 
   .modalScrollArea {

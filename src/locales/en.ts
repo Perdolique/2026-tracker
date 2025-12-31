@@ -56,6 +56,8 @@ const enLocale = {
     currentProgress: 'Current progress',
     goal: 'Goal',
     daysProgress: '{completed} / {target} days',
+    tabGeneral: 'General',
+    tabDays: 'Days',
   },
   checkIn: {
     pageTitle: 'Check-in 🎮',

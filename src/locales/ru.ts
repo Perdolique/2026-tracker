@@ -56,6 +56,8 @@ const ruLocale = {
     currentProgress: 'Текущий прогресс',
     goal: 'Цель',
     daysProgress: '{completed} / {target} дней',
+    tabGeneral: 'Основные',
+    tabDays: 'Дни',
   },
   checkIn: {
     pageTitle: 'Check-in 🎮',
