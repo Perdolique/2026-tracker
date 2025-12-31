@@ -3,10 +3,12 @@
     <ErrorBanner :message="taskStore.error" @dismiss="taskStore.clearError()" />
 
     <main :class="$style.main">
-      <RouterView />
+      <div :class="$style.content">
+        <RouterView />
+      </div>
     </main>
 
-    <AppFooter />
+    <AppFooter :class="$style.content" />
   </div>
 </template>
 
@@ -25,13 +27,17 @@
     flex-direction: column;
     height: 100vh;
     height: 100dvh;
-    max-width: var(--content-max-width);
-    margin: 0 auto;
   }
 
   .main {
     flex: 1;
     overflow-y: auto;
+  }
+
+  .content {
+    max-width: var(--content-max-width);
+    margin: 0 auto;
+    width: 100%;
   }
 </style>
 
