@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, useCssModule } from 'vue'
+  import { computed } from 'vue'
   import { useI18n } from 'vue-i18n'
   import { Icon } from '@iconify/vue'
   import type { TaskType } from '@/models/task'
@@ -60,18 +60,16 @@
   const typeClass = computed(() => {
     switch (type) {
       case 'daily': {
-        return $style.daily
+        return 'daily'
       }
       case 'progress': {
-        return $style.progress
+        return 'progress'
       }
       case 'one-time': {
-        return $style.onetime
+        return 'onetime'
       }
     }
   })
-
-  const $style = useCssModule()
 </script>
 
 <style module>
@@ -107,35 +105,35 @@
   }
 
   /* Daily */
-  .daily:hover,
-  .daily.selected {
+  .option:global(.daily):hover,
+  .option:global(.daily).selected {
     border-color: var(--color-daily);
     color: var(--color-daily);
   }
 
-  .daily.selected {
+  .option:global(.daily).selected {
     background: var(--color-daily-bg);
   }
 
   /* Progress */
-  .progress:hover,
-  .progress.selected {
+  .option:global(.progress):hover,
+  .option:global(.progress).selected {
     border-color: var(--color-progress-chip);
     color: var(--color-progress-chip);
   }
 
-  .progress.selected {
+  .option:global(.progress).selected {
     background: var(--color-progress-chip-bg);
   }
 
   /* One-time */
-  .onetime:hover,
-  .onetime.selected {
+  .option:global(.onetime):hover,
+  .option:global(.onetime).selected {
     border-color: var(--color-onetime);
     color: var(--color-onetime);
   }
 
-  .onetime.selected {
+  .option:global(.onetime).selected {
     background: var(--color-onetime-bg);
   }
 </style>

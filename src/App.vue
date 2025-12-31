@@ -1,11 +1,16 @@
 <template>
   <div :class="$style.app">
+    <ErrorBanner :message="taskStore.error" @dismiss="taskStore.clearError()" />
     <RouterView />
   </div>
 </template>
 
 <script setup lang="ts">
   import { RouterView } from 'vue-router'
+  import { useTaskStore } from '@/stores/task-store'
+  import ErrorBanner from '@/components/ErrorBanner.vue'
+
+  const taskStore = useTaskStore()
 </script>
 
 <style module>

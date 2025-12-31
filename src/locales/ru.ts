@@ -93,6 +93,13 @@ const ruLocale = {
     inProgress: 'В процессе',
     language: 'Язык',
   },
+  errors: {
+    fetchTasks: 'Не удалось загрузить задачи',
+    createTask: 'Не удалось создать задачу',
+    updateTask: 'Не удалось обновить задачу',
+    deleteTask: 'Не удалось удалить задачу',
+    checkIn: 'Не удалось записать check-in',
+  },
 }
 
 export default ruLocale

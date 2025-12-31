@@ -1,7 +1,7 @@
 <template>
   <div :class="$style.container">
-    <!-- Loading -->
-    <div v-if="isLoading" :class="$style.loading">
+    <!-- Loading (only when no data to display yet) -->
+    <div v-if="shouldShowLoading" :class="$style.loading">
       {{ $t('common.loading') }}
     </div>
 
@@ -166,13 +166,8 @@
         </button>
       </div>
 
-      <!-- Loading tasks (only on initial load) -->
-      <div v-if="isOwnProfile && taskStore.isLoading && taskStore.tasks.length === 0" :class="$style.loadingTasks">
-        {{ $t('profile.loadingTasks') }}
-      </div>
-
       <!-- Empty state -->
-      <div v-else-if="activeTasks.length === 0 && completedTasks.length === 0" :class="$style.empty">
+      <div v-if="activeTasks.length === 0 && completedTasks.length === 0" :class="$style.empty">
         <p :class="$style.emptyText">{{ $t('profile.noTasksYet') }}</p>
         <p v-if="isOwnProfile" :class="$style.emptyHint">{{ $t('profile.addFirstGoal') }}</p>
       </div>
@@ -276,10 +271,24 @@
   const { locale, setLocale, syncLocaleFromUser } = useLocale()
 
   const profile = ref<Profile | null>(null)
-  const isLoading = ref(true)
   const error = ref<string | null>(null)
   const showShareModal = ref(false)
   const copied = ref(false)
+
+  // Check if this is own profile based on authStore (before profile loads)
+  const isLikelyOwnProfile = computed(() => {
+    const userId = route.params.userId as string
+    return authStore.user?.id === userId
+  })
+
+  // Show loading only on initial app load
+  // For own profile: wait for both authStore and taskStore
+  // For public profile: only wait for authStore (taskStore won't be fetched)
+  const shouldShowLoading = computed(() => {
+    if (!authStore.hasFetched) {return true}
+    if (isLikelyOwnProfile.value && !taskStore.hasFetched) {return true}
+    return false
+  })
 
   const isOwnProfile = computed(() => profile.value?.isOwner ?? false)
 
@@ -326,6 +335,21 @@
   onMounted(async () => {
     await authStore.fetchMe()
     syncLocaleFromUser()
+
+    // If this is own profile and we have cached data, initialize profile immediately
+    // This prevents loading flash on navigation back from other pages
+    if (isLikelyOwnProfile.value && taskStore.tasks.length > 0 && authStore.user) {
+      profile.value = {
+        user: {
+          id: authStore.user.id,
+          displayName: authStore.user.displayName,
+          avatarUrl: authStore.user.avatarUrl,
+        },
+        tasks: taskStore.tasks,
+        isOwner: true,
+      }
+    }
+
     await loadProfile()
   })
 
@@ -336,7 +360,6 @@
 
   async function loadProfile() {
     const userId = route.params.userId as string
-    isLoading.value = true
     error.value = null
 
     try {
@@ -365,8 +388,6 @@
       }
     } catch {
       error.value = 'network'
-    } finally {
-      isLoading.value = false
     }
   }
 
