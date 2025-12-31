@@ -75,8 +75,8 @@ On each iteration, before marking task complete, verify:
 - Project structure in docs matches actual directories
 - New files/directories are documented
 - Removed or renamed entities are updated in docs
-- Data models in docs match actual TypeScript interfaces
-- API endpoints documented match actual routes
+- Data models in docs match actual [TypeScript interfaces](#data-models)
+- API endpoints documented match actual [API routes](#api-endpoints)
 
 If discrepancies found — fix them as part of the current task.
 
