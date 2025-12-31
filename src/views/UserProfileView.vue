@@ -167,8 +167,8 @@
         </button>
       </div>
 
-      <!-- Loading tasks -->
-      <div v-if="isOwnProfile && taskStore.isLoading" :class="$style.loadingTasks">
+      <!-- Loading tasks (only on initial load) -->
+      <div v-if="isOwnProfile && taskStore.isLoading && taskStore.tasks.length === 0" :class="$style.loadingTasks">
         {{ $t('profile.loadingTasks') }}
       </div>
 
