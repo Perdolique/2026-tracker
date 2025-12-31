@@ -10,6 +10,7 @@ describe('Task Types', () => {
       targetDays: 300,
       completedDates: ['2026-01-01', '2026-01-02'],
       createdAt: '2026-01-01T00:00:00.000Z',
+      checkInEnabled: true,
     }
 
     expect(dailyTask.type).toBe('daily')
@@ -26,6 +27,7 @@ describe('Task Types', () => {
       currentValue: 5000,
       unit: 'steps',
       createdAt: '2026-01-01T00:00:00.000Z',
+      checkInEnabled: true,
     }
 
     expect(progressTask.type).toBe('progress')
@@ -39,6 +41,7 @@ describe('Task Types', () => {
       title: 'Read TypeScript handbook',
       type: 'one-time',
       createdAt: '2026-01-01T00:00:00.000Z',
+      checkInEnabled: false,
     }
 
     expect(oneTimeTask.type).toBe('one-time')
@@ -52,6 +55,7 @@ describe('Task Types', () => {
       type: 'one-time',
       completedAt: '2026-01-15T10:00:00.000Z',
       createdAt: '2026-01-01T00:00:00.000Z',
+      checkInEnabled: false,
     }
 
     expect(oneTimeTask.completedAt).toBe('2026-01-15T10:00:00.000Z')
@@ -97,6 +101,7 @@ describe('isDailyTaskCompletedToday', () => {
       targetDays: 100,
       completedDates: ['2026-01-14', '2026-01-15'],
       createdAt: '2026-01-01T00:00:00.000Z',
+      checkInEnabled: true,
     }
 
     expect(isDailyTaskCompletedToday(task)).toBeTruthy()
@@ -110,6 +115,7 @@ describe('isDailyTaskCompletedToday', () => {
       targetDays: 100,
       completedDates: ['2026-01-13', '2026-01-14'],
       createdAt: '2026-01-01T00:00:00.000Z',
+      checkInEnabled: true,
     }
 
     expect(isDailyTaskCompletedToday(task)).toBeFalsy()
@@ -123,6 +129,7 @@ describe('isDailyTaskCompletedToday', () => {
       targetDays: 100,
       completedDates: [],
       createdAt: '2026-01-01T00:00:00.000Z',
+      checkInEnabled: true,
     }
 
     expect(isDailyTaskCompletedToday(task)).toBeFalsy()

@@ -16,6 +16,7 @@ function rowToTask(row: TaskRow, completedDates: string[] = []): Task {
     title: row.title,
     description: row.description ?? undefined,
     createdAt: row.createdAt,
+    checkInEnabled: row.checkInEnabled ?? false,
   }
 
   switch (row.type) {
@@ -116,6 +117,7 @@ export async function createTask(db: Database, userId: string, data: CreateTaskD
     type: data.type as TaskType,
     createdAt,
     isArchived: false,
+    checkInEnabled: data.checkInEnabled ?? false,
   }
 
   switch (data.type) {
@@ -182,6 +184,7 @@ export async function updateTask(db: Database, userId: string, task: Task): Prom
   const baseUpdate = {
     title: task.title,
     description: task.description ?? null,
+    checkInEnabled: task.checkInEnabled,
   }
 
   const ownershipCondition = and(eq(tasks.id, task.id), eq(tasks.userId, userId))

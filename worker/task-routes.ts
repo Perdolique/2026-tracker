@@ -101,6 +101,7 @@ taskRoutes.put('/:id', vValidator('json', updateTaskSchema), async (context) => 
     title: data.title,
     description: data.description,
     createdAt: data.createdAt,
+    checkInEnabled: data.checkInEnabled,
   }
 
   const task: Task = (() => {

@@ -1,0 +1,1 @@
+ALTER TABLE `tasks` ADD `check_in_enabled` integer DEFAULT false NOT NULL;

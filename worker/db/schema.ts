@@ -61,6 +61,9 @@ export const tasks = sqliteTable(
 
     // One-time task fields
     completedAt: text('completed_at'),
+
+    // Check-in control
+    checkInEnabled: integer('check_in_enabled', { mode: 'boolean' }).notNull().default(false),
   },
   (table) => [index('tasks_user_id_idx').on(table.userId)]
 )

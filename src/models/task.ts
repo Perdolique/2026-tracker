@@ -8,6 +8,7 @@ export interface BaseTask {
   description?: string
   type: TaskType
   createdAt: string // ISO date
+  checkInEnabled: boolean // Include in daily check-in
 }
 
 // Daily task — complete N days total
@@ -42,6 +43,7 @@ export interface CreateTaskData {
   targetDays?: number // for daily
   targetValue?: number // for progress
   unit?: string // for progress
+  checkInEnabled?: boolean // Include in daily check-in (default: false)
 }
 
 // Check-in result for a single task

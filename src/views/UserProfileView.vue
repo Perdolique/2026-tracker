@@ -1008,7 +1008,7 @@
     height: 56px;
     border-radius: 50%;
     border: none;
-    padding: 0 0 6px;
+    padding: 0;
     background: var(--color-primary);
     color: white;
     font-size: 2.5rem;

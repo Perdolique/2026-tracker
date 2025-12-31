@@ -48,6 +48,7 @@ describe('ControlView - Browser Tests', () => {
       title: 'Test task',
       type: 'one-time',
       createdAt: '2026-01-01',
+      checkInEnabled: true,
     }
     setMockTasks([task])
 
@@ -117,6 +118,7 @@ describe('ControlView - Browser Tests', () => {
       title: 'Test No button',
       type: 'one-time',
       createdAt: '2026-01-01',
+      checkInEnabled: true,
     }
     setMockTasks([task])
 
@@ -174,12 +176,14 @@ describe('ControlView - Browser Tests', () => {
       title: 'First task',
       type: 'one-time',
       createdAt: '2026-01-01',
+      checkInEnabled: true,
     }
     const task2: OneTimeTask = {
       id: 'test-task-4',
       title: 'Second task',
       type: 'one-time',
       createdAt: '2026-01-02',
+      checkInEnabled: true,
     }
     setMockTasks([task1, task2])
 
@@ -256,6 +260,7 @@ describe('ControlView - Browser Tests', () => {
         targetDays: 100,
         completedDates: ['2026-01-01', '2026-01-02'],
         createdAt: '2026-01-01',
+        checkInEnabled: true,
       }
       setMockTasks([task])
 
@@ -306,6 +311,7 @@ describe('ControlView - Browser Tests', () => {
         targetDays: 50,
         completedDates: ['2026-01-01'],
         createdAt: '2026-01-01',
+        checkInEnabled: true,
       }
       setMockTasks([task])
 
@@ -350,6 +356,7 @@ describe('ControlView - Browser Tests', () => {
         targetDays: 100,
         completedDates: [TEST_DATE], // Already marked today
         createdAt: '2026-01-01',
+        checkInEnabled: true,
       }
       setMockTasks([task])
 
@@ -398,6 +405,7 @@ describe('ControlView - Browser Tests', () => {
         currentValue: 500_000,
         unit: 'steps',
         createdAt: '2026-01-01',
+        checkInEnabled: true,
       }
       setMockTasks([task])
 
@@ -449,6 +457,7 @@ describe('ControlView - Browser Tests', () => {
         currentValue: 50_000,
         unit: '$',
         createdAt: '2026-01-01',
+        checkInEnabled: true,
       }
       setMockTasks([task])
 
@@ -516,6 +525,7 @@ describe('ControlView - Browser Tests', () => {
         currentValue: 200,
         unit: 'km',
         createdAt: '2026-01-01',
+        checkInEnabled: true,
       }
       setMockTasks([task])
 
@@ -574,6 +584,7 @@ describe('ControlView - Browser Tests', () => {
         targetDays: 100,
         completedDates: [],
         createdAt: '2026-01-01',
+        checkInEnabled: true,
       }
 
       const progressTask: ProgressTask = {
@@ -584,6 +595,7 @@ describe('ControlView - Browser Tests', () => {
         currentValue: 100,
         unit: 'points',
         createdAt: '2026-01-01',
+        checkInEnabled: true,
       }
 
       const oneTimeTask: OneTimeTask = {
@@ -591,6 +603,7 @@ describe('ControlView - Browser Tests', () => {
         title: 'One-time task',
         type: 'one-time',
         createdAt: '2026-01-01',
+        checkInEnabled: true,
       }
 
       setMockTasks([dailyTask, progressTask, oneTimeTask])
