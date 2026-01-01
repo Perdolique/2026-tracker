@@ -96,11 +96,14 @@ taskRoutes.put('/:id', vValidator('json', updateTaskSchema), async (context) => 
   }
 
   // Reconstruct the Task union type from the flat schema
+  // Note: timestamps are server-controlled, not from client
   const baseTask = {
     id: data.id,
     title: data.title,
     description: data.description,
-    createdAt: data.createdAt,
+    // Timestamps will be set by updateTask, use placeholders for type safety
+    createdAt: '',
+    updatedAt: '',
     checkInEnabled: data.checkInEnabled,
   }
 

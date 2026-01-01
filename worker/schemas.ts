@@ -17,7 +17,6 @@ export const updateTaskSchema = valibot.object({
   title: valibot.pipe(valibot.string(), valibot.minLength(1)),
   description: valibot.optional(valibot.string()),
   type: taskTypeSchema,
-  createdAt: valibot.string(),
   checkInEnabled: valibot.boolean(),
   // Daily
   targetDays: valibot.optional(valibot.number()),

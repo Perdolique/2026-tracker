@@ -28,7 +28,9 @@ export async function createTask(data: CreateTaskData): Promise<Task> {
 
 // Update existing task
 export async function updateTask(task: Task): Promise<Task> {
-  return api.put(`tasks/${task.id}`, { json: task }).json<Task>()
+  // Strip timestamp fields - server will generate them
+  const { createdAt: _createdAt, updatedAt: _updatedAt, ...taskData } = task
+  return api.put(`tasks/${task.id}`, { json: taskData }).json<Task>()
 }
 
 // Delete task

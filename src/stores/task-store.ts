@@ -11,6 +11,33 @@ export const useTaskStore = defineStore('tasks', () => {
   const activeTasks = computed(() => tasks.value.filter((t) => !isTaskCompleted(t)))
   const completedTasks = computed(() => tasks.value.filter((t) => isTaskCompleted(t)))
 
+  // Sorted tasks with priority: check-in enabled → recently updated
+  const sortedActiveTasks = computed(() =>
+    activeTasks.value.toSorted((taskA, taskB) => {
+      // Priority 1: Tasks that require check-in
+      if (taskA.checkInEnabled && !taskB.checkInEnabled) {
+        return -1
+      }
+      if (!taskA.checkInEnabled && taskB.checkInEnabled) {
+        return 1
+      }
+
+      // Priority 2: Recently updated (desc)
+      const aUpdated = new Date(taskA.updatedAt).getTime()
+      const bUpdated = new Date(taskB.updatedAt).getTime()
+      return bUpdated - aUpdated
+    })
+  )
+
+  const sortedCompletedTasks = computed(() =>
+    // Completed tasks: sort by update date (most recent first)
+    completedTasks.value.toSorted((taskA, taskB) => {
+      const aUpdated = new Date(taskA.updatedAt).getTime()
+      const bUpdated = new Date(taskB.updatedAt).getTime()
+      return bUpdated - aUpdated
+    })
+  )
+
   function getTasksForCheckIn(): Task[] {
     return activeTasks.value.filter((task) => {
       // Only include tasks with check-in enabled
@@ -119,6 +146,8 @@ export const useTaskStore = defineStore('tasks', () => {
     error: errorMessage,
     activeTasks,
     completedTasks,
+    sortedActiveTasks,
+    sortedCompletedTasks,
     getTasksForCheckIn,
     fetchTasks,
     addTask,

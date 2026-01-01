@@ -48,6 +48,7 @@ describe('ControlView - Browser Tests', () => {
       title: 'Test task',
       type: 'one-time',
       createdAt: '2026-01-01',
+      updatedAt: '2026-01-01',
       checkInEnabled: true,
     }
     setMockTasks([task])
@@ -118,6 +119,7 @@ describe('ControlView - Browser Tests', () => {
       title: 'Test No button',
       type: 'one-time',
       createdAt: '2026-01-01',
+      updatedAt: '2026-01-01',
       checkInEnabled: true,
     }
     setMockTasks([task])
@@ -176,6 +178,7 @@ describe('ControlView - Browser Tests', () => {
       title: 'First task',
       type: 'one-time',
       createdAt: '2026-01-01',
+      updatedAt: '2026-01-01',
       checkInEnabled: true,
     }
     const task2: OneTimeTask = {
@@ -183,6 +186,7 @@ describe('ControlView - Browser Tests', () => {
       title: 'Second task',
       type: 'one-time',
       createdAt: '2026-01-02',
+      updatedAt: '2026-01-02',
       checkInEnabled: true,
     }
     setMockTasks([task1, task2])
@@ -258,8 +262,9 @@ describe('ControlView - Browser Tests', () => {
         title: 'Run every day',
         type: 'daily',
         targetDays: 100,
-        completedDates: ['2026-01-01', '2026-01-02'],
+        completedDates: ['2025-01-01', '2025-01-02'],
         createdAt: '2026-01-01',
+        updatedAt: '2026-01-01',
         checkInEnabled: true,
       }
       setMockTasks([task])
@@ -309,8 +314,9 @@ describe('ControlView - Browser Tests', () => {
         title: 'Read a book',
         type: 'daily',
         targetDays: 50,
-        completedDates: ['2026-01-01'],
+        completedDates: ['2025-01-01'],
         createdAt: '2026-01-01',
+        updatedAt: '2026-01-01',
         checkInEnabled: true,
       }
       setMockTasks([task])
@@ -345,7 +351,7 @@ describe('ControlView - Browser Tests', () => {
       const tasks = getMockTasksStorage() as DailyTask[]
       const unchangedTask = tasks.find((t) => t.id === 'daily-2')
 
-      expect(unchangedTask?.completedDates).toEqual(['2026-01-01'])
+      expect(unchangedTask?.completedDates).toEqual(['2025-01-01'])
     })
 
     it('should prevent duplicate date when checking in same day twice', async () => {
@@ -356,6 +362,7 @@ describe('ControlView - Browser Tests', () => {
         targetDays: 100,
         completedDates: [TEST_DATE], // Already marked today
         createdAt: '2026-01-01',
+        updatedAt: '2026-01-01',
         checkInEnabled: true,
       }
       setMockTasks([task])
@@ -405,6 +412,7 @@ describe('ControlView - Browser Tests', () => {
         currentValue: 500_000,
         unit: 'steps',
         createdAt: '2026-01-01',
+        updatedAt: '2026-01-01',
         checkInEnabled: true,
       }
       setMockTasks([task])
@@ -457,6 +465,7 @@ describe('ControlView - Browser Tests', () => {
         currentValue: 50_000,
         unit: '$',
         createdAt: '2026-01-01',
+        updatedAt: '2026-01-01',
         checkInEnabled: true,
       }
       setMockTasks([task])
@@ -525,6 +534,7 @@ describe('ControlView - Browser Tests', () => {
         currentValue: 200,
         unit: 'km',
         createdAt: '2026-01-01',
+        updatedAt: '2026-01-01',
         checkInEnabled: true,
       }
       setMockTasks([task])
@@ -584,6 +594,7 @@ describe('ControlView - Browser Tests', () => {
         targetDays: 100,
         completedDates: [],
         createdAt: '2026-01-01',
+        updatedAt: '2026-01-01',
         checkInEnabled: true,
       }
 
@@ -595,6 +606,7 @@ describe('ControlView - Browser Tests', () => {
         currentValue: 100,
         unit: 'points',
         createdAt: '2026-01-01',
+        updatedAt: '2026-01-01',
         checkInEnabled: true,
       }
 
@@ -603,6 +615,7 @@ describe('ControlView - Browser Tests', () => {
         title: 'One-time task',
         type: 'one-time',
         createdAt: '2026-01-01',
+        updatedAt: '2026-01-01',
         checkInEnabled: true,
       }
 

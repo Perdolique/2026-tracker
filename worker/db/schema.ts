@@ -50,6 +50,7 @@ export const tasks = sqliteTable(
     description: text('description'),
     type: text('type', { enum: taskTypes }).notNull(),
     createdAt: text('created_at').notNull(), // ISO timestamp
+    updatedAt: text('updated_at').notNull(), // ISO timestamp
 
     // Daily task fields
     targetDays: integer('target_days'),

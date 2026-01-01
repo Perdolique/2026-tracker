@@ -1,0 +1,1 @@
+ALTER TABLE `tasks` ADD `updated_at` text NOT NULL;

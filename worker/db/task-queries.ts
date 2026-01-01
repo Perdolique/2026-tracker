@@ -16,6 +16,7 @@ function rowToTask(row: TaskRow, completedDates: string[] = []): Task {
     title: row.title,
     description: row.description ?? undefined,
     createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
     checkInEnabled: row.checkInEnabled ?? false,
   }
 
@@ -107,7 +108,7 @@ export async function getTaskById(db: Database, id: string, userId?: string): Pr
  */
 export async function createTask(db: Database, userId: string, data: CreateTaskData): Promise<Task> {
   const id = crypto.randomUUID()
-  const createdAt = new Date().toISOString()
+  const now = new Date().toISOString()
 
   const baseRow = {
     id,
@@ -115,8 +116,8 @@ export async function createTask(db: Database, userId: string, data: CreateTaskD
     title: data.title,
     description: data.description ?? null,
     type: data.type as TaskType,
-    createdAt,
-    isArchived: false,
+    createdAt: now,
+    updatedAt: now,
     checkInEnabled: data.checkInEnabled ?? false,
   }
 
@@ -185,6 +186,7 @@ export async function updateTask(db: Database, userId: string, task: Task): Prom
     title: task.title,
     description: task.description ?? null,
     checkInEnabled: task.checkInEnabled,
+    updatedAt: new Date().toISOString(),
   }
 
   const ownershipCondition = and(eq(tasks.id, task.id), eq(tasks.userId, userId))
@@ -250,7 +252,8 @@ export async function updateTask(db: Database, userId: string, task: Task): Prom
     }
   }
 
-  return task
+  // Fetch and return the updated task with fresh server timestamp
+  return getTaskById(db, task.id, userId)
 }
 
 /**
@@ -287,7 +290,8 @@ export async function recordCheckIn(params: CheckInParams): Promise<Task | null>
     return task
   }
 
-  const todayParts = new Date().toISOString().split('T')
+  const now = new Date().toISOString()
+  const todayParts = now.split('T')
   const today = todayParts[0] ?? ''
   const ownershipCondition = and(eq(tasks.id, taskId), eq(tasks.userId, userId))
 
@@ -299,7 +303,9 @@ export async function recordCheckIn(params: CheckInParams): Promise<Task | null>
           taskId,
           completedDate: today,
         })
+        await db.update(tasks).set({ updatedAt: now }).where(ownershipCondition)
         task.completedDates.push(today)
+        task.updatedAt = now
       }
       break
     }
@@ -310,9 +316,10 @@ export async function recordCheckIn(params: CheckInParams): Promise<Task | null>
         const newValue = task.currentValue + value
         await db
           .update(tasks)
-          .set({ currentValue: newValue })
+          .set({ currentValue: newValue, updatedAt: now })
           .where(ownershipCondition)
         task.currentValue = newValue
+        task.updatedAt = now
       }
       break
     }
@@ -321,9 +328,10 @@ export async function recordCheckIn(params: CheckInParams): Promise<Task | null>
       // Mark as completed
       await db
         .update(tasks)
-        .set({ completedAt: today })
+        .set({ completedAt: today, updatedAt: now })
         .where(ownershipCondition)
       task.completedAt = today
+      task.updatedAt = now
       break
     }
   }
