@@ -8,6 +8,7 @@ export interface BaseTask {
   description?: string
   type: TaskType
   createdAt: string // ISO date
+  updatedAt: string // ISO date
   checkInEnabled: boolean // Include in daily check-in
 }
 

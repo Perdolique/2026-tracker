@@ -19,6 +19,7 @@ describe('Task Types', () => {
       targetDays: 300,
       completedDates: ['2026-01-01', '2026-01-02'],
       createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
       checkInEnabled: true,
     }
 
@@ -36,6 +37,7 @@ describe('Task Types', () => {
       currentValue: 5000,
       unit: 'steps',
       createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
       checkInEnabled: true,
     }
 
@@ -50,6 +52,7 @@ describe('Task Types', () => {
       title: 'Read TypeScript handbook',
       type: 'one-time',
       createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
       checkInEnabled: false,
     }
 
@@ -64,6 +67,7 @@ describe('Task Types', () => {
       type: 'one-time',
       completedAt: '2026-01-15T10:00:00.000Z',
       createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
       checkInEnabled: false,
     }
 
@@ -110,6 +114,7 @@ describe('isDailyTaskCompletedToday', () => {
       targetDays: 100,
       completedDates: ['2026-01-14', '2026-01-15'],
       createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
       checkInEnabled: true,
     }
 
@@ -124,6 +129,7 @@ describe('isDailyTaskCompletedToday', () => {
       targetDays: 100,
       completedDates: ['2026-01-13', '2026-01-14'],
       createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
       checkInEnabled: true,
     }
 
@@ -138,6 +144,7 @@ describe('isDailyTaskCompletedToday', () => {
       targetDays: 100,
       completedDates: [],
       createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
       checkInEnabled: true,
     }
 
@@ -159,6 +166,7 @@ describe('getGlobalProgress', () => {
         targetDays: 10,
         completedDates: Array.from({ length: 10 }, (_unused, index) => `2026-01-0${index + 1}`),
         createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
         checkInEnabled: true,
       },
       {
@@ -169,6 +177,7 @@ describe('getGlobalProgress', () => {
         currentValue: 100,
         unit: 'pages',
         createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
         checkInEnabled: true,
       },
       {
@@ -177,6 +186,7 @@ describe('getGlobalProgress', () => {
         type: 'one-time',
         completedAt: '2026-01-15T00:00:00.000Z',
         createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
         checkInEnabled: false,
       },
     ]
@@ -193,6 +203,7 @@ describe('getGlobalProgress', () => {
         targetDays: 10,
         completedDates: [],
         createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
         checkInEnabled: true,
       },
       {
@@ -203,6 +214,7 @@ describe('getGlobalProgress', () => {
         currentValue: 0,
         unit: 'pages',
         createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
         checkInEnabled: true,
       },
       {
@@ -210,6 +222,7 @@ describe('getGlobalProgress', () => {
         title: 'One-time task',
         type: 'one-time',
         createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
         checkInEnabled: false,
       },
     ]
@@ -226,6 +239,7 @@ describe('getGlobalProgress', () => {
         targetDays: 10,
         completedDates: ['2026-01-01', '2026-01-02', '2026-01-03', '2026-01-04', '2026-01-05'], // 50%
         createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
         checkInEnabled: true,
       },
       {
@@ -236,6 +250,7 @@ describe('getGlobalProgress', () => {
         currentValue: 50, // 50%
         unit: 'pages',
         createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
         checkInEnabled: true,
       },
     ]
@@ -252,6 +267,7 @@ describe('getGlobalProgress', () => {
         targetDays: 10,
         completedDates: Array.from({ length: 10 }, (_unused, index) => `2026-01-${String(index + 1).padStart(2, '0')}`), // 100%
         createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
         checkInEnabled: true,
       },
       {
@@ -262,6 +278,7 @@ describe('getGlobalProgress', () => {
         currentValue: 0, // 0%
         unit: 'pages',
         createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
         checkInEnabled: true,
       },
     ]
@@ -279,6 +296,7 @@ describe('getGlobalProgress', () => {
         currentValue: 150, // should be capped at 100%
         unit: 'pages',
         createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
         checkInEnabled: true,
       },
     ]
@@ -296,6 +314,7 @@ describe('getTaskProgress - division by zero edge cases', () => {
       targetDays: 0,
       completedDates: [],
       createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
       checkInEnabled: true,
     }
 
@@ -311,6 +330,7 @@ describe('getTaskProgress - division by zero edge cases', () => {
       currentValue: 0,
       unit: 'steps',
       createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
       checkInEnabled: true,
     }
 
@@ -326,6 +346,7 @@ describe('getTaskProgress - division by zero edge cases', () => {
       currentValue: 100,
       unit: 'pages',
       createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
       checkInEnabled: true,
     }
 
@@ -341,6 +362,7 @@ describe('getTaskProgress - division by zero edge cases', () => {
         targetDays: 0,
         completedDates: [],
         createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
         checkInEnabled: true,
       },
       {
@@ -351,6 +373,7 @@ describe('getTaskProgress - division by zero edge cases', () => {
         currentValue: 0,
         unit: 'steps',
         createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
         checkInEnabled: true,
       },
       {
@@ -361,6 +384,7 @@ describe('getTaskProgress - division by zero edge cases', () => {
         currentValue: 50,
         unit: 'pages',
         createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
         checkInEnabled: true,
       },
     ]

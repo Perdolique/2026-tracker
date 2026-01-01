@@ -312,16 +312,37 @@
   // For own profile, use taskStore; for public profile, use profile.tasks
   const activeTasks = computed(() => {
     if (isOwnProfile.value) {
-      return taskStore.activeTasks
+      return taskStore.sortedActiveTasks
     }
-    return profile.value?.tasks.filter(t => !isTaskCompleted(t)) ?? []
+    const tasks = profile.value?.tasks.filter(t => !isTaskCompleted(t)) ?? []
+    // Sort public profile tasks: check-in enabled first, then by updatedAt (desc)
+    return tasks.toSorted((taskA, taskB) => {
+      // Priority 1: Tasks that require check-in
+      if (taskA.checkInEnabled && !taskB.checkInEnabled) {
+        return -1
+      }
+      if (!taskA.checkInEnabled && taskB.checkInEnabled) {
+        return 1
+      }
+
+      // Priority 2: Recently updated (desc)
+      const aUpdated = new Date(taskA.updatedAt).getTime()
+      const bUpdated = new Date(taskB.updatedAt).getTime()
+      return bUpdated - aUpdated
+    })
   })
 
   const completedTasks = computed(() => {
     if (isOwnProfile.value) {
-      return taskStore.completedTasks
+      return taskStore.sortedCompletedTasks
     }
-    return profile.value?.tasks.filter(t => isTaskCompleted(t)) ?? []
+    const tasks = profile.value?.tasks.filter(t => isTaskCompleted(t)) ?? []
+    // Sort completed tasks by updatedAt (desc)
+    return tasks.toSorted((taskA, taskB) => {
+      const aUpdated = new Date(taskA.updatedAt).getTime()
+      const bUpdated = new Date(taskB.updatedAt).getTime()
+      return bUpdated - aUpdated
+    })
   })
 
   // All tasks for global progress calculation

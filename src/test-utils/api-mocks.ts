@@ -42,6 +42,7 @@ export function createMockOneTimeTask(overrides: Partial<OneTimeTask> = {}): One
     title: 'Test One-Time Task',
     type: 'one-time',
     createdAt: '2026-01-01',
+    updatedAt: overrides.updatedAt ?? '2026-01-01',
     checkInEnabled: true,
     ...overrides,
   }
@@ -55,6 +56,7 @@ export function createMockDailyTask(overrides: Partial<DailyTask> = {}): DailyTa
     targetDays: 100,
     completedDates: [],
     createdAt: '2026-01-01',
+    updatedAt: overrides.updatedAt ?? '2026-01-01',
     checkInEnabled: true,
     ...overrides,
   }
@@ -69,6 +71,7 @@ export function createMockProgressTask(overrides: Partial<ProgressTask> = {}): P
     currentValue: 0,
     unit: 'units',
     createdAt: '2026-01-01',
+    updatedAt: overrides.updatedAt ?? '2026-01-01',
     checkInEnabled: true,
     ...overrides,
   }
@@ -81,6 +84,7 @@ function createTaskFromData(data: CreateTaskData): Task {
     title: data.title,
     description: data.description,
     createdAt: TEST_DATE,
+    updatedAt: TEST_DATE,
     checkInEnabled: data.checkInEnabled ?? false,
   }
 
@@ -181,6 +185,7 @@ export const handlers = [
           const dailyTask = task as DailyTask
           if (!dailyTask.completedDates.includes(TEST_DATE)) {
             dailyTask.completedDates.push(TEST_DATE)
+            dailyTask.updatedAt = TEST_DATE
           }
           break
         }
@@ -188,12 +193,14 @@ export const handlers = [
           const progressTask = task as ProgressTask
           if (value !== undefined && value > 0) {
             progressTask.currentValue += value
+            progressTask.updatedAt = TEST_DATE
           }
           break
         }
         case 'one-time': {
           const oneTimeTask = task as OneTimeTask
           oneTimeTask.completedAt = TEST_DATE
+          oneTimeTask.updatedAt = TEST_DATE
           break
         }
       }
