@@ -25,7 +25,7 @@
       const data = await response.json()
       appVersion.value = `v${data.version}-${data.gitHash}`
     } catch {
-      // Fallback — версия не загрузилась, скрываем блок
+      // Fallback — version did not load, hide the version block
     }
   })
 </script>
