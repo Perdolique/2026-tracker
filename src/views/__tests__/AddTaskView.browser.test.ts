@@ -4,7 +4,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia, setActivePinia } from 'pinia'
 import AddTaskView from '../AddTaskView.vue'
 import HomeView from '../HomeView.vue'
-import type { DailyTask, ProgressTask, OneTimeTask } from '@/models/task'
+import { isProgressTask, isOneTimeTask, isDailyTask } from '@/models/task'
+
 import {
   resetMockStorage,
   setMockTasks,
@@ -13,6 +14,7 @@ import {
   stopMockServer,
   resetTaskIdCounter,
 } from '@/test-utils/api-mocks'
+
 import { createTestI18n } from '@/test-utils/i18n'
 import { delay, waitFor } from '@/test-utils/delay'
 
@@ -31,8 +33,8 @@ describe('AddTaskView - Browser Tests', () => {
     await startMockServer()
   })
 
-  afterAll(async () => {
-    await stopMockServer()
+  afterAll(() => {
+    stopMockServer()
   })
 
   beforeEach(() => {
@@ -101,11 +103,11 @@ describe('AddTaskView - Browser Tests', () => {
     const tasks = getMockTasksStorage()
     expect(tasks.length).toBe(1)
 
-    const createdTask = tasks[0] as DailyTask
-    expect(createdTask.title).toBe('Run every day')
-    expect(createdTask.type).toBe('daily')
-    expect(createdTask.targetDays).toBe(300)
-    expect(createdTask.completedDates).toEqual([])
+    const createdTask = tasks.find((t) => isDailyTask(t))
+    expect(createdTask?.title).toBe('Run every day')
+    expect(createdTask?.type).toBe('daily')
+    expect(createdTask?.targetDays).toBe(300)
+    expect(createdTask?.completedDates).toEqual([])
   })
 
   it('should create a progress task', async () => {
@@ -170,12 +172,12 @@ describe('AddTaskView - Browser Tests', () => {
     const tasks = getMockTasksStorage()
     expect(tasks.length).toBe(1)
 
-    const createdTask = tasks[0] as ProgressTask
-    expect(createdTask.title).toBe('Walk a million steps')
-    expect(createdTask.type).toBe('progress')
-    expect(createdTask.targetValue).toBe(1_000_000)
-    expect(createdTask.currentValue).toBe(0)
-    expect(createdTask.unit).toBe('steps')
+    const progressTasks = tasks.find((t) => isProgressTask(t))
+    expect(progressTasks?.title).toBe('Walk a million steps')
+    expect(progressTasks?.type).toBe('progress')
+    expect(progressTasks?.targetValue).toBe(1_000_000)
+    expect(progressTasks?.currentValue).toBe(0)
+    expect(progressTasks?.unit).toBe('steps')
   })
 
   it('should create a one-time task', async () => {
@@ -222,12 +224,14 @@ describe('AddTaskView - Browser Tests', () => {
     })
 
     const tasks = getMockTasksStorage()
+
     expect(tasks.length).toBe(1)
 
-    const createdTask = tasks[0] as OneTimeTask
-    expect(createdTask.title).toBe('Buy a bicycle')
-    expect(createdTask.type).toBe('one-time')
-    expect(createdTask.completedAt).toBeUndefined()
+    const oneTimeTask = tasks.find((t) => isOneTimeTask(t))
+
+    expect(oneTimeTask?.title).toBe('Buy a bicycle')
+    expect(oneTimeTask?.type).toBe('one-time')
+    expect(oneTimeTask?.completedAt).toBeUndefined()
   })
 
   it('should not create task without title', async () => {

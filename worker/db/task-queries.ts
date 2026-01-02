@@ -80,9 +80,9 @@ export async function getAllTasks(db: Database, userId: string): Promise<Task[]>
  * Get single task by ID (with optional user check)
  */
 export async function getTaskById(db: Database, id: string, userId?: string): Promise<Task | null> {
-  const conditions = userId
-    ? and(eq(tasks.id, id), eq(tasks.userId, userId))
-    : eq(tasks.id, id)
+  const conditions = userId === undefined
+    ? eq(tasks.id, id)
+    : and(eq(tasks.id, id), eq(tasks.userId, userId))
 
   const rows = await db.select().from(tasks).where(conditions)
   const [row] = rows

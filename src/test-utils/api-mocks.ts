@@ -1,4 +1,4 @@
-import { http, HttpResponse } from 'msw'
+import { http, HttpResponse, type PathParams } from 'msw'
 import { setupWorker } from 'msw/browser'
 import type { Task, DailyTask, ProgressTask, OneTimeTask, CreateTaskData } from '@/models/task'
 
@@ -121,8 +121,8 @@ export const handlers = [
   http.get('*/api/tasks', () => HttpResponse.json(mockTasksStorage)),
 
   // POST /api/tasks — создание задачи
-  http.post('*/api/tasks', async ({ request }) => {
-    const data = await request.json() as CreateTaskData
+  http.post<PathParams, CreateTaskData>('*/api/tasks', async ({ request }) => {
+    const data = await request.json()
     const newTask = createTaskFromData(data)
     mockTasksStorage.push(newTask)
 
@@ -142,9 +142,9 @@ export const handlers = [
   }),
 
   // PUT /api/tasks/:id — обновление задачи
-  http.put('*/api/tasks/:id', async ({ params, request }) => {
+  http.put<PathParams, Task>('*/api/tasks/:id', async ({ params, request }) => {
     const { id } = params
-    const updatedTask = await request.json() as Task
+    const updatedTask = await request.json()
 
     const index = mockTasksStorage.findIndex(t => t.id === id)
     if (index === -1) {
@@ -168,7 +168,7 @@ export const handlers = [
   }),
 
   // POST /api/tasks/:id/checkin — check-in
-  http.post('*/api/tasks/:id/checkin', async ({ params, request }) => {
+  http.post<PathParams, { completed: boolean; value?: number }>('*/api/tasks/:id/checkin', async ({ params, request }) => {
     const { id } = params
     const task = mockTasksStorage.find(t => t.id === id)
 
@@ -176,13 +176,13 @@ export const handlers = [
       return HttpResponse.json({ error: 'Not found' }, { status: 404 })
     }
 
-    const body = await request.json() as { completed: boolean; value?: number }
+    const body = await request.json()
     const { completed, value } = body
 
     if (completed) {
       switch (task.type) {
         case 'daily': {
-          const dailyTask = task as DailyTask
+          const dailyTask = task
           if (!dailyTask.completedDates.includes(TEST_DATE)) {
             dailyTask.completedDates.push(TEST_DATE)
             dailyTask.updatedAt = TEST_DATE
@@ -190,7 +190,7 @@ export const handlers = [
           break
         }
         case 'progress': {
-          const progressTask = task as ProgressTask
+          const progressTask = task
           if (value !== undefined && value > 0) {
             progressTask.currentValue += value
             progressTask.updatedAt = TEST_DATE
@@ -198,7 +198,7 @@ export const handlers = [
           break
         }
         case 'one-time': {
-          const oneTimeTask = task as OneTimeTask
+          const oneTimeTask = task
           oneTimeTask.completedAt = TEST_DATE
           oneTimeTask.updatedAt = TEST_DATE
           break
@@ -237,7 +237,7 @@ export async function startMockServer(): Promise<void> {
   })
 }
 
-export async function stopMockServer(): Promise<void> {
+export function stopMockServer() {
   if (worker) {
     worker.stop()
     worker = null

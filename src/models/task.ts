@@ -99,7 +99,7 @@ export function getTaskProgress(task: Task): number {
       return Math.min(100, (task.currentValue / task.targetValue) * 100)
     }
     case 'one-time': {
-      return task.completedAt ? 100 : 0
+      return task.completedAt === undefined ? 0 : 100
     }
   }
 }

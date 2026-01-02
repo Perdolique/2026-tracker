@@ -1,3 +1,5 @@
+// oxlint-disable-next-line id-length
+import * as v from 'valibot'
 import en from './en'
 import ru from './ru'
 
@@ -11,6 +13,11 @@ export const SUPPORTED_LOCALES: Locale[] = ['en', 'ru']
 export const DEFAULT_LOCALE: Locale = 'en'
 export const LOCALE_STORAGE_KEY = 'app-language'
 
+const storedLocaleSchema = v.union([
+  v.literal<Locale>('en'),
+  v.literal<Locale>('ru')
+])
+
 /**
  * Detect initial locale based on priority:
  * 1. localStorage (for returning users / guests)
@@ -20,8 +27,10 @@ export const LOCALE_STORAGE_KEY = 'app-language'
 export function detectInitialLocale(): Locale {
   // 1. Check localStorage
   const stored = localStorage.getItem(LOCALE_STORAGE_KEY)
-  if (stored && SUPPORTED_LOCALES.includes(stored as Locale)) {
-    return stored as Locale
+  const locale = v.safeParse(storedLocaleSchema, stored)
+
+  if (locale.success) {
+    return locale.output
   }
 
   // 2. Check browser language

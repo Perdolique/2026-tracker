@@ -30,6 +30,18 @@ interface Variables {
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>()
 
+interface TwitchUserResponse {
+  data: {
+    id: string
+    display_name: string
+    profile_image_url: string
+  }[]
+}
+
+interface TwitchTokenResponse {
+  access_token: string
+}
+
 // =============================================================================
 // Auth Middleware
 // =============================================================================
@@ -40,7 +52,9 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>()
 app.use('/api/*', async (context, next) => {
   const sessionId = getCookie(context, 'session')
 
-  if (sessionId) {
+  if (sessionId === undefined) {
+    context.set('user', null)
+  } else {
     const db = createDatabase(context.env.DB)
     const result = await getSessionWithUser(db, sessionId)
 
@@ -51,8 +65,6 @@ app.use('/api/*', async (context, next) => {
       deleteCookie(context, 'session')
       context.set('user', null)
     }
-  } else {
-    context.set('user', null)
   }
 
   await next()
@@ -74,7 +86,7 @@ app.get('/api/auth/twitch', (context) => {
     scope: 'user:read:email',
   })
 
-  return context.redirect(`https://id.twitch.tv/oauth2/authorize?${params}`)
+  return context.redirect(`https://id.twitch.tv/oauth2/authorize?${params.toString()}`)
 })
 
 // GET /api/auth/twitch/callback - Handle OAuth callback
@@ -82,7 +94,7 @@ app.get('/api/auth/twitch/callback', async (context) => {
   const code = context.req.query('code')
   const error = context.req.query('error')
 
-  if (error || !code) {
+  if (error !== undefined || code === undefined) {
     return context.redirect('/?auth_error=access_denied')
   }
 
@@ -109,7 +121,7 @@ app.get('/api/auth/twitch/callback', async (context) => {
       return context.redirect('/?auth_error=token_exchange_failed')
     }
 
-    const tokenData = (await tokenResponse.json()) as { access_token: string }
+    const tokenData = await tokenResponse.json<TwitchTokenResponse>()
 
     // Get user info from Twitch
     const userResponse = await fetch('https://api.twitch.tv/helix/users', {
@@ -124,9 +136,7 @@ app.get('/api/auth/twitch/callback', async (context) => {
       return context.redirect('/?auth_error=user_fetch_failed')
     }
 
-    const userData = (await userResponse.json()) as {
-      data: { id: string; display_name: string; profile_image_url: string }[]
-    }
+    const userData = await userResponse.json<TwitchUserResponse>()
     const [twitchUser] = userData.data
 
     if (!twitchUser) {
@@ -188,7 +198,7 @@ app.get('/api/auth/me', (context) => {
 app.post('/api/auth/logout', async (context) => {
   const sessionId = getCookie(context, 'session')
 
-  if (sessionId) {
+  if (sessionId !== undefined) {
     const db = createDatabase(context.env.DB)
     await deleteSession(db, sessionId)
   }
