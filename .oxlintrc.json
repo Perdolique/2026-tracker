@@ -21,7 +21,8 @@
       { "allow": ["@fontsource-variable/**"] }
     ],
     "vue/define-props-destructuring": "off",
-    "eslint/no-alert": "off"
+    "eslint/no-alert": "off",
+    "eslint/no-inline-comments": "off"
   },
 
   "overrides": [{
