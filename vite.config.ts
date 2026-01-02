@@ -9,7 +9,8 @@ import { execSync } from 'node:child_process';
 function generateVersionPlugin(): Plugin {
   return {
     name: 'generate-version',
-    buildStart() {
+    apply: 'build',
+    buildEnd() {
       const getGitHash = () => {
         try {
           return execSync('git rev-parse --short HEAD').toString().trim();
