@@ -32,3 +32,6 @@ dist-ssr
 
 # Test screenshots
 **/__screenshots__/
+
+# Generated version file
+public/version.json

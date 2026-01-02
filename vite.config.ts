@@ -1,12 +1,37 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from 'node:url'
 import { createHash, type BinaryLike } from 'node:crypto';
-import { basename } from 'node:path';
+import { basename, resolve } from 'node:path';
+import { writeFileSync } from 'node:fs';
+import { execSync } from 'node:child_process';
+
+function generateVersionPlugin(): Plugin {
+  return {
+    name: 'generate-version',
+    buildStart() {
+      const getGitHash = () => {
+        try {
+          return execSync('git rev-parse --short HEAD').toString().trim();
+        } catch {
+          return 'dev';
+        }
+      };
+
+      const version = {
+        version: process.env.npm_package_version ?? '1.0.0',
+        gitHash: getGitHash(),
+      };
+
+      const outputPath = resolve(__dirname, 'public/version.json');
+      writeFileSync(outputPath, JSON.stringify(version, null, 2));
+    },
+  };
+}
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue(), generateVersionPlugin()],
 
   resolve: {
     alias: {
