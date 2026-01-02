@@ -9,11 +9,25 @@
     >
       <Icon icon="tabler:brand-github" :class="$style.icon" />
     </a>
+    <div v-if="appVersion" :class="$style.version">{{ appVersion }}</div>
   </footer>
 </template>
 
 <script setup lang="ts">
   import { Icon } from '@iconify/vue'
+  import { ref, onMounted } from 'vue'
+
+  const appVersion = ref<string | null>(null)
+
+  onMounted(async () => {
+    try {
+      const response = await fetch('/version.json')
+      const data = await response.json()
+      appVersion.value = `v${data.version}-${data.gitHash}`
+    } catch {
+      // Fallback — version did not load, hide the version block
+    }
+  })
 </script>
 
 <style module>
@@ -34,5 +48,12 @@
   .icon {
     width: 24px;
     height: 24px;
+  }
+
+  .version {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    opacity: 0.7;
   }
 </style>
