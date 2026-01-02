@@ -3,14 +3,15 @@ import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from 'node:url'
 import { createHash, type BinaryLike } from 'node:crypto';
 import { basename, resolve } from 'node:path';
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 
 function generateVersionPlugin(): Plugin {
   return {
     name: 'generate-version',
     apply: 'build',
-    buildEnd() {
+
+    buildStart() {
       const getGitHash = () => {
         try {
           return execSync('git rev-parse --short HEAD').toString().trim();
@@ -19,8 +20,20 @@ function generateVersionPlugin(): Plugin {
         }
       };
 
+      const getPackageVersion = () => {
+        try {
+          const packageJson = JSON.parse(
+            readFileSync(resolve(__dirname, 'package.json'), 'utf8')
+          );
+
+          return packageJson.version ?? '?.?.?';
+        } catch {
+          return '?.?.?';
+        }
+      };
+
       const version = {
-        version: process.env.npm_package_version ?? '1.0.0',
+        version: getPackageVersion(),
         gitHash: getGitHash(),
       };
 
