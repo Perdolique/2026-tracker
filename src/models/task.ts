@@ -15,16 +15,16 @@ export interface BaseTask {
 // Daily task — complete N days total
 export interface DailyTask extends BaseTask {
   type: 'daily'
-  targetDays: number // e.g., 300
+  targetDays: number // E.g., 300
   completedDates: string[] // ISO dates when completed
 }
 
 // Progress task — accumulate value toward goal
 export interface ProgressTask extends BaseTask {
   type: 'progress'
-  targetValue: number // e.g., 1000000
-  currentValue: number // accumulated so far
-  unit: string // e.g., "steps", "pages", "km"
+  targetValue: number // E.g., 1000000
+  currentValue: number // Accumulated so far
+  unit: string // E.g., "steps", "pages", "km"
 }
 
 // One-time task — single completion
@@ -41,9 +41,9 @@ export interface CreateTaskData {
   title: string
   description?: string
   type: TaskType
-  targetDays?: number // for daily
-  targetValue?: number // for progress
-  unit?: string // for progress
+  targetDays?: number // For daily
+  targetValue?: number // For progress
+  unit?: string // For progress
   checkInEnabled?: boolean // Include in daily check-in (default: false)
 }
 
@@ -52,7 +52,7 @@ export interface CheckInResult {
   taskId: string
   date: string // ISO date
   completed: boolean
-  value?: number // for progress tasks
+  value?: number // For progress tasks
 }
 
 // Type guards
@@ -99,7 +99,7 @@ export function getTaskProgress(task: Task): number {
       return Math.min(100, (task.currentValue / task.targetValue) * 100)
     }
     case 'one-time': {
-      return task.completedAt ? 100 : 0
+      return task.completedAt === undefined ? 0 : 100
     }
   }
 }

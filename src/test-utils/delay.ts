@@ -2,7 +2,7 @@
  * Delay utility for tests — use instead of new Promise + setTimeout
  * eslint-disable-next-line eslint-plugin-promise/avoid-new -- intentional Promise wrapper for setTimeout
  */
-export const delay = (ms: number): Promise<void> =>
+export const delay = async (ms: number): Promise<void> =>
   // eslint-disable-next-line promise/avoid-new -- required for setTimeout wrapping
   new Promise((resolve) => {
     setTimeout(resolve, ms)

@@ -1,22 +1,26 @@
 import ky, { type KyInstance, type HTTPError } from 'ky'
+// oxlint-disable-next-line id-length
+import * as v from 'valibot'
 
-interface ApiErrorBody {
-  error?: string
-}
+const ApiErrorBodySchema = v.object({
+  error: v.optional(
+    v.string()
+  ),
+})
 
 // Extract error message from API response body
 async function extractErrorMessage(error: HTTPError): Promise<HTTPError> {
   const { response } = error
 
-  if (response) {
-    try {
-      const body = await response.clone().json() as ApiErrorBody
-      if (body.error) {
-        error.message = body.error
-      }
-    } catch {
-      // Response is not JSON, keep original message
+  try {
+    const body = await response.clone().json()
+    const parsedError = v.parse(ApiErrorBodySchema, body)
+
+    if (parsedError.error !== undefined) {
+      error.message = parsedError.error
     }
+  } catch {
+    // Response is not JSON, keep original message
   }
 
   return error

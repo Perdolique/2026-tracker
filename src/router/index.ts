@@ -6,22 +6,22 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: () => import('@/views/HomeView.vue'),
+      component: async () => import('@/views/HomeView.vue'),
     },
     {
       path: '/control',
       name: 'control',
-      component: () => import('@/views/ControlView.vue'),
+      component: async () => import('@/views/ControlView.vue'),
     },
     {
       path: '/add',
       name: 'add-task',
-      component: () => import('@/views/AddTaskView.vue'),
+      component: async () => import('@/views/AddTaskView.vue'),
     },
     {
       path: '/user/:userId',
       name: 'user-profile',
-      component: () => import('@/views/UserProfileView.vue'),
+      component: async () => import('@/views/UserProfileView.vue'),
     },
   ],
 })

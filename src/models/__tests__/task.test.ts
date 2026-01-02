@@ -293,7 +293,7 @@ describe('getGlobalProgress', () => {
         title: 'Over-completed',
         type: 'progress',
         targetValue: 100,
-        currentValue: 150, // should be capped at 100%
+        currentValue: 150, // Should be capped at 100%
         unit: 'pages',
         createdAt: '2026-01-01T00:00:00.000Z',
         updatedAt: '2026-01-01T00:00:00.000Z',

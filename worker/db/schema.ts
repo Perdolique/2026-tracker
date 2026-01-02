@@ -45,7 +45,7 @@ export const tasks = sqliteTable(
   'tasks',
   {
     id: text('id').primaryKey(), // UUID
-    userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }), // nullable for migration
+    userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }), // Nullable for migration
     title: text('title').notNull(),
     description: text('description'),
     type: text('type', { enum: taskTypes }).notNull(),

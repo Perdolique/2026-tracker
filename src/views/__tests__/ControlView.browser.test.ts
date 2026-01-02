@@ -4,7 +4,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia, setActivePinia } from 'pinia'
 import ControlView from '../ControlView.vue'
 import HomeView from '../HomeView.vue'
-import type { OneTimeTask, DailyTask, ProgressTask } from '@/models/task'
+import { type OneTimeTask, type DailyTask, type ProgressTask, isDailyTask, isProgressTask, isOneTimeTask } from '@/models/task'
 import {
   TEST_DATE,
   resetMockStorage,
@@ -32,8 +32,8 @@ describe('ControlView - Browser Tests', () => {
     await startMockServer()
   })
 
-  afterAll(async () => {
-    await stopMockServer()
+  afterAll(() => {
+    stopMockServer()
   })
 
   beforeEach(() => {
@@ -87,14 +87,16 @@ describe('ControlView - Browser Tests', () => {
 
     // Wait for storage update (API call via route mock)
     await waitFor(() => {
-      const tasks = getMockTasksStorage() as OneTimeTask[]
-      const updatedTask = tasks.find((t) => t.id === 'test-task-1')
+      const tasks = getMockTasksStorage()
+      const oneTimeTasks = tasks.filter((t) => isOneTimeTask(t))
+      const updatedTask = oneTimeTasks.find((t) => t.id === 'test-task-1')
       return updatedTask?.completedAt === TEST_DATE
     })
 
     // Check final state
-    const tasks = getMockTasksStorage() as OneTimeTask[]
-    const completedTask = tasks.find((t) => t.id === 'test-task-1')
+    const tasks = getMockTasksStorage()
+    const oneTimeTasks = tasks.filter((t) => isOneTimeTask(t))
+    const completedTask = oneTimeTasks.find((t) => t.id === 'test-task-1')
 
     expect(completedTask).toBeDefined()
     expect(completedTask?.completedAt).toBe(TEST_DATE)
@@ -155,8 +157,9 @@ describe('ControlView - Browser Tests', () => {
     await delay(100)
 
     // Check task wasn't changed
-    const tasks = getMockTasksStorage() as OneTimeTask[]
-    const unchangedTask = tasks.find((t) => t.id === 'test-task-2')
+    const tasks = getMockTasksStorage()
+    const oneTimeTasks = tasks.filter((t) => isOneTimeTask(t))
+    const unchangedTask = oneTimeTasks.find((t) => t.id === 'test-task-2')
 
     expect(unchangedTask).toBeDefined()
     expect(unchangedTask?.completedAt).toBeUndefined()
@@ -243,10 +246,10 @@ describe('ControlView - Browser Tests', () => {
     })
 
     // Check final task state
-    const tasks = getMockTasksStorage() as OneTimeTask[]
-
-    const finalTask1 = tasks.find((t) => t.id === 'test-task-3')
-    const finalTask2 = tasks.find((t) => t.id === 'test-task-4')
+    const tasks = getMockTasksStorage()
+    const oneTimeTasks = tasks.filter((t) => isOneTimeTask(t))
+    const finalTask1 = oneTimeTasks.find((t) => t.id === 'test-task-3')
+    const finalTask2 = oneTimeTasks.find((t) => t.id === 'test-task-4')
 
     // First task should be completed
     expect(finalTask1?.completedAt).toBe(TEST_DATE)
@@ -296,13 +299,15 @@ describe('ControlView - Browser Tests', () => {
 
       // Wait for storage update
       await waitFor(() => {
-        const tasks = getMockTasksStorage() as DailyTask[]
-        const updatedTask = tasks.find((t) => t.id === 'daily-1')
+        const tasks = getMockTasksStorage()
+        const dailyTasks = tasks.filter((t) => isDailyTask(t))
+        const updatedTask = dailyTasks.find((t) => t.id === 'daily-1')
         return updatedTask?.completedDates.includes(TEST_DATE) ?? false
       })
 
-      const tasks = getMockTasksStorage() as DailyTask[]
-      const completedTask = tasks.find((t) => t.id === 'daily-1')
+      const tasks = getMockTasksStorage()
+      const dailyTasks = tasks.filter((t) => isDailyTask(t))
+      const completedTask = dailyTasks.find((t) => t.id === 'daily-1')
 
       expect(completedTask?.completedDates).toContain(TEST_DATE)
       expect(completedTask?.completedDates.length).toBe(3)
@@ -348,8 +353,9 @@ describe('ControlView - Browser Tests', () => {
 
       await delay(100)
 
-      const tasks = getMockTasksStorage() as DailyTask[]
-      const unchangedTask = tasks.find((t) => t.id === 'daily-2')
+      const tasks = getMockTasksStorage()
+      const dailyTasks = tasks.filter((t) => isDailyTask(t))
+      const unchangedTask = dailyTasks.find((t) => t.id === 'daily-2')
 
       expect(unchangedTask?.completedDates).toEqual(['2025-01-01'])
     })
@@ -394,8 +400,9 @@ describe('ControlView - Browser Tests', () => {
 
       await delay(150)
 
-      const tasks = getMockTasksStorage() as DailyTask[]
-      const completedTask = tasks.find((t) => t.id === 'daily-4')
+      const tasks = getMockTasksStorage()
+      const dailyTasks = tasks.filter((t) => isDailyTask(t))
+      const completedTask = dailyTasks.find((t) => t.id === 'daily-4')
 
       expect(completedTask?.completedDates).toEqual([TEST_DATE])
       expect(completedTask?.completedDates.length).toBe(1) // No duplicate added
@@ -514,13 +521,15 @@ describe('ControlView - Browser Tests', () => {
 
       // Wait for storage update
       await waitFor(() => {
-        const tasks = getMockTasksStorage() as ProgressTask[]
-        const updatedTask = tasks.find((t) => t.id === 'progress-2')
+        const tasks = getMockTasksStorage()
+        const progressTasks = tasks.filter((t) => isProgressTask(t))
+        const updatedTask = progressTasks.find((t) => t.id === 'progress-2')
         return updatedTask?.currentValue === 65_000
       })
 
-      const tasks = getMockTasksStorage() as ProgressTask[]
-      const progressTask = tasks.find((t) => t.id === 'progress-2')
+      const tasks = getMockTasksStorage()
+      const progressTasks = tasks.filter((t) => isProgressTask(t))
+      const progressTask = progressTasks.find((t) => t.id === 'progress-2')
 
       expect(progressTask?.currentValue).toBe(65_000)
     })
@@ -578,8 +587,9 @@ describe('ControlView - Browser Tests', () => {
 
       await delay(100)
 
-      const tasks = getMockTasksStorage() as ProgressTask[]
-      const unchangedTask = tasks.find((t) => t.id === 'progress-3')
+      const tasks = getMockTasksStorage()
+      const progressTasks = tasks.filter((t) => isProgressTask(t))
+      const unchangedTask = progressTasks.find((t) => t.id === 'progress-3')
 
       expect(unchangedTask?.currentValue).toBe(200)
     })
@@ -709,15 +719,12 @@ describe('ControlView - Browser Tests', () => {
       })
 
       const tasks = getMockTasksStorage()
-
-      const finalDaily = tasks.find((t) => t.id === 'mixed-daily') as DailyTask
-      const finalProgress = tasks.find((t) => t.id === 'mixed-progress') as ProgressTask
-      const finalOneTime = tasks.find((t) => t.id === 'mixed-onetime') as OneTimeTask
+      const finalDaily = tasks.find((task) => isDailyTask(task))
+      const finalProgress = tasks.find((task) => isProgressTask(task))
+      const finalOneTime = tasks.find((task) => isOneTimeTask(task))
 
       expect(finalDaily?.completedDates).toContain(TEST_DATE)
-
       expect(finalProgress?.currentValue).toBe(350)
-
       expect(finalOneTime?.completedAt).toBeUndefined()
     })
   })
