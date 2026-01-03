@@ -103,6 +103,7 @@ This ensures continuous improvement of agent effectiveness across iterations.
 - **CSS Modules** — component-scoped styles
 - **ky** — HTTP client (fetch wrapper) for API requests
 - **Vite** — build tool
+- **vite-plugin-pwa** — PWA support (manifest + service worker)
 - **Vitest** — testing framework
 - **oxlint** — linting (via eslint-config-greenpie)
 - **husky** — git hooks (pre-commit: lint → test → build)
@@ -113,6 +114,13 @@ Modern browsers only, no polyfills:
 
 - **Chrome/Edge** — 133+ (required for Popover API `hint` state)
 - **Firefox/Safari** — not supported for `popover="hint"` (falls back to `manual`)
+
+### PWA Configuration
+
+- **Service Worker** — auto-generated via `vite-plugin-pwa` with `generateSW` strategy
+- **Update Strategy** — silent background updates, activates on page reload (F5)
+- **Manifest** — defines app name, icons, theme color (#1a1a1a)
+- **No Auto-Reload** — `registerType: 'autoUpdate'` + `injectRegister: null` + manual `registerSW()` ensures no forced reloads
 
 ### Backend
 

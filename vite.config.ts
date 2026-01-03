@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import { VitePWA } from 'vite-plugin-pwa'
 import { fileURLToPath } from 'node:url'
 import { createHash, type BinaryLike } from 'node:crypto'
 import { basename } from 'node:path'
@@ -7,21 +8,49 @@ import { generateVersionPlugin } from './vite-plugins/generate-version'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [vue(), generateVersionPlugin()],
+  plugins: [
+    vue(),
+    generateVersionPlugin(),
+
+    // oxlint-disable-next-line new-cap
+    VitePWA({
+      registerType: 'autoUpdate',
+      injectRegister: null,
+
+      manifest: {
+        name: '2026 Tracker',
+        short_name: '2026 Tracker',
+        description: 'Track your 2026 goals and tasks',
+        theme_color: '#1a1a1a',
+        background_color: '#1a1a1a',
+        display: 'standalone',
+
+        icons: [{
+          src: '/pwa-192x192.png',
+          sizes: '192x192',
+          type: 'image/png'
+        }, {
+          src: '/pwa-512x512.png',
+          sizes: '512x512',
+          type: 'image/png'
+        }]
+      }
+    })
+  ],
 
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
-    },
+      '@': fileURLToPath(new URL('./src', import.meta.url))
+    }
   },
 
   server: {
     proxy: {
       '/api': {
         target: 'http://localhost:8787',
-        changeOrigin: true,
-      },
-    },
+        changeOrigin: true
+      }
+    }
   },
 
   css: {
@@ -30,15 +59,15 @@ export default defineConfig({
         const hash = createHash('sha256')
           .update(data)
           .digest('hex')
-          .slice(0, 6);
+          .slice(0, 6)
 
         const filePath = filename
           .replace(/\.vue(?:\?.+?)?$/u, '')
-          .replaceAll(/\[|\]/gu, '');
+          .replaceAll(/\[|\]/gu, '')
 
-        const baseName = basename(filePath);
+        const baseName = basename(filePath)
 
-        return `${baseName}_${className}_${hash}`;
+        return `${baseName}_${className}_${hash}`
       }
     }
   }
