@@ -48,7 +48,8 @@
       "vite.config.ts",
       "vitest.browser.config.ts",
       "drizzle.config.ts",
-      "scripts/**/*.ts"
+      "scripts/**/*.ts",
+      "vite-plugins/**/*.ts"
     ],
 
     "env": {
