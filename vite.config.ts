@@ -14,7 +14,7 @@ export default defineConfig({
 
     // oxlint-disable-next-line new-cap
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       injectRegister: null,
 
       manifest: {
@@ -24,15 +24,18 @@ export default defineConfig({
         theme_color: '#1a1a1a',
         background_color: '#1a1a1a',
         display: 'standalone',
+        start_url: '/',
 
         icons: [{
           src: '/pwa-192x192.png',
           sizes: '192x192',
-          type: 'image/png'
+          type: 'image/png',
+          purpose: 'any'
         }, {
           src: '/pwa-512x512.png',
           sizes: '512x512',
-          type: 'image/png'
+          type: 'image/png',
+          purpose: 'any'
         }]
       }
     })

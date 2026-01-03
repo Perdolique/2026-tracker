@@ -25,4 +25,11 @@ app.mount('#app')
 
 // Register service worker without auto-reload
 // New SW will activate in background, F5 will load new content
-registerSW({ immediate: true })
+registerSW({
+  immediate: true,
+
+  onRegisterError(error) {
+    // oxlint-disable-next-line no-console
+    console.error('Service worker registration failed:', error)
+  }
+})

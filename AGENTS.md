@@ -117,10 +117,10 @@ Modern browsers only, no polyfills:
 
 ### PWA Configuration
 
-- **Service Worker** — auto-generated via `vite-plugin-pwa` with `generateSW` strategy
+- **Service Worker** — auto-generated via `vite-plugin-pwa` (default `generateSW` strategy)
 - **Update Strategy** — silent background updates, activates on page reload (F5)
 - **Manifest** — defines app name, icons, theme color (#1a1a1a)
-- **No Auto-Reload** — `registerType: 'autoUpdate'` + `injectRegister: null` + manual `registerSW()` ensures no forced reloads
+- **No Auto-Reload** — `registerType: 'prompt'` + `injectRegister: null` + manual `registerSW()` ensures no forced reloads
 
 ### Backend
 
