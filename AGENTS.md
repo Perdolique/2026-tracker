@@ -255,6 +255,7 @@ Browser tests use **MSW (Mock Service Worker)** for HTTP request interception.
 - Prefer discriminated unions for task types
 - No `any`, use `unknown` if needed
 - Use `satisfies` for type-safe object literals
+- Use function declarations (`function foo() {}`) instead of arrow functions assigned to variables (`const foo = () => {}`) for named functions
 
 ### CSS
 
