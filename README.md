@@ -11,6 +11,7 @@ Mobile-first task tracker for 2026 goals with three completion types.
 - **🏆 Completed section** — Track achieved goals separately
 - **🔐 Twitch OAuth** — Login via Twitch account
 - **🔗 Public profiles** — Share your progress via `/user/:userId` link
+- **📱 PWA support** — Install as standalone app, works offline
 
 ## Tech Stack
 
@@ -23,6 +24,7 @@ Mobile-first task tracker for 2026 goals with three completion types.
 - CSS Modules (no frameworks)
 - Vitest for testing
 - Vite + Rolldown for blazing fast builds
+- vite-plugin-pwa for PWA support
 - oxlint for linting
 - husky for git hooks
 
