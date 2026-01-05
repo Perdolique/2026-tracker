@@ -13,6 +13,9 @@ dist-ssr
 dev-dist
 *.local
 
+# Lock files (project uses pnpm)
+package-lock.json
+
 # Environment variables
 .env
 .dev.vars
