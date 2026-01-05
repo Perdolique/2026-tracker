@@ -18,6 +18,10 @@ export default defineConfig({
         enabled: true
       },
 
+      workbox: {
+        navigateFallbackDenylist: [/^\/api\/.*/u]
+      },
+
       registerType: 'prompt',
       injectRegister: null,
 
