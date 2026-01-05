@@ -15,6 +15,7 @@ import {
 } from './db/queries'
 import { updateUserSchema } from './schemas'
 import { taskRoutes } from './task-routes'
+import { getTwitchCallbackUrl } from './utils'
 
 // Cloudflare Worker bindings
 interface Bindings {
@@ -22,6 +23,7 @@ interface Bindings {
   ASSETS: Fetcher
   TWITCH_CLIENT_ID: string
   TWITCH_CLIENT_SECRET: string
+  REDIRECT_BASE_URL?: string // Optional: base URL for OAuth redirects when the callback URL differs from this worker (e.g. dev, staging, production)
 }
 
 interface Variables {
@@ -77,7 +79,7 @@ app.use('/api/*', async (context, next) => {
 // GET /api/auth/twitch - Redirect to Twitch OAuth
 app.get('/api/auth/twitch', (context) => {
   const clientId = context.env.TWITCH_CLIENT_ID
-  const redirectUri = new URL('/api/auth/twitch/callback', context.req.url).toString()
+  const redirectUri = getTwitchCallbackUrl(context)
 
   const params = new URLSearchParams({
     client_id: clientId,
@@ -100,7 +102,7 @@ app.get('/api/auth/twitch/callback', async (context) => {
 
   const clientId = context.env.TWITCH_CLIENT_ID
   const clientSecret = context.env.TWITCH_CLIENT_SECRET
-  const redirectUri = new URL('/api/auth/twitch/callback', context.req.url).toString()
+  const redirectUri = getTwitchCallbackUrl(context)
 
   try {
     // Exchange code for token
@@ -117,7 +119,7 @@ app.get('/api/auth/twitch/callback', async (context) => {
     })
 
     if (!tokenResponse.ok) {
-      console.error('Token exchange failed:', await tokenResponse.text())
+      console.error('Token exchange failed:', await tokenResponse.text(), redirectUri)
       return context.redirect('/?auth_error=token_exchange_failed')
     }
 

@@ -14,6 +14,10 @@ export default defineConfig({
 
     // oxlint-disable-next-line new-cap
     VitePWA({
+      devOptions: {
+        enabled: true
+      },
+
       registerType: 'prompt',
       injectRegister: null,
 
@@ -50,8 +54,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:8787',
-        changeOrigin: true
+        target: 'http://localhost:8787'
       }
     }
   },
