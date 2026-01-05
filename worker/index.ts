@@ -22,6 +22,7 @@ interface Bindings {
   ASSETS: Fetcher
   TWITCH_CLIENT_ID: string
   TWITCH_CLIENT_SECRET: string
+  REDIRECT_BASE_URL?: string // Optional: base URL for OAuth redirects in dev mode
 }
 
 interface Variables {
@@ -77,7 +78,8 @@ app.use('/api/*', async (context, next) => {
 // GET /api/auth/twitch - Redirect to Twitch OAuth
 app.get('/api/auth/twitch', (context) => {
   const clientId = context.env.TWITCH_CLIENT_ID
-  const redirectUri = new URL('/api/auth/twitch/callback', context.req.url).toString()
+  const baseUrl = context.env.REDIRECT_BASE_URL ?? context.req.url
+  const redirectUri = new URL('/api/auth/twitch/callback', baseUrl).toString()
 
   const params = new URLSearchParams({
     client_id: clientId,
@@ -100,7 +102,8 @@ app.get('/api/auth/twitch/callback', async (context) => {
 
   const clientId = context.env.TWITCH_CLIENT_ID
   const clientSecret = context.env.TWITCH_CLIENT_SECRET
-  const redirectUri = new URL('/api/auth/twitch/callback', context.req.url).toString()
+  const baseUrl = context.env.REDIRECT_BASE_URL ?? context.req.url
+  const redirectUri = new URL('/api/auth/twitch/callback', baseUrl).toString()
 
   try {
     // Exchange code for token
@@ -117,7 +120,7 @@ app.get('/api/auth/twitch/callback', async (context) => {
     })
 
     if (!tokenResponse.ok) {
-      console.error('Token exchange failed:', await tokenResponse.text())
+      console.error('Token exchange failed:', await tokenResponse.text(), redirectUri)
       return context.redirect('/?auth_error=token_exchange_failed')
     }
 
