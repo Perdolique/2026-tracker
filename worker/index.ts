@@ -84,8 +84,7 @@ app.get('/api/auth/twitch', (context) => {
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: redirectUri,
-    response_type: 'code',
-    scope: 'user:read:email',
+    response_type: 'code'
   })
 
   return context.redirect(`https://id.twitch.tv/oauth2/authorize?${params.toString()}`)
