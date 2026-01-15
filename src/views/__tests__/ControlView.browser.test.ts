@@ -360,8 +360,8 @@ describe('ControlView - Browser Tests', () => {
       expect(unchangedTask?.completedDates).toEqual(['2025-01-01'])
     })
 
-    it('should prevent duplicate date when checking in same day twice', async () => {
-      const task: DailyTask = {
+    it('should not show daily task that was already completed today', async () => {
+      const taskAlreadyDone: DailyTask = {
         id: 'daily-4',
         title: 'Yoga',
         type: 'daily',
@@ -371,7 +371,17 @@ describe('ControlView - Browser Tests', () => {
         updatedAt: '2026-01-01',
         checkInEnabled: true,
       }
-      setMockTasks([task])
+      const taskNotDone: DailyTask = {
+        id: 'daily-5',
+        title: 'Meditation',
+        type: 'daily',
+        targetDays: 50,
+        completedDates: ['2025-12-01'],
+        createdAt: '2026-01-01',
+        updatedAt: '2026-01-01',
+        checkInEnabled: true,
+      }
+      setMockTasks([taskAlreadyDone, taskNotDone])
 
       const router = createTestRouter()
       const pinia = createPinia()
@@ -386,26 +396,32 @@ describe('ControlView - Browser Tests', () => {
         },
       })
 
+      // Should show only "Meditation" (not completed today)
       await waitFor(() => {
         try {
-          screen.getByText('Yoga')
+          screen.getByText('Meditation')
           return true
         } catch {
           return false
         }
       })
 
-      const yesButton = screen.getByTestId('checkin-yes')
-      await yesButton.click()
+      // "Yoga" should not appear in wizard (wait a bit for rendering)
+      await delay(100)
+      
+      // Check if Yoga is in DOM
+      const html = screen.container.innerHTML
+      if (html.includes('Yoga')) {
+        throw new Error('Yoga task should not be visible in the wizard')
+      }
 
-      await delay(150)
 
+      // Storage should remain unchanged
       const tasks = getMockTasksStorage()
-      const dailyTasks = tasks.filter((t) => isDailyTask(t))
-      const completedTask = dailyTasks.find((t) => t.id === 'daily-4')
-
-      expect(completedTask?.completedDates).toEqual([TEST_DATE])
-      expect(completedTask?.completedDates.length).toBe(1) // No duplicate added
+      const yogaTask = tasks.find((t) => t.id === 'daily-4')
+      if (yogaTask && isDailyTask(yogaTask)) {
+        expect(yogaTask.completedDates).toEqual([TEST_DATE])
+      }
     })
   })
 

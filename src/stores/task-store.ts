@@ -39,17 +39,21 @@ export const useTaskStore = defineStore('tasks', () => {
   )
 
   function getTasksForCheckIn(): Task[] {
-    return activeTasks.value.filter((task) => {
+    const filtered = activeTasks.value.filter((task) => {
       // Only include tasks with check-in enabled
       if (!task.checkInEnabled) {
         return false
       }
       // Skip daily tasks that were already completed today
-      if (isDailyTask(task) && isDailyTaskCompletedToday(task)) {
-        return false
+      if (isDailyTask(task)) {
+        const completedToday = isDailyTaskCompletedToday(task)
+        if (completedToday) {
+          return false
+        }
       }
       return true
     })
+    return filtered
   }
 
   async function fetchTasks(): Promise<void> {
