@@ -75,7 +75,7 @@ describe('Task Types', () => {
   })
 })
 
-describe('getCurrentDate', () => {
+describe(getCurrentDate, () => {
   beforeEach(() => {
     vi.useFakeTimers()
   })
@@ -96,7 +96,7 @@ describe('getCurrentDate', () => {
   })
 })
 
-describe('isDailyTaskCompletedToday', () => {
+describe(isDailyTaskCompletedToday, () => {
   beforeEach(() => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2026-01-15T10:00:00.000Z'))
@@ -152,7 +152,7 @@ describe('isDailyTaskCompletedToday', () => {
   })
 })
 
-describe('getGlobalProgress', () => {
+describe(getGlobalProgress, () => {
   it('should return 0 for empty task array', () => {
     expect(getGlobalProgress([])).toBe(0)
   })
