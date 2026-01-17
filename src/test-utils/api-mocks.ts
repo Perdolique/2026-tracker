@@ -70,6 +70,7 @@ export function createMockProgressTask(overrides: Partial<ProgressTask> = {}): P
     targetValue: 1000,
     currentValue: 0,
     unit: 'units',
+    completedValues: [],
     createdAt: '2026-01-01',
     updatedAt: overrides.updatedAt ?? '2026-01-01',
     checkInEnabled: true,
@@ -104,6 +105,7 @@ function createTaskFromData(data: CreateTaskData): Task {
         targetValue: data.targetValue ?? 1,
         currentValue: 0,
         unit: data.unit ?? '',
+        completedValues: [],
       } as ProgressTask
     }
     case 'one-time': {
@@ -192,6 +194,12 @@ export const handlers = [
         case 'progress': {
           const progressTask = task
           if (value !== undefined && value > 0) {
+            // Ensure completedValues array exists (for backward compat with existing tests)
+            progressTask.completedValues = progressTask.completedValues ?? []
+            // Use TEST_DATE-based timestamp for consistency
+            const timestamp = `${TEST_DATE}T12:00:00.000Z`
+            const newId = Math.max(0, ...progressTask.completedValues.map(cv => cv.id)) + 1
+            progressTask.completedValues.push({ id: newId, date: timestamp, value })
             progressTask.currentValue += value
             progressTask.updatedAt = TEST_DATE
           }

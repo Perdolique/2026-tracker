@@ -1,5 +1,5 @@
-import { eq, and } from 'drizzle-orm'
-import { tasks, dailyCompletions, type TaskRow, type TaskType } from './schema'
+import { eq, and, sql } from 'drizzle-orm'
+import { tasks, dailyCompletions, progressCompletions, type TaskRow, type TaskType } from './schema'
 import type { Task, DailyTask, ProgressTask, OneTimeTask, CreateTaskData } from '../../src/models/task'
 import type { Database } from './queries'
 
@@ -8,9 +8,13 @@ import type { Database } from './queries'
 // =============================================================================
 
 /**
- * Transform DB row + completedDates into discriminated union Task
+ * Transform DB row + completedDates/completedValues into discriminated union Task
  */
-function rowToTask(row: TaskRow, completedDates: string[] = []): Task {
+function rowToTask(
+  row: TaskRow,
+  completedDates: string[] = [],
+  completedValues: { id: number; date: string; value: number }[] = []
+): Task {
   const base = {
     id: row.id,
     title: row.title,
@@ -37,6 +41,7 @@ function rowToTask(row: TaskRow, completedDates: string[] = []): Task {
         targetValue: row.targetValue ?? 100,
         currentValue: row.currentValue ?? 0,
         unit: row.unit ?? 'units',
+        completedValues,
       } satisfies ProgressTask
     }
 
@@ -56,24 +61,33 @@ function rowToTask(row: TaskRow, completedDates: string[] = []): Task {
 export async function getAllTasks(db: Database, userId: string): Promise<Task[]> {
   const rows = await db.select().from(tasks).where(eq(tasks.userId, userId))
 
-  // Get all daily completions in one query
+  // Get all daily completions in one query, filtered by taskIds
   const taskIds = rows.map((row) => row.id)
-  const completions =
+  const dailyData =
     taskIds.length > 0
-      ? await db.select().from(dailyCompletions)
+      ? await db.select().from(dailyCompletions).where(sql`${dailyCompletions.taskId} IN ${taskIds}`)
+      : []
+  const progressData =
+    taskIds.length > 0
+      ? await db.select().from(progressCompletions).where(sql`${progressCompletions.taskId} IN ${taskIds}`)
       : []
 
   // Group completions by taskId
-  const completionsByTask = new Map<string, string[]>()
-  for (const completion of completions) {
-    if (taskIds.includes(completion.taskId)) {
-      const dates = completionsByTask.get(completion.taskId) ?? []
-      dates.push(completion.completedDate)
-      completionsByTask.set(completion.taskId, dates)
-    }
+  const dailyByTask = new Map<string, string[]>()
+  for (const completion of dailyData) {
+    const dates = dailyByTask.get(completion.taskId) ?? []
+    dates.push(completion.completedDate)
+    dailyByTask.set(completion.taskId, dates)
   }
 
-  return rows.map((row) => rowToTask(row, completionsByTask.get(row.id) ?? []))
+  const progressByTask = new Map<string, { id: number; date: string; value: number }[]>()
+  for (const completion of progressData) {
+    const values = progressByTask.get(completion.taskId) ?? []
+    values.push({ id: completion.id, date: completion.completedDate, value: completion.value })
+    progressByTask.set(completion.taskId, values)
+  }
+
+  return rows.map((row) => rowToTask(row, dailyByTask.get(row.id) ?? [], progressByTask.get(row.id) ?? []))
 }
 
 /**
@@ -92,6 +106,8 @@ export async function getTaskById(db: Database, id: string, userId?: string): Pr
   }
 
   let completedDates: string[] = []
+  let completedValues: { id: number; date: string; value: number }[] = []
+
   if (row.type === 'daily') {
     const completions = await db
       .select()
@@ -100,7 +116,15 @@ export async function getTaskById(db: Database, id: string, userId?: string): Pr
     completedDates = completions.map((completion) => completion.completedDate)
   }
 
-  return rowToTask(row, completedDates)
+  if (row.type === 'progress') {
+    const completions = await db
+      .select()
+      .from(progressCompletions)
+      .where(eq(progressCompletions.taskId, id))
+    completedValues = completions.map((completion) => ({ id: completion.id, date: completion.completedDate, value: completion.value }))
+  }
+
+  return rowToTask(row, completedDates, completedValues)
 }
 
 /**
@@ -156,7 +180,8 @@ export async function createTask(db: Database, userId: string, data: CreateTaskD
           unit: data.unit ?? 'units',
           completedAt: null,
         },
-        []
+        [],
+        [] // Empty completedValues with correct type
       )
     }
 
@@ -220,13 +245,15 @@ export async function updateTask(db: Database, userId: string, task: Task): Prom
     }
 
     case 'progress': {
+      // Don't sync completedValues - they are managed by separate delete endpoint
+      // Only update task metadata
       result = await db
         .update(tasks)
         .set({
           ...baseUpdate,
           targetValue: task.targetValue,
-          currentValue: task.currentValue,
           unit: task.unit,
+          // CurrentValue is managed by check-in and deletion, don't override
         })
         .where(ownershipCondition)
 
@@ -267,6 +294,53 @@ export async function deleteTask(db: Database, id: string, userId: string): Prom
 }
 
 /**
+ * Add a new progress value to a progress task
+ * Returns updated task or null if task not found or not a progress task
+ */
+export async function addProgressValue({
+  db,
+  userId,
+  taskId,
+  value,
+}: {
+  db: Database
+  userId: string
+  taskId: string
+  value: number
+}): Promise<Task | null> {
+  // Verify ownership and task type
+  const task = await getTaskById(db, taskId, userId)
+  if (task?.type !== 'progress') {
+    return null
+  }
+
+  const now = new Date().toISOString()
+
+  // 1. Insert completion record
+  await db.insert(progressCompletions).values({
+    taskId,
+    completedDate: now,
+    value,
+  })
+
+  // 2. Recalculate currentValue from all completions
+  const sumResult = await db
+    .select({ total: sql<number>`COALESCE(SUM(${progressCompletions.value}), 0)` })
+    .from(progressCompletions)
+    .where(eq(progressCompletions.taskId, taskId))
+  const newValue = sumResult[0]?.total ?? 0
+
+  // 3. Update task
+  await db
+    .update(tasks)
+    .set({ currentValue: newValue, updatedAt: now })
+    .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)))
+
+  // Return updated task with fresh data
+  return getTaskById(db, taskId, userId)
+}
+
+/**
  * Record a check-in for a task (with user ownership check)
  * Returns the updated task, or null if not found or doesn't belong to user
  */
@@ -291,8 +365,7 @@ export async function recordCheckIn(params: CheckInParams): Promise<Task | null>
   }
 
   const now = new Date().toISOString()
-  const todayParts = now.split('T')
-  const today = todayParts[0] ?? ''
+  const today = now.split('T')[0] ?? ''
   const ownershipCondition = and(eq(tasks.id, taskId), eq(tasks.userId, userId))
 
   switch (task.type) {
@@ -313,13 +386,8 @@ export async function recordCheckIn(params: CheckInParams): Promise<Task | null>
     case 'progress': {
       // Add value to current progress
       if (value !== undefined && value > 0) {
-        const newValue = task.currentValue + value
-        await db
-          .update(tasks)
-          .set({ currentValue: newValue, updatedAt: now })
-          .where(ownershipCondition)
-        task.currentValue = newValue
-        task.updatedAt = now
+        // Reuse addProgressValue to avoid duplication and fix placeholder ID bug
+        return addProgressValue({ db, userId, taskId, value })
       }
       break
     }
@@ -337,4 +405,52 @@ export async function recordCheckIn(params: CheckInParams): Promise<Task | null>
   }
 
   return task
+}
+
+/**
+ * Delete a single progress completion and recalculate currentValue
+ * Returns updated task or null if completion/task not found
+ */
+export async function deleteProgressCompletion({
+  db,
+  userId,
+  taskId,
+  completionId,
+}: {
+  db: Database
+  userId: string
+  taskId: string
+  completionId: number
+}): Promise<Task | null> {
+  // Verify ownership
+  const task = await getTaskById(db, taskId, userId)
+  if (task?.type !== 'progress') {
+    return null
+  }
+
+  // Delete the completion
+  const result = await db
+    .delete(progressCompletions)
+    .where(and(eq(progressCompletions.id, completionId), eq(progressCompletions.taskId, taskId)))
+
+  if (result.meta.changes === 0) {
+    return null
+  }
+
+  // Recalculate currentValue from remaining completions
+  const sumResult = await db
+    .select({ total: sql<number>`COALESCE(SUM(${progressCompletions.value}), 0)` })
+    .from(progressCompletions)
+    .where(eq(progressCompletions.taskId, taskId))
+  const newValue = sumResult[0]?.total ?? 0
+
+  // Update task
+  const now = new Date().toISOString()
+  await db
+    .update(tasks)
+    .set({ currentValue: newValue, updatedAt: now })
+    .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)))
+
+  // Return updated task
+  return getTaskById(db, taskId, userId)
 }

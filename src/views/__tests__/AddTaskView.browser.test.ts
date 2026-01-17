@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest'
 import { render } from 'vitest-browser-vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia, setActivePinia } from 'pinia'
@@ -7,6 +7,7 @@ import HomeView from '../HomeView.vue'
 import { isProgressTask, isOneTimeTask, isDailyTask } from '@/models/task'
 
 import {
+  TEST_DATE,
   resetMockStorage,
   setMockTasks,
   getMockTasksStorage,
@@ -30,11 +31,14 @@ function createTestRouter() {
 
 describe('AddTaskView - Browser Tests', () => {
   beforeAll(async () => {
+    // Mock system time to TEST_DATE at 12:00 UTC to avoid timezone issues
+    vi.setSystemTime(new Date(`${TEST_DATE}T12:00:00.000Z`))
     await startMockServer()
   })
 
   afterAll(() => {
     stopMockServer()
+    vi.useRealTimers()
   })
 
   beforeEach(() => {

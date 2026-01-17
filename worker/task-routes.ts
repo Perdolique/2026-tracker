@@ -11,7 +11,7 @@ import {
   type User,
 } from './db/queries'
 import type { Task } from '../src/models/task'
-import { createTaskSchema, updateTaskSchema, checkInSchema } from './schemas'
+import { createTaskSchema, updateTaskSchema, checkInSchema, addProgressValueSchema } from './schemas'
 
 interface Bindings {
   DB: D1Database
@@ -122,8 +122,9 @@ taskRoutes.put('/:id', vValidator('json', updateTaskSchema), async (context) => 
           ...baseTask,
           type: 'progress' as const,
           targetValue: data.targetValue ?? 100,
-          currentValue: data.currentValue ?? 0,
+          currentValue: 0, // CurrentValue is calculated from completions, not from client
           unit: data.unit ?? 'units',
+          completedValues: data.completedValues ?? [],
         }
       }
       case 'one-time': {
@@ -180,4 +181,78 @@ taskRoutes.post('/:id/checkin', vValidator('json', checkInSchema), async (contex
   }
 
   return context.json(task)
+})
+
+// POST /api/tasks/:id/completions - Add new progress value
+taskRoutes.post('/:id/completions', vValidator('json', addProgressValueSchema), async (context) => {
+  const user = context.get('user')
+
+  if (!user) {
+    return context.json({ error: 'Unauthorized' }, 401)
+  }
+
+  const db = createDatabase(context.env.DB)
+  const id = context.req.param('id')
+  const { value } = context.req.valid('json')
+
+  // Verify task exists and is a progress task
+  const task = await getTaskById(db, id, user.id)
+  if (task?.type !== 'progress') {
+    return context.json({ error: 'Task not found or not a progress task' }, 404)
+  }
+
+  // Add the value
+  const { addProgressValue } = await import('./db/task-queries')
+  const updated = await addProgressValue({
+    db,
+    userId: user.id,
+    taskId: id,
+    value,
+  })
+
+  if (!updated) {
+    return context.json({ error: 'Failed to add value' }, 500)
+  }
+
+  return context.json(updated)
+})
+
+// DELETE /api/tasks/:taskId/completions/:completionId - Delete single progress completion
+taskRoutes.delete('/:taskId/completions/:completionId', async (context) => {
+  const user = context.get('user')
+
+  if (!user) {
+    return context.json({ error: 'Unauthorized' }, 401)
+  }
+
+  const db = createDatabase(context.env.DB)
+  const taskId = context.req.param('taskId')
+  const completionIdParam = context.req.param('completionId')
+
+  // Validate completionId is a valid positive integer
+  const completionId = Number(completionIdParam)
+  if (!Number.isInteger(completionId) || completionId <= 0) {
+    return context.json({ error: 'Invalid completion ID' }, 400)
+  }
+
+  // Verify task ownership before deleting completion
+  const task = await getTaskById(db, taskId, user.id)
+  if (task?.type !== 'progress') {
+    return context.json({ error: 'Task not found or not a progress task' }, 404)
+  }
+
+  // Delete the completion and recalculate currentValue
+  const { deleteProgressCompletion } = await import('./db/task-queries')
+  const updated = await deleteProgressCompletion({
+    db,
+    userId: user.id,
+    taskId,
+    completionId,
+  })
+
+  if (!updated) {
+    return context.json({ error: 'Completion not found' }, 404)
+  }
+
+  return context.json(updated)
 })

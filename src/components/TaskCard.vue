@@ -61,9 +61,27 @@
             </button>
           </div>
 
+          <!-- Tab header for progress tasks -->
+          <div v-if="isProgressTask(task)" :class="$style.tabHeader">
+            <button
+              type="button"
+              :class="[$style.tabBtn, activeTab === 'general' && $style.tabActive]"
+              @click="activeTab = 'general'"
+            >
+              {{ $t('taskCard.tabGeneral') }}
+            </button>
+            <button
+              type="button"
+              :class="[$style.tabBtn, activeTab === 'values' && $style.tabActive]"
+              @click="activeTab = 'values'"
+            >
+              {{ $t('taskCard.tabValues') }} ({{ editForm.completedValues.length }})
+            </button>
+          </div>
+
           <div :class="$style.modalScrollArea">
-            <!-- General tab content (or default for non-daily tasks) -->
-            <template v-if="!isDailyTask(task) || activeTab === 'general'">
+            <!-- Daily task: General tab -->
+            <template v-if="isDailyTask(task) && activeTab === 'general'">
               <div :class="$style.formGroup">
                 <label :class="$style.label">{{ $t('taskForm.titleLabel') }}</label>
                 <input
@@ -83,8 +101,7 @@
                 />
               </div>
 
-              <!-- Daily task goal field -->
-              <div v-if="isDailyTask(task)" :class="$style.formGroup">
+              <div :class="$style.formGroup">
                 <label :class="$style.label">{{ $t('taskCard.goalDays') }}</label>
                 <input
                   v-model.number="editForm.targetDays"
@@ -139,18 +156,27 @@
               </div>
             </template>
 
-            <!-- Progress task fields -->
-            <template v-if="isProgressTask(task)">
+            <!-- Progress task: General tab -->
+            <template v-if="isProgressTask(task) && activeTab === 'general'">
               <div :class="$style.formGroup">
-                <label :class="$style.label">{{ $t('taskCard.currentProgress') }}</label>
+                <label :class="$style.label">{{ $t('taskForm.titleLabel') }}</label>
                 <input
-                  v-model.number="editForm.currentValue"
+                  v-model="editForm.title"
                   :class="$style.input"
-                  type="number"
-                  min="0"
+                  type="text"
                   required
                 />
               </div>
+
+              <div :class="$style.formGroup">
+                <label :class="$style.label">{{ $t('taskForm.descriptionLabel') }}</label>
+                <textarea
+                  v-model="editForm.description"
+                  :class="$style.textarea"
+                  rows="3"
+                />
+              </div>
+
               <div :class="$style.formGroup">
                 <label :class="$style.label">{{ $t('taskCard.goal') }}</label>
                 <input
@@ -172,8 +198,72 @@
               </div>
             </template>
 
+            <!-- Values tab content (progress tasks only) -->
+            <template v-if="isProgressTask(task) && activeTab === 'values'">
+              <div :class="$style.formGroup">
+                <label :class="$style.label">{{ $t('taskCard.loggedValues') }} ({{ editForm.completedValues.length }})</label>
+
+                <div :class="$style.addDateRow">
+                  <input
+                    v-model.number="editForm.newValue"
+                    :class="$style.input"
+                    type="number"
+                    min="0"
+                    step="1"
+                    :placeholder="$t('taskCard.enterValue')"
+                  />
+                  <button
+                    type="button"
+                    :class="$style.addDateBtn"
+                    :disabled="!canAddValue"
+                    @click="addValue"
+                  >
+                    +
+                  </button>
+                </div>
+
+                <div v-if="editForm.completedValues.length > 0" :class="$style.dateList">
+                  <div
+                    v-for="item in sortedCompletedValues"
+                    :key="item.id"
+                    :class="$style.dateRow"
+                  >
+                    <span :class="$style.dateText">{{ formatDateTime(item.date) }} — {{ item.value.toLocaleString() }} {{ editForm.unit }}</span>
+                    <button
+                      type="button"
+                      :class="$style.dateRemoveBtn"
+                      @click="removeValue(item.id)"
+                      :aria-label="$t('taskCard.removeValue')"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+                <div v-else :class="$style.emptyDates">{{ $t('taskCard.noLoggedValues') }}</div>
+              </div>
+            </template>
+
             <!-- One-time task fields -->
             <template v-if="isOneTimeTask(task)">
+              <div :class="$style.formGroup">
+                <label :class="$style.label">{{ $t('taskForm.titleLabel') }}</label>
+                <input
+                  v-model="editForm.title"
+                  :class="$style.input"
+                  type="text"
+                  required
+                />
+              </div>
+
+              <div :class="$style.formGroup">
+                <label :class="$style.label">{{ $t('taskForm.descriptionLabel') }}</label>
+                <textarea
+                  v-model="editForm.description"
+                  :class="$style.textarea"
+                  rows="3"
+                />
+              </div>
+
               <div :class="$style.formGroup">
                 <label :class="$style.checkboxLabel">
                   <input
@@ -197,18 +287,19 @@
               </div>
             </template>
 
-            <!-- Check-in control (shown in general tab for daily, always for others) -->
-            <div v-if="!isDailyTask(task) || activeTab === 'general'" :class="$style.checkInField">
-              <label :class="$style.checkboxLabel">
-                <input
-                  v-model="editForm.checkInEnabled"
-                  type="checkbox"
-                  :class="$style.checkbox"
-                />
-                <span>{{ $t('taskForm.checkInEnabled') }}</span>
-              </label>
-              <span :class="$style.checkInHint">{{ $t('taskForm.checkInEnabledHint') }}</span>
-            </div>
+          </div>
+
+          <!-- Check-in control (always visible) -->
+          <div :class="$style.checkInField">
+            <label :class="$style.checkboxLabel">
+              <input
+                v-model="editForm.checkInEnabled"
+                type="checkbox"
+                :class="$style.checkbox"
+              />
+              <span>{{ $t('taskForm.checkInEnabled') }}</span>
+            </label>
+            <span :class="$style.checkInHint">{{ $t('taskForm.checkInEnabledHint') }}</span>
           </div>
 
           <div :class="$style.modalActions">
@@ -254,7 +345,7 @@
   // Menu state
   const showEditModal = ref(false)
   const isSaving = ref(false)
-  const activeTab = ref<'general' | 'days'>('general')
+  const activeTab = ref<'general' | 'days' | 'values'>('general')
 
   // Edit form state
   const editForm = reactive({
@@ -265,7 +356,9 @@
     targetValue: 0,
     unit: '',
     completedDates: [] as string[],
+    completedValues: [] as { id: number; date: string; value: number }[],
     newDate: '',
+    newValue: undefined as number | undefined,
     checkInEnabled: false,
     // One-time task fields
     isCompleted: false,
@@ -295,6 +388,10 @@
     [...editForm.completedDates].toSorted((dateA: string, dateB: string) => dateB.localeCompare(dateA))
   )
 
+  const sortedCompletedValues = computed(() =>
+    [...editForm.completedValues].toSorted((itemA, itemB) => itemB.date.localeCompare(itemA.date))
+  )
+
   const canAddDate = computed(() => {
     const date = editForm.newDate
     if (!date) {return false}
@@ -304,9 +401,22 @@
     return true
   })
 
+  const canAddValue = computed(() => {
+    const value = editForm.newValue
+    return value !== undefined && value !== null && value > 0
+  })
+
   function formatDate(isoDate: string): string {
     const [year, month, day] = isoDate.split('-')
     return `${day}.${month}.${year}`
+  }
+
+  function formatDateTime(isoDateTime: string): string {
+    // Format: 2026-01-23T18:02:30.000Z -> 2026-01-23 18:02
+    const [datePart, timePart] = isoDateTime.split('T')
+    const [year, month, day] = (datePart ?? '').split('-')
+    const [hours, minutes] = (timePart ?? '').split(':')
+    return `${year}-${month}-${day} ${hours}:${minutes}`
   }
 
   function addDate() {
@@ -315,10 +425,49 @@
     editForm.newDate = ''
   }
 
+  async function addValue() {
+    if (!canAddValue.value || !isProgressTask(props.task)) {return}
+
+    const value = editForm.newValue
+    if (value === undefined || value === null) {return}
+
+    try {
+      const updated = await store.addProgressValueToTask(props.task.id, value)
+      if (updated && isProgressTask(updated)) {
+        // Update local state
+        editForm.completedValues = updated.completedValues
+        editForm.currentValue = updated.currentValue
+        editForm.newValue = undefined
+        emit('update', updated)
+      }
+    } catch {
+      // Failed to add value
+    }
+  }
+
   function removeDate(date: string) {
     const index = editForm.completedDates.indexOf(date)
     if (index !== -1) {
       editForm.completedDates.splice(index, 1)
+    }
+  }
+
+  async function removeValue(completionId: number) {
+    if (!isProgressTask(props.task)) {return}
+
+    if (!confirm(t('taskCard.confirmDeleteValue'))) {
+      return
+    }
+
+    try {
+      const updated = await store.deleteProgressValueFromTask(props.task.id, completionId)
+      if (!updated || !isProgressTask(updated)) {return}
+      // Update local state
+      editForm.completedValues = updated.completedValues
+      editForm.currentValue = updated.currentValue
+      emit('update', updated)
+    } catch {
+      // Deletion failed
     }
   }
 
@@ -331,6 +480,7 @@
     editForm.title = props.task.title
     editForm.description = props.task.description ?? ''
     editForm.newDate = ''
+    editForm.newValue = undefined
     editForm.checkInEnabled = props.task.checkInEnabled
 
     if (isDailyTask(props.task)) {
@@ -342,6 +492,7 @@
       editForm.currentValue = props.task.currentValue
       editForm.targetValue = props.task.targetValue
       editForm.unit = props.task.unit
+      editForm.completedValues = [...props.task.completedValues]
     }
 
     if (isOneTimeTask(props.task)) {
@@ -382,7 +533,6 @@
         ...props.task,
         title: editForm.title.trim(),
         description: editForm.description.trim() || undefined,
-        currentValue: editForm.currentValue,
         targetValue: editForm.targetValue,
         unit: editForm.unit.trim(),
         checkInEnabled: editForm.checkInEnabled,

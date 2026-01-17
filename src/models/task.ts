@@ -25,6 +25,7 @@ export interface ProgressTask extends BaseTask {
   targetValue: number // E.g., 1000000
   currentValue: number // Accumulated so far
   unit: string // E.g., "steps", "pages", "km"
+  completedValues: { id: number; date: string; value: number }[] // History of logged values
 }
 
 // One-time task — single completion
