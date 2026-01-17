@@ -23,7 +23,6 @@ export const updateTaskSchema = valibot.object({
   completedDates: valibot.optional(valibot.array(valibot.string())),
   // Progress
   targetValue: valibot.optional(valibot.number()),
-  currentValue: valibot.optional(valibot.number()),
   unit: valibot.optional(valibot.string()),
   completedValues: valibot.optional(valibot.array(valibot.object({
     id: valibot.number(),
@@ -40,7 +39,7 @@ export const checkInSchema = valibot.object({
 })
 
 export const addProgressValueSchema = valibot.object({
-  value: valibot.pipe(valibot.number(), valibot.minValue(0)),
+  value: valibot.pipe(valibot.number(), valibot.minValue(0.01)),
 })
 
 export const updateUserSchema = valibot.object({

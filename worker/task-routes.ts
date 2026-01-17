@@ -122,7 +122,7 @@ taskRoutes.put('/:id', vValidator('json', updateTaskSchema), async (context) => 
           ...baseTask,
           type: 'progress' as const,
           targetValue: data.targetValue ?? 100,
-          currentValue: data.currentValue ?? 0,
+          currentValue: 0, // CurrentValue is calculated from completions, not from client
           unit: data.unit ?? 'units',
           completedValues: data.completedValues ?? [],
         }
@@ -227,7 +227,13 @@ taskRoutes.delete('/:taskId/completions/:completionId', async (context) => {
 
   const db = createDatabase(context.env.DB)
   const taskId = context.req.param('taskId')
-  const completionId = context.req.param('completionId')
+  const completionIdParam = context.req.param('completionId')
+
+  // Validate completionId is a valid positive integer
+  const completionId = Number(completionIdParam)
+  if (!Number.isInteger(completionId) || completionId <= 0) {
+    return context.json({ error: 'Invalid completion ID' }, 400)
+  }
 
   // Verify task ownership before deleting completion
   const task = await getTaskById(db, taskId, user.id)
@@ -241,7 +247,7 @@ taskRoutes.delete('/:taskId/completions/:completionId', async (context) => {
     db,
     userId: user.id,
     taskId,
-    completionId: Number(completionId),
+    completionId,
   })
 
   if (!updated) {

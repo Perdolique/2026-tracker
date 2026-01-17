@@ -322,7 +322,6 @@
   import { Icon } from '@iconify/vue'
   import { getTaskProgress, isDailyTask, isProgressTask, isOneTimeTask, type Task, type DailyTask, type ProgressTask } from '@/models/task'
   import { useTaskStore } from '@/stores/task-store'
-  import * as taskApi from '@/api/task-api'
   import TypeChip from '@/components/TypeChip.vue'
 
   const { t } = useI18n()
@@ -461,8 +460,8 @@
     }
 
     try {
-      const updated = await taskApi.deleteProgressCompletion(props.task.id, completionId)
-      if (!isProgressTask(updated)) {return}
+      const updated = await store.deleteProgressValueFromTask(props.task.id, completionId)
+      if (!updated || !isProgressTask(updated)) {return}
       // Update local state
       editForm.completedValues = updated.completedValues
       editForm.currentValue = updated.currentValue

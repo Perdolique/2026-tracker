@@ -61,34 +61,30 @@ function rowToTask(
 export async function getAllTasks(db: Database, userId: string): Promise<Task[]> {
   const rows = await db.select().from(tasks).where(eq(tasks.userId, userId))
 
-  // Get all daily completions in one query
+  // Get all daily completions in one query, filtered by taskIds
   const taskIds = rows.map((row) => row.id)
   const dailyData =
     taskIds.length > 0
-      ? await db.select().from(dailyCompletions)
+      ? await db.select().from(dailyCompletions).where(sql`${dailyCompletions.taskId} IN ${taskIds}`)
       : []
   const progressData =
     taskIds.length > 0
-      ? await db.select().from(progressCompletions)
+      ? await db.select().from(progressCompletions).where(sql`${progressCompletions.taskId} IN ${taskIds}`)
       : []
 
   // Group completions by taskId
   const dailyByTask = new Map<string, string[]>()
   for (const completion of dailyData) {
-    if (taskIds.includes(completion.taskId)) {
-      const dates = dailyByTask.get(completion.taskId) ?? []
-      dates.push(completion.completedDate)
-      dailyByTask.set(completion.taskId, dates)
-    }
+    const dates = dailyByTask.get(completion.taskId) ?? []
+    dates.push(completion.completedDate)
+    dailyByTask.set(completion.taskId, dates)
   }
 
   const progressByTask = new Map<string, { id: number; date: string; value: number }[]>()
   for (const completion of progressData) {
-    if (taskIds.includes(completion.taskId)) {
-      const values = progressByTask.get(completion.taskId) ?? []
-      values.push({ id: completion.id, date: completion.completedDate, value: completion.value })
-      progressByTask.set(completion.taskId, values)
-    }
+    const values = progressByTask.get(completion.taskId) ?? []
+    values.push({ id: completion.id, date: completion.completedDate, value: completion.value })
+    progressByTask.set(completion.taskId, values)
   }
 
   return rows.map((row) => rowToTask(row, dailyByTask.get(row.id) ?? [], progressByTask.get(row.id) ?? []))
@@ -298,6 +294,53 @@ export async function deleteTask(db: Database, id: string, userId: string): Prom
 }
 
 /**
+ * Add a new progress value to a progress task
+ * Returns updated task or null if task not found or not a progress task
+ */
+export async function addProgressValue({
+  db,
+  userId,
+  taskId,
+  value,
+}: {
+  db: Database
+  userId: string
+  taskId: string
+  value: number
+}): Promise<Task | null> {
+  // Verify ownership and task type
+  const task = await getTaskById(db, taskId, userId)
+  if (task?.type !== 'progress') {
+    return null
+  }
+
+  const now = new Date().toISOString()
+
+  // 1. Insert completion record
+  await db.insert(progressCompletions).values({
+    taskId,
+    completedDate: now,
+    value,
+  })
+
+  // 2. Recalculate currentValue from all completions
+  const sumResult = await db
+    .select({ total: sql<number>`COALESCE(SUM(${progressCompletions.value}), 0)` })
+    .from(progressCompletions)
+    .where(eq(progressCompletions.taskId, taskId))
+  const newValue = sumResult[0]?.total ?? 0
+
+  // 3. Update task
+  await db
+    .update(tasks)
+    .set({ currentValue: newValue, updatedAt: now })
+    .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)))
+
+  // Return updated task with fresh data
+  return getTaskById(db, taskId, userId)
+}
+
+/**
  * Record a check-in for a task (with user ownership check)
  * Returns the updated task, or null if not found or doesn't belong to user
  */
@@ -343,30 +386,8 @@ export async function recordCheckIn(params: CheckInParams): Promise<Task | null>
     case 'progress': {
       // Add value to current progress
       if (value !== undefined && value > 0) {
-        // 1. Insert completion record
-        await db.insert(progressCompletions).values({
-          taskId,
-          completedDate: now,
-          value,
-        })
-
-        // 2. Recalculate currentValue from all completions
-        const sumResult = await db
-          .select({ total: sql<number>`COALESCE(SUM(${progressCompletions.value}), 0)` })
-          .from(progressCompletions)
-          .where(eq(progressCompletions.taskId, taskId))
-        const newValue = sumResult[0]?.total ?? 0
-
-        // 3. Update task
-        await db
-          .update(tasks)
-          .set({ currentValue: newValue, updatedAt: now })
-          .where(ownershipCondition)
-
-        task.currentValue = newValue
-        task.updatedAt = now
-        // Note: id will be filled when re-fetching task, using 0 as placeholder
-        task.completedValues.push({ id: 0, date: now, value })
+        // Reuse addProgressValue to avoid duplication and fix placeholder ID bug
+        return addProgressValue({ db, userId, taskId, value })
       }
       break
     }
@@ -384,53 +405,6 @@ export async function recordCheckIn(params: CheckInParams): Promise<Task | null>
   }
 
   return task
-}
-
-/**
- * Add a new progress value to a progress task
- * Returns updated task or null if task not found or not a progress task
- */
-export async function addProgressValue({
-  db,
-  userId,
-  taskId,
-  value,
-}: {
-  db: Database
-  userId: string
-  taskId: string
-  value: number
-}): Promise<Task | null> {
-  // Verify ownership and task type
-  const task = await getTaskById(db, taskId, userId)
-  if (task?.type !== 'progress') {
-    return null
-  }
-
-  const now = new Date().toISOString()
-
-  // 1. Insert completion record
-  await db.insert(progressCompletions).values({
-    taskId,
-    completedDate: now,
-    value,
-  })
-
-  // 2. Recalculate currentValue from all completions
-  const sumResult = await db
-    .select({ total: sql<number>`COALESCE(SUM(${progressCompletions.value}), 0)` })
-    .from(progressCompletions)
-    .where(eq(progressCompletions.taskId, taskId))
-  const newValue = sumResult[0]?.total ?? 0
-
-  // 3. Update task
-  await db
-    .update(tasks)
-    .set({ currentValue: newValue, updatedAt: now })
-    .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)))
-
-  // Return updated task with fresh data
-  return getTaskById(db, taskId, userId)
 }
 
 /**
