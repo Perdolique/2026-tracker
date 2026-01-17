@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest'
 import { render } from 'vitest-browser-vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia, setActivePinia } from 'pinia'
@@ -29,11 +29,14 @@ function createTestRouter() {
 
 describe('ControlView - Browser Tests', () => {
   beforeAll(async () => {
+    // Mock system time to TEST_DATE at 12:00 UTC to avoid timezone issues
+    vi.setSystemTime(new Date(`${TEST_DATE}T12:00:00.000Z`))
     await startMockServer()
   })
 
   afterAll(() => {
     stopMockServer()
+    vi.useRealTimers()
   })
 
   beforeEach(() => {
@@ -431,6 +434,7 @@ describe('ControlView - Browser Tests', () => {
         id: 'progress-1',
         title: 'Walk 1000000 steps',
         type: 'progress',
+      completedValues: [],
         targetValue: 1_000_000,
         currentValue: 500_000,
         unit: 'steps',
@@ -484,6 +488,7 @@ describe('ControlView - Browser Tests', () => {
         id: 'progress-2',
         title: 'Save money',
         type: 'progress',
+      completedValues: [],
         targetValue: 100_000,
         currentValue: 50_000,
         unit: '$',
@@ -555,6 +560,7 @@ describe('ControlView - Browser Tests', () => {
         id: 'progress-3',
         title: 'Run kilometers',
         type: 'progress',
+      completedValues: [],
         targetValue: 500,
         currentValue: 200,
         unit: 'km',
@@ -628,6 +634,7 @@ describe('ControlView - Browser Tests', () => {
         id: 'mixed-progress',
         title: 'Progress task',
         type: 'progress',
+      completedValues: [],
         targetValue: 1000,
         currentValue: 100,
         unit: 'points',

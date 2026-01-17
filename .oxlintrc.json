@@ -72,5 +72,11 @@
       "eslint/max-lines": "off",
       "promise/avoid-new": "off"
     }
+  }, {
+    "files": ["worker/db/task-queries.ts"],
+
+    "rules": {
+      "eslint/max-lines": "off"
+    }
   }]
 }

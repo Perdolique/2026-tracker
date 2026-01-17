@@ -46,3 +46,13 @@ export async function recordCheckIn(
 ): Promise<Task> {
   return api.post(`tasks/${taskId}/checkin`, { json: { completed, value } }).json<Task>()
 }
+
+// Add new progress value
+export async function addProgressValue(taskId: string, value: number): Promise<Task> {
+  return api.post(`tasks/${taskId}/completions`, { json: { value } }).json<Task>()
+}
+
+// Delete single progress completion
+export async function deleteProgressCompletion(taskId: string, completionId: number): Promise<Task> {
+  return api.delete(`tasks/${taskId}/completions/${completionId}`).json<Task>()
+}

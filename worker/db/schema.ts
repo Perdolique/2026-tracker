@@ -88,6 +88,26 @@ export const dailyCompletions = sqliteTable(
   ]
 )
 
+/**
+ * Progress task value logs
+ * Tracks each value addition with date for history and deletion
+ */
+export const progressCompletions = sqliteTable(
+  'progress_completions',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    taskId: text('task_id')
+      .notNull()
+      .references(() => tasks.id, { onDelete: 'cascade' }),
+    completedDate: text('completed_date').notNull(), // ISO timestamp (YYYY-MM-DDTHH:mm:ss.sssZ)
+    value: integer('value').notNull(), // Amount added at this timestamp
+  },
+  (table) => [
+    index('progress_completions_task_id_idx').on(table.taskId),
+    index('progress_completions_task_date_idx').on(table.taskId, table.completedDate),
+  ]
+)
+
 // TypeScript types inferred from schema
 export type UserRow = typeof users.$inferSelect
 export type NewUserRow = typeof users.$inferInsert
@@ -97,3 +117,5 @@ export type TaskRow = typeof tasks.$inferSelect
 export type NewTaskRow = typeof tasks.$inferInsert
 export type DailyCompletionRow = typeof dailyCompletions.$inferSelect
 export type NewDailyCompletionRow = typeof dailyCompletions.$inferInsert
+export type ProgressCompletionRow = typeof progressCompletions.$inferSelect
+export type NewProgressCompletionRow = typeof progressCompletions.$inferInsert

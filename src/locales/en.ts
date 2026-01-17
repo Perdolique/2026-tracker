@@ -58,6 +58,12 @@ const enLocale = {
     daysProgress: '{completed} / {target} days',
     tabGeneral: 'General',
     tabDays: 'Days',
+    tabValues: 'Values',
+    loggedValues: 'Logged values',
+    noLoggedValues: 'No logged values',
+    removeValue: 'Remove value',
+    confirmDeleteValue: 'Delete this logged value?',
+    enterValue: 'Enter value',
   },
   checkIn: {
     pageTitle: 'Check-in',

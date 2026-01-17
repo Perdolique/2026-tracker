@@ -139,6 +139,24 @@ export const useTaskStore = defineStore('tasks', () => {
     }
   }
 
+  async function addProgressValueToTask(taskId: string, value: number): Promise<Task | null> {
+    errorMessage.value = null
+    try {
+      const updatedTask = await taskApi.addProgressValue(taskId, value)
+
+      // Update task in local state
+      const index = tasks.value.findIndex((t) => t.id === taskId)
+      if (index !== -1) {
+        tasks.value[index] = updatedTask
+      }
+
+      return updatedTask
+    } catch (error) {
+      errorMessage.value = error instanceof Error ? error.message : 'Failed to add progress value'
+      return null
+    }
+  }
+
   function getTaskById(taskId: string): Task | undefined {
     return tasks.value.find((t) => t.id === taskId)
   }
@@ -158,6 +176,7 @@ export const useTaskStore = defineStore('tasks', () => {
     removeTask,
     updateTask,
     processCheckIn,
+    addProgressValueToTask,
     getTaskById,
     clearError,
   }

@@ -58,6 +58,12 @@ const ruLocale = {
     daysProgress: '{completed} / {target} дней',
     tabGeneral: 'Основные',
     tabDays: 'Дни',
+    tabValues: 'Значения',
+    loggedValues: 'Залогированные значения',
+    noLoggedValues: 'Нет залогированных значений',
+    removeValue: 'Удалить значение',
+    confirmDeleteValue: 'Удалить это значение?',
+    enterValue: 'Введите значение',
   },
   checkIn: {
     pageTitle: 'Check-in',
