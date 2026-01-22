@@ -1,29 +1,43 @@
 import * as valibot from 'valibot'
+import { EXCESSIVE_NEWLINES_REGEX } from '../src/utils/text'
 
 export const taskTypeSchema = valibot.picklist(['daily', 'progress', 'one-time'])
+
+const titleSchema = valibot.pipe(
+  valibot.string(),
+  valibot.transform((text) => text.trim()),
+  valibot.minLength(1),
+)
 
 const descriptionSchema = valibot.optional(
   valibot.pipe(
     valibot.string(),
-    valibot.maxLength(1000),
     valibot.transform((text) => text.trim()),
-    valibot.transform((text) => text.replaceAll(/\n{3,}/g, '\n\n')),
+    valibot.transform((text) => text.replaceAll(EXCESSIVE_NEWLINES_REGEX, '\n\n')),
+    valibot.maxLength(1000),
+  ),
+)
+
+const unitSchema = valibot.optional(
+  valibot.pipe(
+    valibot.string(),
+    valibot.transform((text) => text.trim()),
   ),
 )
 
 export const createTaskSchema = valibot.object({
-  title: valibot.pipe(valibot.string(), valibot.minLength(1)),
+  title: titleSchema,
   description: descriptionSchema,
   type: taskTypeSchema,
   targetDays: valibot.optional(valibot.number()),
   targetValue: valibot.optional(valibot.number()),
-  unit: valibot.optional(valibot.string()),
+  unit: unitSchema,
   checkInEnabled: valibot.optional(valibot.boolean()),
 })
 
 export const updateTaskSchema = valibot.object({
   id: valibot.string(),
-  title: valibot.pipe(valibot.string(), valibot.minLength(1)),
+  title: titleSchema,
   description: descriptionSchema,
   type: taskTypeSchema,
   checkInEnabled: valibot.boolean(),
