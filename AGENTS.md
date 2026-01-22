@@ -150,6 +150,7 @@ src/
 │   └── __tests__/ # Unit tests for models
 ├── stores/        # Pinia stores (task-store, auth-store)
 ├── test-utils/    # Test utilities (MSW mocks, helpers)
+├── utils/         # Utility functions (text.ts)
 ├── views/         # Page components (routed)
 │   └── __tests__/ # Browser tests for views
 ├── router/        # Vue Router config

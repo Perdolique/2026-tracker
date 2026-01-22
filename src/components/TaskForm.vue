@@ -4,7 +4,7 @@
       <label :class="$style.label" for="title">{{ $t('taskForm.titleLabel') }}</label>
       <input
         id="title"
-        v-model="title"
+        v-model.trim="title"
         :class="$style.input"
         type="text"
         :placeholder="$t('taskForm.titlePlaceholder')"
@@ -16,7 +16,7 @@
       <label :class="$style.label" for="description">{{ $t('taskForm.descriptionLabel') }}</label>
       <textarea
         id="description"
-        v-model="description"
+        v-model.trim="description"
         :class="$style.textarea"
         :placeholder="$t('taskForm.descriptionPlaceholder')"
         rows="2"
@@ -73,7 +73,7 @@
         <label :class="$style.label" for="unit">{{ $t('taskForm.unit') }}</label>
         <input
           id="unit"
-          v-model="unit"
+          v-model.trim="unit"
           :class="$style.input"
           type="text"
           :placeholder="$t('taskForm.unitPlaceholder')"
@@ -117,6 +117,7 @@
   import { ref, computed } from 'vue'
   import TypeOption from '@/components/TypeOption.vue'
   import type { CreateTaskData, TaskType } from '@/models/task'
+  import { normalizeDescription } from '@/utils/text'
 
   const emit = defineEmits<{
     submit: [data: CreateTaskData]
@@ -132,9 +133,9 @@
   const checkInEnabled = ref(false)
 
   const isValid = computed(() => {
-    if (!title.value.trim()) {return false}
+    if (!title.value) {return false}
     if (taskType.value === 'daily' && targetDays.value < 1) {return false}
-    if (taskType.value === 'progress' && (targetValue.value < 1 || !unit.value.trim())) {return false}
+    if (taskType.value === 'progress' && (targetValue.value < 1 || !unit.value)) {return false}
     return true
   })
 
@@ -142,8 +143,8 @@
     if (!isValid.value) {return}
 
     const data: CreateTaskData = {
-      title: title.value.trim(),
-      description: description.value.trim() || undefined,
+      title: title.value,
+      description: normalizeDescription(description.value) || undefined,
       type: taskType.value,
       checkInEnabled: checkInEnabled.value,
     }
@@ -152,7 +153,7 @@
       data.targetDays = targetDays.value
     } else if (taskType.value === 'progress') {
       data.targetValue = targetValue.value
-      data.unit = unit.value.trim()
+      data.unit = unit.value
     }
 
     emit('submit', data)

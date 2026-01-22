@@ -90,6 +90,8 @@
     font-size: 0.875rem;
     color: var(--color-text-secondary);
     line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
   }
 
   .progressContainer {
