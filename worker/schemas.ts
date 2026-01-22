@@ -2,9 +2,18 @@ import * as valibot from 'valibot'
 
 export const taskTypeSchema = valibot.picklist(['daily', 'progress', 'one-time'])
 
+const descriptionSchema = valibot.optional(
+  valibot.pipe(
+    valibot.string(),
+    valibot.maxLength(1000),
+    valibot.transform((text) => text.trim()),
+    valibot.transform((text) => text.replaceAll(/\n{3,}/g, '\n\n')),
+  ),
+)
+
 export const createTaskSchema = valibot.object({
   title: valibot.pipe(valibot.string(), valibot.minLength(1)),
-  description: valibot.optional(valibot.string()),
+  description: descriptionSchema,
   type: taskTypeSchema,
   targetDays: valibot.optional(valibot.number()),
   targetValue: valibot.optional(valibot.number()),
@@ -15,7 +24,7 @@ export const createTaskSchema = valibot.object({
 export const updateTaskSchema = valibot.object({
   id: valibot.string(),
   title: valibot.pipe(valibot.string(), valibot.minLength(1)),
-  description: valibot.optional(valibot.string()),
+  description: descriptionSchema,
   type: taskTypeSchema,
   checkInEnabled: valibot.boolean(),
   // Daily

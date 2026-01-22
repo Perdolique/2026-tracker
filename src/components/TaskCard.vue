@@ -85,7 +85,7 @@
               <div :class="$style.formGroup">
                 <label :class="$style.label">{{ $t('taskForm.titleLabel') }}</label>
                 <input
-                  v-model="editForm.title"
+                  v-model.trim="editForm.title"
                   :class="$style.input"
                   type="text"
                   required
@@ -95,7 +95,7 @@
               <div :class="$style.formGroup">
                 <label :class="$style.label">{{ $t('taskForm.descriptionLabel') }}</label>
                 <textarea
-                  v-model="editForm.description"
+                  v-model.trim="editForm.description"
                   :class="$style.textarea"
                   rows="3"
                 />
@@ -161,7 +161,7 @@
               <div :class="$style.formGroup">
                 <label :class="$style.label">{{ $t('taskForm.titleLabel') }}</label>
                 <input
-                  v-model="editForm.title"
+                  v-model.trim="editForm.title"
                   :class="$style.input"
                   type="text"
                   required
@@ -171,7 +171,7 @@
               <div :class="$style.formGroup">
                 <label :class="$style.label">{{ $t('taskForm.descriptionLabel') }}</label>
                 <textarea
-                  v-model="editForm.description"
+                  v-model.trim="editForm.description"
                   :class="$style.textarea"
                   rows="3"
                 />
@@ -190,7 +190,7 @@
               <div :class="$style.formGroup">
                 <label :class="$style.label">{{ $t('taskForm.unit') }}</label>
                 <input
-                  v-model="editForm.unit"
+                  v-model.trim="editForm.unit"
                   :class="$style.input"
                   type="text"
                   required
@@ -248,7 +248,7 @@
               <div :class="$style.formGroup">
                 <label :class="$style.label">{{ $t('taskForm.titleLabel') }}</label>
                 <input
-                  v-model="editForm.title"
+                  v-model.trim="editForm.title"
                   :class="$style.input"
                   type="text"
                   required
@@ -258,7 +258,7 @@
               <div :class="$style.formGroup">
                 <label :class="$style.label">{{ $t('taskForm.descriptionLabel') }}</label>
                 <textarea
-                  v-model="editForm.description"
+                  v-model.trim="editForm.description"
                   :class="$style.textarea"
                   rows="3"
                 />
@@ -323,6 +323,7 @@
   import { getTaskProgress, isDailyTask, isProgressTask, isOneTimeTask, type Task, type DailyTask, type ProgressTask } from '@/models/task'
   import { useTaskStore } from '@/stores/task-store'
   import TypeChip from '@/components/TypeChip.vue'
+  import { normalizeDescription } from '@/utils/text'
 
   const { t } = useI18n()
 
@@ -513,7 +514,7 @@
   }
 
   async function saveChanges() {
-    if (!editForm.title.trim()) {return}
+    if (!editForm.title) {return}
 
     isSaving.value = true
 
@@ -522,8 +523,8 @@
     if (isDailyTask(props.task)) {
       updatedTask = {
         ...props.task,
-        title: editForm.title.trim(),
-        description: editForm.description.trim() || undefined,
+        title: editForm.title,
+        description: normalizeDescription(editForm.description) || undefined,
         targetDays: editForm.targetDays,
         completedDates: editForm.completedDates,
         checkInEnabled: editForm.checkInEnabled,
@@ -531,17 +532,17 @@
     } else if (isProgressTask(props.task)) {
       updatedTask = {
         ...props.task,
-        title: editForm.title.trim(),
-        description: editForm.description.trim() || undefined,
+        title: editForm.title,
+        description: normalizeDescription(editForm.description) || undefined,
         targetValue: editForm.targetValue,
-        unit: editForm.unit.trim(),
+        unit: editForm.unit,
         checkInEnabled: editForm.checkInEnabled,
       } satisfies ProgressTask
     } else if (isOneTimeTask(props.task)) {
       updatedTask = {
         ...props.task,
-        title: editForm.title.trim(),
-        description: editForm.description.trim() || undefined,
+        title: editForm.title,
+        description: normalizeDescription(editForm.description) || undefined,
         checkInEnabled: editForm.checkInEnabled,
         completedAt: editForm.isCompleted ? editForm.completedAt : undefined,
       }
@@ -662,6 +663,8 @@
     font-size: 0.875rem;
     color: var(--color-text-secondary);
     line-height: 1.4;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
   }
 
   .progressContainer {
