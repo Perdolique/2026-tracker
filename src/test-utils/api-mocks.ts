@@ -25,6 +25,19 @@ export function setMockTasks(tasks: Task[]): void {
 
 // --- ID генератор ---
 let taskIdCounter = 0
+const DAILY_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+
+interface UpdateTaskRequest {
+  id: string
+  title: string
+  description?: string
+  type: Task['type']
+  checkInEnabled: boolean
+  targetDays?: number
+  targetValue?: number
+  unit?: string
+  completedAt?: string
+}
 
 function generateTaskId(): string {
   taskIdCounter += 1
@@ -143,18 +156,63 @@ export const handlers = [
     return HttpResponse.json(task)
   }),
 
-  // PUT /api/tasks/:id — обновление задачи
-  http.put<PathParams, Task>('*/api/tasks/:id', async ({ params, request }) => {
+  // PUT /api/tasks/:id — обновление метаданных задачи (без истории completion)
+  http.put<PathParams, UpdateTaskRequest>('*/api/tasks/:id', async ({ params, request }) => {
     const { id } = params
-    const updatedTask = await request.json()
+    const requestTask = await request.json()
 
     const index = mockTasksStorage.findIndex(t => t.id === id)
     if (index === -1) {
       return HttpResponse.json({ error: 'Not found' }, { status: 404 })
     }
 
-    mockTasksStorage[index] = updatedTask
-    return HttpResponse.json(updatedTask)
+    const currentTask = mockTasksStorage[index]
+    if (!currentTask || requestTask.id !== currentTask.id || requestTask.type !== currentTask.type) {
+      return HttpResponse.json({ error: 'Invalid task update payload' }, { status: 400 })
+    }
+
+    const baseTask = {
+      ...currentTask,
+      title: requestTask.title,
+      description: requestTask.description,
+      checkInEnabled: requestTask.checkInEnabled,
+      updatedAt: TEST_DATE,
+    }
+
+    switch (currentTask.type) {
+      case 'daily': {
+        mockTasksStorage[index] = {
+          ...baseTask,
+          type: 'daily',
+          targetDays: requestTask.targetDays ?? currentTask.targetDays,
+          completedDates: [...currentTask.completedDates],
+        }
+        break
+      }
+
+      case 'progress': {
+        mockTasksStorage[index] = {
+          ...baseTask,
+          type: 'progress',
+          targetValue: requestTask.targetValue ?? currentTask.targetValue,
+          currentValue: currentTask.currentValue,
+          unit: requestTask.unit ?? currentTask.unit,
+          completedValues: [...currentTask.completedValues],
+        }
+        break
+      }
+
+      case 'one-time': {
+        mockTasksStorage[index] = {
+          ...baseTask,
+          type: 'one-time',
+          completedAt: requestTask.completedAt,
+        }
+        break
+      }
+    }
+
+    return HttpResponse.json(mockTasksStorage[index])
   }),
 
   // DELETE /api/tasks/:id — удаление задачи
@@ -213,6 +271,57 @@ export const handlers = [
         }
       }
     }
+
+    return HttpResponse.json(task)
+  }),
+
+  // POST /api/tasks/:id/daily-completions — добавить дату daily-задаче
+  http.post<PathParams, { date: string }>('*/api/tasks/:id/daily-completions', async ({ params, request }) => {
+    const { id } = params
+    const task = mockTasksStorage.find(t => t.id === id)
+
+    if (task?.type !== 'daily') {
+      return HttpResponse.json({ error: 'Task not found or not a daily task' }, { status: 404 })
+    }
+
+    const { date } = await request.json()
+    const hasValidDateFormat = DAILY_DATE_PATTERN.test(date)
+    if (!hasValidDateFormat) {
+      return HttpResponse.json({ error: 'Invalid date' }, { status: 400 })
+    }
+
+    if (!task.completedDates.includes(date)) {
+      task.completedDates.push(date)
+      task.updatedAt = TEST_DATE
+    }
+
+    return HttpResponse.json(task)
+  }),
+
+  // DELETE /api/tasks/:taskId/daily-completions/:date — удалить одну дату
+  http.delete('*/api/tasks/:taskId/daily-completions/:date', ({ params }) => {
+    const { taskId: taskIdParam, date: rawDateParam } = params
+    const taskId = Array.isArray(taskIdParam) ? (taskIdParam[0] ?? '') : (taskIdParam ?? '')
+    const rawDate = Array.isArray(rawDateParam) ? rawDateParam[0] : rawDateParam
+    const date = rawDate === undefined ? '' : decodeURIComponent(rawDate)
+    const task = mockTasksStorage.find(t => t.id === taskId)
+
+    if (task?.type !== 'daily') {
+      return HttpResponse.json({ error: 'Task not found or not a daily task' }, { status: 404 })
+    }
+
+    const hasValidDateFormat = DAILY_DATE_PATTERN.test(date)
+    if (!hasValidDateFormat) {
+      return HttpResponse.json({ error: 'Invalid date' }, { status: 400 })
+    }
+
+    const index = task.completedDates.indexOf(date)
+    if (index === -1) {
+      return HttpResponse.json({ error: 'Date not found' }, { status: 404 })
+    }
+
+    task.completedDates.splice(index, 1)
+    task.updatedAt = TEST_DATE
 
     return HttpResponse.json(task)
   }),

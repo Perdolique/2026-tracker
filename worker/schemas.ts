@@ -2,6 +2,7 @@ import * as valibot from 'valibot'
 import { EXCESSIVE_NEWLINES_REGEX } from '../src/utils/text'
 
 export const taskTypeSchema = valibot.picklist(['daily', 'progress', 'one-time'])
+export const isoDateSchema = valibot.pipe(valibot.string(), valibot.isoDate())
 
 const titleSchema = valibot.pipe(
   valibot.string(),
@@ -41,17 +42,11 @@ export const updateTaskSchema = valibot.object({
   description: descriptionSchema,
   type: taskTypeSchema,
   checkInEnabled: valibot.boolean(),
-  // Daily
+  // Daily metadata only (history is managed via dedicated endpoints)
   targetDays: valibot.optional(valibot.number()),
-  completedDates: valibot.optional(valibot.array(valibot.string())),
-  // Progress
+  // Progress metadata only (history is managed via dedicated endpoints)
   targetValue: valibot.optional(valibot.number()),
   unit: valibot.optional(valibot.string()),
-  completedValues: valibot.optional(valibot.array(valibot.object({
-    id: valibot.number(),
-    date: valibot.string(),
-    value: valibot.number(),
-  }))),
   // One-time
   completedAt: valibot.optional(valibot.string()),
 })
@@ -63,6 +58,10 @@ export const checkInSchema = valibot.object({
 
 export const addProgressValueSchema = valibot.object({
   value: valibot.pipe(valibot.number(), valibot.minValue(0.01)),
+})
+
+export const addDailyCompletionSchema = valibot.object({
+  date: isoDateSchema,
 })
 
 export const updateUserSchema = valibot.object({

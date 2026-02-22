@@ -380,9 +380,15 @@ Tables can be found in `worker/db/schema.ts`.
 | GET | `/api/tasks` | Get all tasks |
 | GET | `/api/tasks/:id` | Get single task |
 | POST | `/api/tasks` | Create task |
-| PUT | `/api/tasks/:id` | Update task |
+| PUT | `/api/tasks/:id` | Update task metadata (not completion history) |
 | DELETE | `/api/tasks/:id` | Delete task |
 | POST | `/api/tasks/:id/checkin` | Record check-in |
+| POST | `/api/tasks/:id/daily-completions` | Add a single daily completion date |
+| DELETE | `/api/tasks/:taskId/daily-completions/:date` | Delete a single daily completion date |
+| POST | `/api/tasks/:id/completions` | Add a single progress value |
+| DELETE | `/api/tasks/:taskId/completions/:completionId` | Delete a single progress value |
+
+`PUT /api/tasks/:id` must not be used to sync `completedDates` or `completedValues`; use the dedicated completion endpoints instead.
 
 ## Key Flows
 

@@ -139,6 +139,40 @@ export const useTaskStore = defineStore('tasks', () => {
     }
   }
 
+  async function addDailyCompletionToTask(taskId: string, date: string): Promise<Task | null> {
+    errorMessage.value = null
+    try {
+      const updatedTask = await taskApi.addDailyCompletion(taskId, date)
+
+      const index = tasks.value.findIndex((t) => t.id === taskId)
+      if (index !== -1) {
+        tasks.value[index] = updatedTask
+      }
+
+      return updatedTask
+    } catch (error) {
+      errorMessage.value = error instanceof Error ? error.message : 'Failed to add daily completion'
+      return null
+    }
+  }
+
+  async function deleteDailyCompletionFromTask(taskId: string, date: string): Promise<Task | null> {
+    errorMessage.value = null
+    try {
+      const updatedTask = await taskApi.deleteDailyCompletion(taskId, date)
+
+      const index = tasks.value.findIndex((t) => t.id === taskId)
+      if (index !== -1) {
+        tasks.value[index] = updatedTask
+      }
+
+      return updatedTask
+    } catch (error) {
+      errorMessage.value = error instanceof Error ? error.message : 'Failed to delete daily completion'
+      return null
+    }
+  }
+
   async function addProgressValueToTask(taskId: string, value: number): Promise<Task | null> {
     errorMessage.value = null
     try {
@@ -194,6 +228,8 @@ export const useTaskStore = defineStore('tasks', () => {
     removeTask,
     updateTask,
     processCheckIn,
+    addDailyCompletionToTask,
+    deleteDailyCompletionFromTask,
     addProgressValueToTask,
     deleteProgressValueFromTask,
     getTaskById,

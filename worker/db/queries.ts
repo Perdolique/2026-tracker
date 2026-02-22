@@ -10,6 +10,8 @@ export {
   updateTask,
   deleteTask,
   recordCheckIn,
+  addDailyCompletion,
+  deleteDailyCompletion,
   type CheckInParams,
 } from './task-queries'
 
