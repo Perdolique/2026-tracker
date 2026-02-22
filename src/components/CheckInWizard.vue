@@ -96,6 +96,14 @@
 
   const isLastTask = computed(() => currentIdIndex.value >= taskIds.value.length - 1)
 
+  function goNext() {
+    if (isLastTask.value) {
+      emit('complete')
+    } else {
+      currentIdIndex.value += 1
+    }
+  }
+
   async function handleYes() {
     if (isProcessing.value) {return}
     const task = currentTask.value
@@ -162,14 +170,6 @@
       goNext()
     } finally {
       isProcessing.value = false
-    }
-  }
-
-  function goNext() {
-    if (isLastTask.value) {
-      emit('complete')
-    } else {
-      currentIdIndex.value += 1
     }
   }
 </script>

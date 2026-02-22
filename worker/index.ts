@@ -93,9 +93,9 @@ app.get('/api/auth/twitch', (context) => {
 // GET /api/auth/twitch/callback - Handle OAuth callback
 app.get('/api/auth/twitch/callback', async (context) => {
   const code = context.req.query('code')
-  const error = context.req.query('error')
+  const authError = context.req.query('error')
 
-  if (error !== undefined || code === undefined) {
+  if (authError !== undefined || code === undefined) {
     return context.redirect('/?auth_error=access_denied')
   }
 

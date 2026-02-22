@@ -145,6 +145,7 @@
                     <button
                       type="button"
                       :class="$style.dateRemoveBtn"
+                      :disabled="isUpdatingDailyDates"
                       @click="removeDate(date)"
                       :aria-label="$t('taskCard.removeDate')"
                     >
@@ -346,6 +347,7 @@
   // Menu state
   const showEditModal = ref(false)
   const isSaving = ref(false)
+  const isUpdatingDailyDates = ref(false)
   const activeTab = ref<'general' | 'days' | 'values'>('general')
 
   // Edit form state
@@ -394,6 +396,7 @@
   )
 
   const canAddDate = computed(() => {
+    if (isUpdatingDailyDates.value) {return false}
     const date = editForm.newDate
     if (!date) {return false}
     const today = todayDate.value ?? ''
@@ -420,10 +423,25 @@
     return `${year}-${month}-${day} ${hours}:${minutes}`
   }
 
-  function addDate() {
-    if (!canAddDate.value) {return}
-    editForm.completedDates.push(editForm.newDate)
-    editForm.newDate = ''
+  async function addDate() {
+    if (!canAddDate.value || !isDailyTask(props.task)) {return}
+
+    const date = editForm.newDate
+    if (!date) {return}
+
+    isUpdatingDailyDates.value = true
+    try {
+      const updated = await store.addDailyCompletionToTask(props.task.id, date)
+      if (!updated || !isDailyTask(updated)) {return}
+
+      editForm.completedDates = [...updated.completedDates]
+      editForm.newDate = ''
+      emit('update', updated)
+    } catch {
+      // Failed to add date
+    } finally {
+      isUpdatingDailyDates.value = false
+    }
   }
 
   async function addValue() {
@@ -446,10 +464,20 @@
     }
   }
 
-  function removeDate(date: string) {
-    const index = editForm.completedDates.indexOf(date)
-    if (index !== -1) {
-      editForm.completedDates.splice(index, 1)
+  async function removeDate(date: string) {
+    if (isUpdatingDailyDates.value || !isDailyTask(props.task)) {return}
+
+    isUpdatingDailyDates.value = true
+    try {
+      const updated = await store.deleteDailyCompletionFromTask(props.task.id, date)
+      if (!updated || !isDailyTask(updated)) {return}
+
+      editForm.completedDates = [...updated.completedDates]
+      emit('update', updated)
+    } catch {
+      // Deletion failed
+    } finally {
+      isUpdatingDailyDates.value = false
     }
   }
 
@@ -483,6 +511,7 @@
     editForm.newDate = ''
     editForm.newValue = undefined
     editForm.checkInEnabled = props.task.checkInEnabled
+    isUpdatingDailyDates.value = false
 
     if (isDailyTask(props.task)) {
       editForm.targetDays = props.task.targetDays

@@ -1,6 +1,18 @@
 import { api } from './client'
 import type { Task, CreateTaskData } from '@/models/task'
 
+interface UpdateTaskPayload {
+  id: string
+  title: string
+  description?: string
+  type: Task['type']
+  checkInEnabled: boolean
+  targetDays?: number
+  targetValue?: number
+  unit?: string
+  completedAt?: string
+}
+
 // Get current ISO date string (YYYY-MM-DD)
 export function getCurrentDate(): string {
   const [date] = new Date().toISOString().split('T')
@@ -26,10 +38,43 @@ export async function createTask(data: CreateTaskData): Promise<Task> {
   return api.post('tasks', { json: data }).json<Task>()
 }
 
+function toUpdateTaskPayload(task: Task): UpdateTaskPayload {
+  const basePayload = {
+    id: task.id,
+    title: task.title,
+    description: task.description,
+    type: task.type,
+    checkInEnabled: task.checkInEnabled,
+  }
+
+  switch (task.type) {
+    case 'daily': {
+      return {
+        ...basePayload,
+        targetDays: task.targetDays,
+      }
+    }
+
+    case 'progress': {
+      return {
+        ...basePayload,
+        targetValue: task.targetValue,
+        unit: task.unit,
+      }
+    }
+
+    case 'one-time': {
+      return {
+        ...basePayload,
+        completedAt: task.completedAt,
+      }
+    }
+  }
+}
+
 // Update existing task
 export async function updateTask(task: Task): Promise<Task> {
-  // Strip timestamp fields - server will generate them
-  const { createdAt: _createdAt, updatedAt: _updatedAt, ...taskData } = task
+  const taskData = toUpdateTaskPayload(task)
   return api.put(`tasks/${task.id}`, { json: taskData }).json<Task>()
 }
 
@@ -45,6 +90,17 @@ export async function recordCheckIn(
   value?: number
 ): Promise<Task> {
   return api.post(`tasks/${taskId}/checkin`, { json: { completed, value } }).json<Task>()
+}
+
+// Add single daily completion date
+export async function addDailyCompletion(taskId: string, date: string): Promise<Task> {
+  return api.post(`tasks/${taskId}/daily-completions`, { json: { date } }).json<Task>()
+}
+
+// Delete single daily completion date
+export async function deleteDailyCompletion(taskId: string, date: string): Promise<Task> {
+  const encodedDate = encodeURIComponent(date)
+  return api.delete(`tasks/${taskId}/daily-completions/${encodedDate}`).json<Task>()
 }
 
 // Add new progress value

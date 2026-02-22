@@ -10,6 +10,8 @@ export {
   updateTask,
   deleteTask,
   recordCheckIn,
+  addDailyCompletion,
+  deleteDailyCompletion,
   type CheckInParams,
 } from './task-queries'
 
@@ -95,6 +97,10 @@ export async function createSession(db: Database, userId: string): Promise<strin
   return id
 }
 
+export async function deleteSession(db: Database, sessionId: string): Promise<void> {
+  await db.delete(sessions).where(eq(sessions.id, sessionId))
+}
+
 export async function getSessionWithUser(
   db: Database,
   sessionId: string
@@ -123,10 +129,6 @@ export async function getSessionWithUser(
     session: { id: session.id, expiresAt: session.expiresAt },
     user,
   }
-}
-
-export async function deleteSession(db: Database, sessionId: string): Promise<void> {
-  await db.delete(sessions).where(eq(sessions.id, sessionId))
 }
 
 export async function deleteUserSessions(db: Database, userId: string): Promise<void> {

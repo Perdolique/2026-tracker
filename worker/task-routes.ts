@@ -11,7 +11,13 @@ import {
   type User,
 } from './db/queries'
 import type { Task } from '../src/models/task'
-import { createTaskSchema, updateTaskSchema, checkInSchema, addProgressValueSchema } from './schemas'
+import {
+  createTaskSchema,
+  updateTaskSchema,
+  checkInSchema,
+  addProgressValueSchema,
+  addDailyCompletionSchema,
+} from './schemas'
 
 interface Bindings {
   DB: D1Database
@@ -30,6 +36,7 @@ interface TaskContext {
 }
 
 export const taskRoutes = new Hono<TaskContext>()
+const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 
 // GET /api/tasks - Get all tasks
 taskRoutes.get('/', async (context) => {
@@ -114,7 +121,7 @@ taskRoutes.put('/:id', vValidator('json', updateTaskSchema), async (context) => 
           ...baseTask,
           type: 'daily' as const,
           targetDays: data.targetDays ?? 30,
-          completedDates: data.completedDates ?? [],
+          completedDates: [],
         }
       }
       case 'progress': {
@@ -124,7 +131,7 @@ taskRoutes.put('/:id', vValidator('json', updateTaskSchema), async (context) => 
           targetValue: data.targetValue ?? 100,
           currentValue: 0, // CurrentValue is calculated from completions, not from client
           unit: data.unit ?? 'units',
-          completedValues: data.completedValues ?? [],
+          completedValues: [],
         }
       }
       case 'one-time': {
@@ -181,6 +188,72 @@ taskRoutes.post('/:id/checkin', vValidator('json', checkInSchema), async (contex
   }
 
   return context.json(task)
+})
+
+// POST /api/tasks/:id/daily-completions - Add single daily completion date
+taskRoutes.post('/:id/daily-completions', vValidator('json', addDailyCompletionSchema), async (context) => {
+  const user = context.get('user')
+
+  if (!user) {
+    return context.json({ error: 'Unauthorized' }, 401)
+  }
+
+  const db = createDatabase(context.env.DB)
+  const taskId = context.req.param('id')
+  const { date } = context.req.valid('json')
+
+  const { addDailyCompletion } = await import('./db/task-queries')
+  const updated = await addDailyCompletion({
+    db,
+    userId: user.id,
+    taskId,
+    date,
+  })
+
+  if (!updated) {
+    return context.json({ error: 'Task not found or not a daily task' }, 404)
+  }
+
+  return context.json(updated)
+})
+
+// DELETE /api/tasks/:taskId/daily-completions/:date - Delete single daily completion date
+taskRoutes.delete('/:taskId/daily-completions/:date', async (context) => {
+  const user = context.get('user')
+
+  if (!user) {
+    return context.json({ error: 'Unauthorized' }, 401)
+  }
+
+  const db = createDatabase(context.env.DB)
+  const taskId = context.req.param('taskId')
+  const encodedDate = context.req.param('date')
+
+  let date = ''
+  try {
+    date = decodeURIComponent(encodedDate)
+  } catch {
+    return context.json({ error: 'Invalid date' }, 400)
+  }
+
+  const hasValidDateFormat = ISO_DATE_PATTERN.test(date)
+  if (!hasValidDateFormat) {
+    return context.json({ error: 'Invalid date' }, 400)
+  }
+
+  const { deleteDailyCompletion } = await import('./db/task-queries')
+  const updated = await deleteDailyCompletion({
+    db,
+    userId: user.id,
+    taskId,
+    date,
+  })
+
+  if (!updated) {
+    return context.json({ error: 'Task not found, not a daily task, or date not found' }, 404)
+  }
+
+  return context.json(updated)
 })
 
 // POST /api/tasks/:id/completions - Add new progress value

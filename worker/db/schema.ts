@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, index } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, text, integer, index, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
 // Task types enum values
 export const taskTypes = ['daily', 'progress', 'one-time'] as const
@@ -84,7 +84,7 @@ export const dailyCompletions = sqliteTable(
   },
   (table) => [
     index('daily_completions_task_id_idx').on(table.taskId),
-    index('daily_completions_task_date_idx').on(table.taskId, table.completedDate),
+    uniqueIndex('daily_completions_task_date_uidx').on(table.taskId, table.completedDate),
   ]
 )
 

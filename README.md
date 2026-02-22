@@ -7,6 +7,7 @@ Mobile-first task tracker for 2026 goals with three completion types.
 - **📅 Daily tasks** — Track completing N days total (e.g., 300/365 days)
 - **📊 Progress tasks** — Accumulate values toward a goal (e.g., 1M steps)
 - **✅ One-time tasks** — Single completion actions
+- **🧩 Incremental history edits** — Daily dates and progress values are added/removed as individual completion records (not full task rewrites)
 - **🎮 Check-in wizard** — Daily review of all active tasks one-by-one
 - **🏆 Completed section** — Track achieved goals separately
 - **🔐 Twitch OAuth** — Login via Twitch account

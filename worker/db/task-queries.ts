@@ -21,7 +21,7 @@ function rowToTask(
     description: row.description ?? undefined,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
-    checkInEnabled: row.checkInEnabled ?? false,
+    checkInEnabled: row.checkInEnabled,
   }
 
   switch (row.type) {
@@ -121,7 +121,9 @@ export async function getTaskById(db: Database, id: string, userId?: string): Pr
       .select()
       .from(progressCompletions)
       .where(eq(progressCompletions.taskId, id))
-    completedValues = completions.map((completion) => ({ id: completion.id, date: completion.completedDate, value: completion.value }))
+    completedValues = completions.map((completion) => {
+      return { id: completion.id, date: completion.completedDate, value: completion.value }
+    })
   }
 
   return rowToTask(row, completedDates, completedValues)
@@ -231,16 +233,6 @@ export async function updateTask(db: Database, userId: string, task: Task): Prom
         return null
       }
 
-      // Sync completed dates (only if task was updated)
-      await db.delete(dailyCompletions).where(eq(dailyCompletions.taskId, task.id))
-      if (task.completedDates.length > 0) {
-        await db.insert(dailyCompletions).values(
-          task.completedDates.map((date) => ({
-            taskId: task.id,
-            completedDate: date,
-          }))
-        )
-      }
       break
     }
 
@@ -291,6 +283,86 @@ export async function deleteTask(db: Database, id: string, userId: string): Prom
   // Cascade delete will handle daily_completions
   const result = await db.delete(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
   return result.meta.changes > 0
+}
+
+/**
+ * Add a single daily completion date (idempotent on duplicate date)
+ * Returns updated task or null if task not found or not a daily task
+ */
+export async function addDailyCompletion({
+  db,
+  userId,
+  taskId,
+  date,
+}: {
+  db: Database
+  userId: string
+  taskId: string
+  date: string
+}): Promise<Task | null> {
+  const task = await getTaskById(db, taskId, userId)
+  if (task?.type !== 'daily') {
+    return null
+  }
+
+  const insertResult = await db
+    .insert(dailyCompletions)
+    .values({
+      taskId,
+      completedDate: date,
+    })
+    .onConflictDoNothing({
+      target: [dailyCompletions.taskId, dailyCompletions.completedDate],
+    })
+
+  const didInsertRow = insertResult.meta.changes > 0
+  if (didInsertRow) {
+    const now = new Date().toISOString()
+    await db
+      .update(tasks)
+      .set({ updatedAt: now })
+      .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)))
+  }
+
+  return getTaskById(db, taskId, userId)
+}
+
+/**
+ * Delete a single daily completion date
+ * Returns updated task or null if task/date not found or task is not daily
+ */
+export async function deleteDailyCompletion({
+  db,
+  userId,
+  taskId,
+  date,
+}: {
+  db: Database
+  userId: string
+  taskId: string
+  date: string
+}): Promise<Task | null> {
+  const task = await getTaskById(db, taskId, userId)
+  if (task?.type !== 'daily') {
+    return null
+  }
+
+  const deleteResult = await db
+    .delete(dailyCompletions)
+    .where(and(eq(dailyCompletions.taskId, taskId), eq(dailyCompletions.completedDate, date)))
+
+  const didDeleteRow = deleteResult.meta.changes > 0
+  if (!didDeleteRow) {
+    return null
+  }
+
+  const now = new Date().toISOString()
+  await db
+    .update(tasks)
+    .set({ updatedAt: now })
+    .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)))
+
+  return getTaskById(db, taskId, userId)
 }
 
 /**
@@ -370,17 +442,12 @@ export async function recordCheckIn(params: CheckInParams): Promise<Task | null>
 
   switch (task.type) {
     case 'daily': {
-      // Add today to completed dates if not already there
-      if (!task.completedDates.includes(today)) {
-        await db.insert(dailyCompletions).values({
-          taskId,
-          completedDate: today,
-        })
-        await db.update(tasks).set({ updatedAt: now }).where(ownershipCondition)
-        task.completedDates.push(today)
-        task.updatedAt = now
-      }
-      break
+      return addDailyCompletion({
+        db,
+        userId,
+        taskId,
+        date: today,
+      })
     }
 
     case 'progress': {
