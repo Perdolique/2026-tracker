@@ -27,7 +27,8 @@
     "typescript/no-unsafe-call": "off",
     "typescript/no-unsafe-argument": "off",
     "typescript/no-unsafe-member-access": "off",
-    "typescript/no-unsafe-return": "off"
+    "typescript/no-unsafe-return": "off",
+    "typescript/consistent-return": "off"
   },
 
   "overrides": [{
@@ -59,7 +60,8 @@
     "files": ["worker/**/*.ts"],
 
     "rules": {
-      "eslint/no-console": "off"
+      "eslint/no-console": "off",
+      "import/no-relative-parent-imports": "off" // worker imports types from src/ — cross-boundary is intentional
     },
 
     "env": {
@@ -70,7 +72,8 @@
 
     "rules": {
       "eslint/max-lines": "off",
-      "promise/avoid-new": "off"
+      "promise/avoid-new": "off",
+      "import/no-relative-parent-imports": "off" // allow relative imports in tests for better readability
     }
   }, {
     "files": ["worker/db/task-queries.ts"],

@@ -314,7 +314,7 @@
     if (isOwnProfile.value) {
       return taskStore.sortedActiveTasks
     }
-    const tasks = profile.value?.tasks.filter(t => !isTaskCompleted(t)) ?? []
+    const tasks = profile.value?.tasks.filter(task => !isTaskCompleted(task)) ?? []
     // Sort public profile tasks: check-in enabled first, then by updatedAt (desc)
     return tasks.toSorted((taskA, taskB) => {
       // Priority 1: Tasks that require check-in
@@ -336,7 +336,7 @@
     if (isOwnProfile.value) {
       return taskStore.sortedCompletedTasks
     }
-    const tasks = profile.value?.tasks.filter(t => isTaskCompleted(t)) ?? []
+    const tasks = profile.value?.tasks.filter(task => isTaskCompleted(task)) ?? []
     // Sort completed tasks by updatedAt (desc)
     return tasks.toSorted((taskA, taskB) => {
       const aUpdated = new Date(taskA.updatedAt).getTime()
@@ -351,32 +351,6 @@
       return taskStore.tasks
     }
     return profile.value?.tasks ?? []
-  })
-
-  onMounted(async () => {
-    await authStore.fetchMe()
-    syncLocaleFromUser()
-
-    // If this is own profile and we have cached data, initialize profile immediately
-    // This prevents loading flash on navigation back from other pages
-    if (isLikelyOwnProfile.value && taskStore.tasks.length > 0 && authStore.user) {
-      profile.value = {
-        user: {
-          id: authStore.user.id,
-          displayName: authStore.user.displayName,
-          avatarUrl: authStore.user.avatarUrl,
-        },
-        tasks: taskStore.tasks,
-        isOwner: true,
-      }
-    }
-
-    await loadProfile()
-  })
-
-  // Reload profile when userId changes
-  watch(() => route.params.userId, async () => {
-    await loadProfile()
   })
 
   async function loadProfile() {
@@ -411,6 +385,32 @@
       error.value = 'network'
     }
   }
+
+  onMounted(async () => {
+    await authStore.fetchMe()
+    syncLocaleFromUser()
+
+    // If this is own profile and we have cached data, initialize profile immediately
+    // This prevents loading flash on navigation back from other pages
+    if (isLikelyOwnProfile.value && taskStore.tasks.length > 0 && authStore.user) {
+      profile.value = {
+        user: {
+          id: authStore.user.id,
+          displayName: authStore.user.displayName,
+          avatarUrl: authStore.user.avatarUrl,
+        },
+        tasks: taskStore.tasks,
+        isOwner: true,
+      }
+    }
+
+    await loadProfile()
+  })
+
+  // Reload profile when userId changes
+  watch(() => route.params.userId, async () => {
+    await loadProfile()
+  })
 
   function goToAddTask() {
     router.push({ name: 'add-task' })

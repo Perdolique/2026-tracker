@@ -109,7 +109,7 @@ function createTaskFromData(data: CreateTaskData): Task {
         type: 'daily',
         targetDays: data.targetDays ?? 1,
         completedDates: [],
-      } as DailyTask
+      } satisfies DailyTask
     }
     case 'progress': {
       return {
@@ -119,13 +119,13 @@ function createTaskFromData(data: CreateTaskData): Task {
         currentValue: 0,
         unit: data.unit ?? '',
         completedValues: [],
-      } as ProgressTask
+      } satisfies ProgressTask
     }
     case 'one-time': {
       return {
         ...base,
         type: 'one-time',
-      } as OneTimeTask
+      } satisfies OneTimeTask
     }
   }
 }
@@ -207,7 +207,7 @@ export const handlers = [
           ...baseTask,
           type: 'one-time',
           completedAt: requestTask.completedAt,
-        }
+        } satisfies OneTimeTask
         break
       }
     }
@@ -252,8 +252,6 @@ export const handlers = [
         case 'progress': {
           const progressTask = task
           if (value !== undefined && value > 0) {
-            // Ensure completedValues array exists (for backward compat with existing tests)
-            progressTask.completedValues = progressTask.completedValues ?? []
             // Use TEST_DATE-based timestamp for consistency
             const timestamp = `${TEST_DATE}T12:00:00.000Z`
             const newId = Math.max(0, ...progressTask.completedValues.map(cv => cv.id)) + 1

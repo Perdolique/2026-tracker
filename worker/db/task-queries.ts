@@ -21,7 +21,7 @@ function rowToTask(
     description: row.description ?? undefined,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
-    checkInEnabled: row.checkInEnabled ?? false,
+    checkInEnabled: row.checkInEnabled,
   }
 
   switch (row.type) {
@@ -121,7 +121,9 @@ export async function getTaskById(db: Database, id: string, userId?: string): Pr
       .select()
       .from(progressCompletions)
       .where(eq(progressCompletions.taskId, id))
-    completedValues = completions.map((completion) => ({ id: completion.id, date: completion.completedDate, value: completion.value }))
+    completedValues = completions.map((completion) => {
+      return { id: completion.id, date: completion.completedDate, value: completion.value }
+    })
   }
 
   return rowToTask(row, completedDates, completedValues)

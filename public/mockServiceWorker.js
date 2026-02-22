@@ -1,10 +1,13 @@
+/* eslint-disable */
+/* tslint:disable */
+
 /**
  * Mock Service Worker.
  * @see https://github.com/mswjs/msw
  * - Please do NOT modify this file.
  */
 
-const PACKAGE_VERSION = '2.12.7'
+const PACKAGE_VERSION = '2.12.10'
 const INTEGRITY_CHECKSUM = '4db4a41e972cec1b64cc569c66952d82'
 const IS_MOCKED_RESPONSE = Symbol('isMockedResponse')
 const activeClientIds = new Set()

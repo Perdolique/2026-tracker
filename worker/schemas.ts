@@ -48,7 +48,7 @@ export const updateTaskSchema = valibot.object({
   targetValue: valibot.optional(valibot.number()),
   unit: valibot.optional(valibot.string()),
   // One-time
-  completedAt: valibot.optional(valibot.string()),
+  completedAt: valibot.optional(isoDateSchema),
 })
 
 export const checkInSchema = valibot.object({
