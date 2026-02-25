@@ -26,7 +26,7 @@
     "@fontsource-variable/inter": "5.2.8",
     "@iconify/vue": "5.0.0",
     "drizzle-orm": "1.0.0-beta.9-e89174b",
-    "hono": "4.12.1",
+    "hono": "4.12.2",
     "ky": "1.14.3",
     "pinia": "3.0.4",
     "valibot": "1.2.0",
