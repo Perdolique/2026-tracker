@@ -167,7 +167,7 @@ export const handlers = [
     }
 
     const currentTask = mockTasksStorage[index]
-    if (!currentTask || requestTask.id !== currentTask.id || requestTask.type !== currentTask.type) {
+    if (requestTask.id !== currentTask.id || requestTask.type !== currentTask.type) {
       return HttpResponse.json({ error: 'Invalid task update payload' }, { status: 400 })
     }
 

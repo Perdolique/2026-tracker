@@ -111,10 +111,11 @@ export async function getSessionWithUser(
     .innerJoin(users, eq(sessions.userId, users.id))
     .where(eq(sessions.id, sessionId))
 
-  if (rows.length === 0) {return null}
+  if (rows.length === 0) {
+    return null
+  }
 
   const [row] = rows
-  if (!row) {return null}
 
   const session = row.sessions
   const user = row.users

@@ -16,7 +16,7 @@ interface UpdateTaskPayload {
 // Get current ISO date string (YYYY-MM-DD)
 export function getCurrentDate(): string {
   const [date] = new Date().toISOString().split('T')
-  return date ?? ''
+  return date
 }
 
 // Get all tasks

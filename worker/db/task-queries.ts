@@ -99,11 +99,12 @@ export async function getTaskById(db: Database, id: string, userId?: string): Pr
     : and(eq(tasks.id, id), eq(tasks.userId, userId))
 
   const rows = await db.select().from(tasks).where(conditions)
-  const [row] = rows
 
-  if (!row) {
+  if (rows.length === 0) {
     return null
   }
+
+  const [row] = rows
 
   let completedDates: string[] = []
   let completedValues: { id: number; date: string; value: number }[] = []

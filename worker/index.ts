@@ -138,11 +138,12 @@ app.get('/api/auth/twitch/callback', async (context) => {
     }
 
     const userData = await userResponse.json<TwitchUserResponse>()
-    const [twitchUser] = userData.data
 
-    if (!twitchUser) {
+    if (userData.data.length === 0) {
       return context.redirect('/?auth_error=no_user_data')
     }
+
+    const [twitchUser] = userData.data
 
     const db = createDatabase(context.env.DB)
 

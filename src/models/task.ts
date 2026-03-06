@@ -118,7 +118,7 @@ export function getGlobalProgress(tasks: Task[]): number {
 // Get current date in YYYY-MM-DD format (UTC)
 export function getCurrentDate(): string {
   const [date] = new Date().toISOString().split('T')
-  return date ?? ''
+  return date
 }
 
 // Check if daily task was already completed today
