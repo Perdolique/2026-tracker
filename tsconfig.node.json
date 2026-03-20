@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
-    "target": "ES2023",
-    "lib": ["ES2023"],
+    "target": "ES2024",
+    "lib": ["ES2024"],
     "module": "ESNext",
     "types": ["node"],
     "skipLibCheck": true,
@@ -22,5 +22,11 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["vite.config.ts"]
+  "include": [
+    "drizzle.config.ts",
+    "scripts/**/*.ts",
+    "vite.config.ts",
+    "vite-plugins/**/*.ts",
+    "vitest*.ts"
+  ]
 }

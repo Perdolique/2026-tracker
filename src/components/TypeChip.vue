@@ -11,7 +11,7 @@
   import { Icon } from '@iconify/vue'
   import type { TaskType } from '@/models/task'
 
-  const { t } = useI18n()
+  const { t: translate } = useI18n()
 
   const props = defineProps<{
     type: TaskType
@@ -20,13 +20,13 @@
   const typeLabel = computed(() => {
     switch (props.type) {
       case 'daily': {
-        return t('taskCard.dailyLabel')
+        return translate('taskCard.dailyLabel')
       }
       case 'progress': {
-        return t('taskCard.progressLabel')
+        return translate('taskCard.progressLabel')
       }
       case 'one-time': {
-        return t('taskCard.oneTimeLabel')
+        return translate('taskCard.oneTimeLabel')
       }
     }
   })

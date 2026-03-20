@@ -326,7 +326,7 @@
   import TypeChip from '@/components/TypeChip.vue'
   import { normalizeDescription } from '@/utils/text'
 
-  const { t } = useI18n()
+  const { t: translate } = useI18n()
 
   const props = defineProps<{
     task: Task
@@ -373,13 +373,13 @@
   const progressText = computed(() => {
     const {task} = props
     if (isDailyTask(task)) {
-      return t('taskCard.daysProgress', { completed: task.completedDates.length, target: task.targetDays })
+      return translate('taskCard.daysProgress', { completed: task.completedDates.length, target: task.targetDays })
     }
     if (isProgressTask(task)) {
       return `${task.currentValue.toLocaleString()} / ${task.targetValue.toLocaleString()} ${task.unit}`
     }
     if (isOneTimeTask(task)) {
-      return task.completedAt ? t('taskCard.completed') : t('taskCard.notCompleted')
+      return task.completedAt ? translate('taskCard.completed') : translate('taskCard.notCompleted')
     }
     return ''
   })
@@ -484,7 +484,7 @@
   async function removeValue(completionId: number) {
     if (!isProgressTask(props.task)) {return}
 
-    if (!confirm(t('taskCard.confirmDeleteValue'))) {
+    if (!confirm(translate('taskCard.confirmDeleteValue'))) {
       return
     }
 

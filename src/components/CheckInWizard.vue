@@ -79,7 +79,7 @@
     (tasks) => {
       // Снапшотим только если ещё не снапшотили (первый раз)
       if (taskIds.value.length === 0 && tasks.length > 0) {
-        taskIds.value = tasks.map(t => t.id)
+        taskIds.value = tasks.map(task => task.id)
       }
     },
     { immediate: true }
@@ -89,7 +89,7 @@
   const currentTaskId = computed(() => taskIds.value[currentIdIndex.value])
 
   // Ищем задачу по ID в актуальном props.tasks
-  const currentTask = computed(() => props.tasks.find(t => t.id === currentTaskId.value))
+  const currentTask = computed(() => props.tasks.find(task => task.id === currentTaskId.value))
 
   // Для индикатора прогресса используем снапшот
   const currentIndex = computed(() => currentIdIndex.value)

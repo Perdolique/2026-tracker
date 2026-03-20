@@ -263,7 +263,7 @@
     isOwner: boolean
   }
 
-  const { t } = useI18n()
+  const { t: translate } = useI18n()
   const route = useRoute()
   const router = useRouter()
   const authStore = useAuthStore()
@@ -295,13 +295,13 @@
   const errorText = computed(() => {
     switch (error.value) {
       case 'not-found': {
-        return t('profile.userNotFound')
+        return translate('profile.userNotFound')
       }
       case 'load-error': {
-        return t('profile.loadError')
+        return translate('profile.loadError')
       }
       case 'network': {
-        return t('profile.networkError')
+        return translate('profile.networkError')
       }
       default: {
         return error.value
@@ -421,7 +421,7 @@
   }
 
   async function handleDelete(taskId: string) {
-    if (confirm(t('profile.deleteTask'))) {
+    if (confirm(translate('profile.deleteTask'))) {
       await taskStore.removeTask(taskId)
     }
   }

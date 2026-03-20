@@ -147,7 +147,7 @@ export const handlers = [
   // GET /api/tasks/:id — получение задачи
   http.get('*/api/tasks/:id', ({ params }) => {
     const { id } = params
-    const task = mockTasksStorage.find(t => t.id === id)
+    const task = mockTasksStorage.find(taskItem => taskItem.id === id)
 
     if (!task) {
       return HttpResponse.json({ error: 'Not found' }, { status: 404 })
@@ -161,7 +161,7 @@ export const handlers = [
     const { id } = params
     const requestTask = await request.json()
 
-    const index = mockTasksStorage.findIndex(t => t.id === id)
+    const index = mockTasksStorage.findIndex(taskItem => taskItem.id === id)
     if (index === -1) {
       return HttpResponse.json({ error: 'Not found' }, { status: 404 })
     }
@@ -218,7 +218,7 @@ export const handlers = [
   // DELETE /api/tasks/:id — удаление задачи
   http.delete('*/api/tasks/:id', ({ params }) => {
     const { id } = params
-    const index = mockTasksStorage.findIndex(t => t.id === id)
+    const index = mockTasksStorage.findIndex(taskItem => taskItem.id === id)
 
     if (index !== -1) {
       mockTasksStorage.splice(index, 1)
@@ -230,7 +230,7 @@ export const handlers = [
   // POST /api/tasks/:id/checkin — check-in
   http.post<PathParams, { completed: boolean; value?: number }>('*/api/tasks/:id/checkin', async ({ params, request }) => {
     const { id } = params
-    const task = mockTasksStorage.find(t => t.id === id)
+    const task = mockTasksStorage.find(taskItem => taskItem.id === id)
 
     if (!task) {
       return HttpResponse.json({ error: 'Not found' }, { status: 404 })
@@ -276,7 +276,7 @@ export const handlers = [
   // POST /api/tasks/:id/daily-completions — добавить дату daily-задаче
   http.post<PathParams, { date: string }>('*/api/tasks/:id/daily-completions', async ({ params, request }) => {
     const { id } = params
-    const task = mockTasksStorage.find(t => t.id === id)
+    const task = mockTasksStorage.find(taskItem => taskItem.id === id)
 
     if (task?.type !== 'daily') {
       return HttpResponse.json({ error: 'Task not found or not a daily task' }, { status: 404 })
@@ -302,7 +302,7 @@ export const handlers = [
     const taskId = Array.isArray(taskIdParam) ? (taskIdParam[0] ?? '') : (taskIdParam ?? '')
     const rawDate = Array.isArray(rawDateParam) ? rawDateParam[0] : rawDateParam
     const date = rawDate === undefined ? '' : decodeURIComponent(rawDate)
-    const task = mockTasksStorage.find(t => t.id === taskId)
+    const task = mockTasksStorage.find(taskItem => taskItem.id === taskId)
 
     if (task?.type !== 'daily') {
       return HttpResponse.json({ error: 'Task not found or not a daily task' }, { status: 404 })

@@ -22,7 +22,7 @@
   import { Icon } from '@iconify/vue'
   import { isDailyTask, isProgressTask, isOneTimeTask, getTaskProgress, type Task } from '@/models/task'
 
-  const { t } = useI18n()
+  const { t: translate } = useI18n()
 
   const { task } = defineProps<{
     task: Task
@@ -32,13 +32,13 @@
 
   const progressText = computed(() => {
     if (isDailyTask(task)) {
-      return t('taskCard.daysProgress', { completed: task.completedDates.length, target: task.targetDays })
+      return translate('taskCard.daysProgress', { completed: task.completedDates.length, target: task.targetDays })
     }
     if (isProgressTask(task)) {
       return `${task.currentValue.toLocaleString()} / ${task.targetValue.toLocaleString()} ${task.unit}`
     }
     if (isOneTimeTask(task)) {
-      return task.completedAt ? t('taskCard.completed') : t('checkIn.waitingForCompletion')
+      return task.completedAt ? translate('taskCard.completed') : translate('checkIn.waitingForCompletion')
     }
     return ''
   })
