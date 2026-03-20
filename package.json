@@ -25,7 +25,7 @@
   "dependencies": {
     "@fontsource-variable/inter": "5.2.8",
     "@iconify/vue": "5.0.0",
-    "drizzle-orm": "1.0.0-beta.18-7eb39f0",
+    "drizzle-orm": "1.0.0-beta.19-d95b7a4",
     "hono": "4.12.8",
     "ky": "1.14.3",
     "pinia": "3.0.4",
@@ -42,7 +42,7 @@
     "@vitest/browser-playwright": "4.1.0",
     "@vitest/ui": "4.1.0",
     "@vue/tsconfig": "0.9.0",
-    "drizzle-kit": "1.0.0-beta.18-7eb39f0",
+    "drizzle-kit": "1.0.0-beta.19-d95b7a4",
     "eslint-config-greenpie": "16.0.0-4",
     "happy-dom": "20.8.4",
     "husky": "9.1.7",
