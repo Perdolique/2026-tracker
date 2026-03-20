@@ -107,7 +107,7 @@ describe('AddTaskView - Browser Tests', () => {
     const tasks = getMockTasksStorage()
     expect(tasks.length).toBe(1)
 
-    const createdTask = tasks.find((t) => isDailyTask(t))
+    const createdTask = tasks.find((taskItem) => isDailyTask(taskItem))
     expect(createdTask?.title).toBe('Run every day')
     expect(createdTask?.type).toBe('daily')
     expect(createdTask?.targetDays).toBe(300)
@@ -176,7 +176,7 @@ describe('AddTaskView - Browser Tests', () => {
     const tasks = getMockTasksStorage()
     expect(tasks.length).toBe(1)
 
-    const progressTasks = tasks.find((t) => isProgressTask(t))
+    const progressTasks = tasks.find((taskItem) => isProgressTask(taskItem))
     expect(progressTasks?.title).toBe('Walk a million steps')
     expect(progressTasks?.type).toBe('progress')
     expect(progressTasks?.targetValue).toBe(1_000_000)
@@ -231,7 +231,7 @@ describe('AddTaskView - Browser Tests', () => {
 
     expect(tasks.length).toBe(1)
 
-    const oneTimeTask = tasks.find((t) => isOneTimeTask(t))
+    const oneTimeTask = tasks.find((taskItem) => isOneTimeTask(taskItem))
 
     expect(oneTimeTask?.title).toBe('Buy a bicycle')
     expect(oneTimeTask?.type).toBe('one-time')

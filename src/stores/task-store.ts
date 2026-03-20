@@ -8,8 +8,8 @@ export const useTaskStore = defineStore('tasks', () => {
   const isLoading = ref(false)
   const errorMessage = ref<string | null>(null)
   const hasFetched = ref(false)
-  const activeTasks = computed(() => tasks.value.filter((t) => !isTaskCompleted(t)))
-  const completedTasks = computed(() => tasks.value.filter((t) => isTaskCompleted(t)))
+  const activeTasks = computed(() => tasks.value.filter((task) => !isTaskCompleted(task)))
+  const completedTasks = computed(() => tasks.value.filter((task) => isTaskCompleted(task)))
 
   // Sorted tasks with priority: check-in enabled → recently updated
   const sortedActiveTasks = computed(() =>
@@ -98,7 +98,7 @@ export const useTaskStore = defineStore('tasks', () => {
 
     try {
       await taskApi.deleteTask(taskId)
-      tasks.value = tasks.value.filter((t) => t.id !== taskId)
+      tasks.value = tasks.value.filter((task) => task.id !== taskId)
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : 'Failed to delete task'
     }
@@ -109,7 +109,7 @@ export const useTaskStore = defineStore('tasks', () => {
 
     try {
       const updatedTask = await taskApi.updateTask(task)
-      const index = tasks.value.findIndex((t) => t.id === task.id)
+      const index = tasks.value.findIndex((taskItem) => taskItem.id === task.id)
       if (index !== -1) {
         tasks.value[index] = updatedTask
       }
@@ -130,7 +130,7 @@ export const useTaskStore = defineStore('tasks', () => {
       const updatedTask = await taskApi.recordCheckIn(taskId, completed, value)
 
       // Update task in local state
-      const index = tasks.value.findIndex((t) => t.id === taskId)
+      const index = tasks.value.findIndex((taskItem) => taskItem.id === taskId)
       if (index !== -1) {
         tasks.value[index] = updatedTask
       }
@@ -144,7 +144,7 @@ export const useTaskStore = defineStore('tasks', () => {
     try {
       const updatedTask = await taskApi.addDailyCompletion(taskId, date)
 
-      const index = tasks.value.findIndex((t) => t.id === taskId)
+      const index = tasks.value.findIndex((taskItem) => taskItem.id === taskId)
       if (index !== -1) {
         tasks.value[index] = updatedTask
       }
@@ -161,7 +161,7 @@ export const useTaskStore = defineStore('tasks', () => {
     try {
       const updatedTask = await taskApi.deleteDailyCompletion(taskId, date)
 
-      const index = tasks.value.findIndex((t) => t.id === taskId)
+      const index = tasks.value.findIndex((taskItem) => taskItem.id === taskId)
       if (index !== -1) {
         tasks.value[index] = updatedTask
       }
@@ -179,7 +179,7 @@ export const useTaskStore = defineStore('tasks', () => {
       const updatedTask = await taskApi.addProgressValue(taskId, value)
 
       // Update task in local state
-      const index = tasks.value.findIndex((t) => t.id === taskId)
+      const index = tasks.value.findIndex((taskItem) => taskItem.id === taskId)
       if (index !== -1) {
         tasks.value[index] = updatedTask
       }
@@ -197,7 +197,7 @@ export const useTaskStore = defineStore('tasks', () => {
       const updatedTask = await taskApi.deleteProgressCompletion(taskId, completionId)
 
       // Update task in local state
-      const index = tasks.value.findIndex((t) => t.id === taskId)
+      const index = tasks.value.findIndex((taskItem) => taskItem.id === taskId)
       if (index !== -1) {
         tasks.value[index] = updatedTask
       }
@@ -210,7 +210,7 @@ export const useTaskStore = defineStore('tasks', () => {
   }
 
   function getTaskById(taskId: string): Task | undefined {
-    return tasks.value.find((t) => t.id === taskId)
+    return tasks.value.find((task) => task.id === taskId)
   }
 
   return {

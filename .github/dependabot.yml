@@ -1,0 +1,19 @@
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+
+updates:
+  # Check for npm package updates
+  - package-ecosystem: "npm"
+    directory: "/"
+
+    schedule:
+      interval: "weekly"
+      day: "friday"
+      time: "19:00"
+      timezone: "Europe/Tallinn"
+
+    groups:
+      packages:
+        patterns:
+          - "*"
