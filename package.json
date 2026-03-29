@@ -44,7 +44,7 @@
     "@vue/tsconfig": "0.9.0",
     "drizzle-kit": "1.0.0-beta.18-7eb39f0",
     "eslint-config-greenpie": "16.0.0-4",
-    "happy-dom": "20.8.4",
+    "happy-dom": "20.8.9",
     "husky": "9.1.7",
     "msw": "2.12.13",
     "oxlint": "1.56.0",
